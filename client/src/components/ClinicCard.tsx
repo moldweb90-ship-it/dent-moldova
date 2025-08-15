@@ -184,22 +184,30 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="mb-1">
-              <div className="flex items-start gap-1">
-                <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight flex-1">{clinic.name}</h3>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {/* Recommended badge next to name */}
-                  {clinic.recommended && (
-                    <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
-                      ⭐ ТОП
-                    </div>
-                  )}
-                  {/* Promotional icon next to name */}
-                  {getPromotionalIcon() && (
-                    <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md">
-                      {getPromotionalIcon()}
-                    </div>
-                  )}
-                </div>
+              <div className="flex items-center gap-1 flex-wrap">
+                {/* All badges before the name */}
+                {clinic.recommended && (
+                  <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
+                    ⭐ ТОП
+                  </div>
+                )}
+                {getPromotionalIcon() && (
+                  <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md">
+                    {getPromotionalIcon()}
+                  </div>
+                )}
+                {clinic.verified && (
+                  <span className="px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
+                    Verified
+                  </span>
+                )}
+                {clinic.cnam && (
+                  <span className="px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
+                    CNAM
+                  </span>
+                )}
+                {/* Clinic name */}
+                <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
               </div>
             </div>
             <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
@@ -207,23 +215,13 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
             </p>
             
-            {/* Specializations and badges */}
+            {/* Specializations only */}
             <div className="flex flex-wrap gap-1 mb-2">
-              {clinic.specializations.slice(0, 1).map(spec => (
+              {clinic.specializations.slice(0, 2).map(spec => (
                 <span key={spec} className="px-1.5 md:px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
                   {SPECIALIZATIONS[spec as keyof typeof SPECIALIZATIONS]?.[language] || spec}
                 </span>
               ))}
-              {clinic.verified && (
-                <span className="px-1.5 md:px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
-                  {t('verifiedBadge')}
-                </span>
-              )}
-              {clinic.cnam && (
-                <span className="px-1.5 md:px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
-                  {t('cnamBadge')}
-                </span>
-              )}
             </div>
             
             <div className="text-xs md:text-sm mb-1">
