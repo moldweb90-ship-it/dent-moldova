@@ -1,8 +1,9 @@
 import { ScoreBar } from './ScoreBar';
 import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
+import { Info, Flame } from 'lucide-react';
 import { useState } from 'react';
 
 interface Clinic {
@@ -23,6 +24,8 @@ interface Clinic {
   reviewsIndex: number;
   accessIndex: number;
   dScore: number;
+  recommended?: boolean;
+  promotionalLabels?: string[];
 }
 
 interface ClinicCardProps {
@@ -35,6 +38,28 @@ interface ClinicCardProps {
 export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }: ClinicCardProps) {
   const { t, language } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
+
+  const promotionalLabelStyles: Record<string, string> = {
+    top: 'bg-yellow-500 text-white',
+    high_rating: 'bg-green-500 text-white',
+    premium: 'bg-purple-500 text-white',
+    verified_plus: 'bg-blue-500 text-white',
+    popular: 'bg-red-500 text-white',
+    new: 'bg-orange-500 text-white',
+    discount: 'bg-pink-500 text-white',
+    fast_service: 'bg-teal-500 text-white'
+  };
+
+  const promotionalLabelText: Record<string, string> = {
+    top: 'ТОП',
+    high_rating: 'Высокий рейтинг',
+    premium: 'Премиум',
+    verified_plus: 'Верифицирован+',
+    popular: 'Популярное',
+    new: 'Новое',
+    discount: 'Скидки',
+    fast_service: 'Быстро'
+  };
 
   const getDScoreColor = (score: number) => {
     if (score >= 75) return 'bg-green-500';
@@ -84,6 +109,30 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         {/* Base overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       </div>
+
+      {/* Top left badges */}
+      <div className="absolute top-3 left-3 z-10 space-y-1">
+        {clinic.recommended && (
+          <Badge className="bg-red-500 text-white font-semibold text-xs">
+            <Flame className="h-2 w-2 mr-1" />
+            Рекомендуем
+          </Badge>
+        )}
+      </div>
+
+      {/* Top right promotional labels */}
+      {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
+        <div className="absolute top-3 right-3 z-10 space-y-1">
+          {clinic.promotionalLabels.slice(0, 2).map((label: string) => (
+            <Badge 
+              key={label}
+              className={`text-xs font-bold block ${promotionalLabelStyles[label] || 'bg-gray-500 text-white'}`}
+            >
+              {promotionalLabelText[label] || label}
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {/* Always visible content */}
       <div className="absolute inset-0 flex flex-col justify-between text-white p-4">

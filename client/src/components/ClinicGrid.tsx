@@ -20,6 +20,8 @@ interface Clinic {
   reviewsIndex: number;
   accessIndex: number;
   dScore: number;
+  recommended?: boolean;
+  promotionalLabels?: string[];
 }
 
 interface ClinicGridProps {

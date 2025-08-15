@@ -11,6 +11,7 @@ import { ClinicDetail } from '../components/ClinicDetail';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
+import { RecommendedClinics } from '../components/RecommendedClinics';
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -219,6 +220,11 @@ export default function Home() {
 
         {/* Main Content */}
         <main className={`flex-1 px-4 md:px-8 py-4 md:py-8 ${!filtersVisible ? 'max-w-full' : ''}`}>
+        {/* Recommended Clinics Section */}
+        <RecommendedClinics
+          onClinicClick={handleClinicClick}
+          onBookClick={handleBookClick}
+        />
         {isLoading ? (
           <div className="space-y-8">
             {/* Results Info Skeleton */}

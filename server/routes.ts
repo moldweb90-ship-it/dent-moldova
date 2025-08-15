@@ -241,6 +241,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trustIndex: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         reviewsIndex: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         accessIndex: z.string().optional().transform(val => val ? parseInt(val) : undefined),
+        recommended: z.string().optional().transform(val => val === 'true'),
+        promotionalLabels: z.string().optional().transform(val => val ? JSON.parse(val) : undefined),
       });
 
       const parsedUpdates = clinicSchema.parse(req.body);
@@ -548,6 +550,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/clinics', recordViewMiddleware);
   app.use('/clinic', recordViewMiddleware);
   
+  // Get recommended clinics for the homepage
+  app.get("/api/recommended-clinics", async (req, res) => {
+    try {
+      const recommendedClinics = await storage.getRecommendedClinics();
+      res.json({ clinics: recommendedClinics });
+    } catch (error) {
+      console.error("Error fetching recommended clinics:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get clinics with filters
   app.get("/api/clinics", async (req, res) => {
     try {

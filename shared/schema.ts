@@ -43,6 +43,8 @@ export const clinics = pgTable("clinics", {
   dScore: integer("d_score").notNull(),
   googleRating: integer("google_rating"),
   googleReviewsCount: integer("google_reviews_count"),
+  recommended: boolean("recommended").default(false),
+  promotionalLabels: json("promotional_labels").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

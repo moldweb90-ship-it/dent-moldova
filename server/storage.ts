@@ -39,6 +39,7 @@ export interface IStorage {
   recordView(view: InsertSiteView): Promise<SiteView>;
   getTodayViews(): Promise<number>;
   getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
+  getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; packages: Package[] })[]>;
   
   // Site settings methods
   getSiteSetting(key: string): Promise<SiteSetting | undefined>;
@@ -344,6 +345,20 @@ export class DatabaseStorage implements IStorage {
       .where(gte(siteViews.createdAt, today));
       
     return result.count || 0;
+  }
+
+  async getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; packages: Package[] })[]> {
+    const results = await db.query.clinics.findMany({
+      where: eq(clinics.recommended, true),
+      with: {
+        city: true,
+        district: true,
+        packages: true,
+      },
+      orderBy: desc(clinics.dScore),
+      limit: 6,
+    });
+    return results as any;
   }
 
   async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City; district: District | null })[]> {

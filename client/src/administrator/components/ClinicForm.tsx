@@ -32,7 +32,9 @@ const clinicSchema = z.object({
   priceIndex: z.number().min(0).max(100),
   trustIndex: z.number().min(0).max(100),
   reviewsIndex: z.number().min(0).max(100),
-  accessIndex: z.number().min(0).max(100)
+  accessIndex: z.number().min(0).max(100),
+  recommended: z.boolean().default(false),
+  promotionalLabels: z.array(z.string()).default([])
 });
 
 type ClinicFormData = z.infer<typeof clinicSchema>;
@@ -86,7 +88,9 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
       priceIndex: clinic?.priceIndex || 50,
       trustIndex: clinic?.trustIndex || 50,
       reviewsIndex: clinic?.reviewsIndex || 50,
-      accessIndex: clinic?.accessIndex || 50
+      accessIndex: clinic?.accessIndex || 50,
+      recommended: clinic?.recommended || false,
+      promotionalLabels: clinic?.promotionalLabels || []
     }
   });
 
@@ -172,6 +176,17 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   ];
 
   const languages = ['ru', 'ro', 'en'];
+
+  const promotionalLabels = [
+    { value: 'top', label: 'ТОП', className: 'bg-yellow-500 text-white' },
+    { value: 'high_rating', label: 'Высокий рейтинг', className: 'bg-green-500 text-white' },
+    { value: 'premium', label: 'Премиум', className: 'bg-purple-500 text-white' },
+    { value: 'verified_plus', label: 'Верифицирован+', className: 'bg-blue-500 text-white' },
+    { value: 'popular', label: 'Популярное', className: 'bg-red-500 text-white' },
+    { value: 'new', label: 'Новое', className: 'bg-orange-500 text-white' },
+    { value: 'discount', label: 'Скидки', className: 'bg-pink-500 text-white' },
+    { value: 'fast_service', label: 'Быстро', className: 'bg-teal-500 text-white' }
+  ];
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -325,6 +340,15 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
               />
               <Label htmlFor="availToday">Доступно сегодня</Label>
             </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="recommended"
+                checked={form.watch('recommended')}
+                onCheckedChange={(checked) => form.setValue('recommended', !!checked)}
+              />
+              <Label htmlFor="recommended">🔥 Рекомендуем (приоритетное размещение)</Label>
+            </div>
           </div>
 
           {/* Rating Sliders */}
@@ -371,6 +395,34 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
                 step={1}
                 className="mt-2"
               />
+            </div>
+            
+            {/* Promotional Labels */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Рекламные лейблы</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {promotionalLabels.map((label) => (
+                  <div key={label.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`label-${label.value}`}
+                      checked={form.watch('promotionalLabels').includes(label.value)}
+                      onCheckedChange={(checked) => {
+                        const currentLabels = form.watch('promotionalLabels');
+                        if (checked) {
+                          form.setValue('promotionalLabels', [...currentLabels, label.value]);
+                        } else {
+                          form.setValue('promotionalLabels', currentLabels.filter(l => l !== label.value));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`label-${label.value}`} className="text-sm">
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${label.className}`}>
+                        {label.label}
+                      </span>
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
