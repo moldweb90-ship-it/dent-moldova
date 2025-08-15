@@ -1,0 +1,331 @@
+Ты создаёшь простое, очень быстрое веб-приложение-каталог стоматологических клиник Молдовы в стиле Nomad List. Минимализм, 1 экран - карточки клиник с квадратным форматным превью, 4 короткие шкалы и общий балл. Всё локализовано на ru и ro.
+
+0. Технологии и общие требования
+
+Full-stack TypeScript.
+
+Next.js 14 App Router или аналог с SSR, Tailwind CSS, шрифты без лишнего, иконки Lucide.
+
+База: SQLite в dev с Prisma ORM. Лёгкая замена на Postgres в .env.
+
+i18n: i18next с файловыми словарями для ru и ro. Дефолт ru. Переключатель языков в шапке.
+
+Вёрстка: чистая, без лишних анимаций. Светлая тема. Карточки 1:1, сетка 1-4 колонки, адаптив.
+
+Никаких карт на MVP. Только каталог, поиск, фильтры, детальная карточка.
+
+Без внешних API на MVP. Все данные - seed. Архитектуру сделать так, чтобы потом подключить источники.
+
+1. Домашняя страница - каталог
+
+Компоненты сверху вниз:
+
+Topbar: логотип текстом, переключатель языка [RU | RO], строка поиска.
+
+Панель фильтров - компактная:
+
+Город: select
+
+Район: multi-select
+
+Специализация: multi-select [Импланты, Виниры, Эндо, Гигиена, Ортодонтия, Детская]
+
+Языки: чекбоксы [ru, ro, en]
+
+Verified: toggle
+
+Срочный приём сегодня: toggle
+
+Диапазон цены: slider для индекса цены 0-100
+
+Сортировка: select [D-score, Цена, Доверие, Отзывы]
+Кнопки: Сброс, Применить. На мобильном фильтры прячутся в Drawer.
+
+Grid карточек клиник. Пагинация или infinite scroll - выбери пагинацию.
+
+2. Карточка клиники - как у Nomad List
+
+Формат 1:1, кликабельная, без лишних деталей.
+Содержимое:
+
+Логотип мини, название, город - район.
+
+Крупно общий балл D-score 0-100.
+
+4 горизонтальные шкалы с короткими подписями и числами справа:
+
+Цена
+
+Доверие
+
+Отзывы
+
+Доступность
+
+Теги: специализации, языки.
+
+Две кнопки: Записаться и Цены.
+Карточка ведёт на страницу клиники по клику на любое место.
+
+Шкалы - это прогресс-бары с тонкими полосами, без цифробреда. Цвета по градации 0-49 красноватый, 50-74 янтарный, 75-100 зелёный. D-score - крупный, круглый бейдж.
+
+3. Страница клиники
+
+Слева - основной контент, справа - боковая колонка.
+
+Хедер: название, район, D-score, бейджи [Verified, CNAM если есть].
+
+Кнопки: Записаться, Позвонить, Сайт.
+
+Блок цен:
+
+3 пакета таблицей: Implant Standard, Hygiene Pro, RCT molar - показать диапазон и медиану.
+
+Блок шкал с расшифровкой что учитывается.
+
+2 фото-кейса до-после - просто заглушки-изображения из seed.
+
+Источники данных: «Цены - предоставлены клиникой», «Отзывы - публичные источники», дата обновления.
+
+Дисклеймер: мы не даём медсоветы.
+
+4. Поиск и фильтры - логика
+
+Поиск по названию клиники, специализациям, тегам, городу, району. Debounce 250 мс.
+
+Фильтры применяются на сервере. Комбинируются. Сортировка по дефолту D-score desc.
+
+Значения фильтров отражаются в query-параметрах URL.
+
+5. Модель данных Prisma
+
+Создай следующие модели:
+
+model City {
+  id       String  @id @default(cuid())
+  nameRu   String
+  nameRo   String
+  districts District[]
+  clinics   Clinic[]
+}
+
+model District {
+  id      String @id @default(cuid())
+  cityId  String
+  city    City   @relation(fields: [cityId], references: [id])
+  nameRu  String
+  nameRo  String
+  clinics Clinic[]
+}
+
+model Clinic {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  logoUrl     String?
+  cityId      String
+  city        City     @relation(fields: [cityId], references: [id])
+  districtId  String?
+  district    District? @relation(fields: [districtId], references: [id])
+  address     String?
+  phone       String?
+  website     String?
+  bookingUrl  String?
+  languages   String[] // ["ru","ro","en"]
+  specializations String[] // ["implants","veneers","endo","hygiene","ortho","kids"]
+  tags        String[]
+  verified    Boolean  @default(false)
+  cnam        Boolean  @default(false)
+  availToday  Boolean  @default(false)
+  availTomorrow Boolean @default(false)
+
+  priceIndex  Int      // 0-100 - ниже лучше
+  trustIndex  Int      // 0-100
+  reviewsIndex Int     // 0-100
+  accessIndex Int      // 0-100
+  dScore      Int      // 0-100 - auto
+
+  googleRating       Float? // для будущего
+  googleReviewsCount Int?
+
+  packages   Package[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Package {
+  id         String  @id @default(cuid())
+  clinicId   String
+  clinic     Clinic  @relation(fields: [clinicId], references: [id])
+  code       String  // "implant_standard" | "hygiene_pro" | "rct_molar"
+  nameRu     String
+  nameRo     String
+  priceMin   Int
+  priceMax   Int
+  priceMedian Int
+}
+
+
+dScore считается на сервере при seed и при апдейте:
+dScore = round(0.3*trustIndex + 0.25*reviewsIndex + 0.25*(100 - priceIndex) + 0.2*accessIndex)
+Здесь priceIndex трактуем как 0 - дёшево, 100 - дорого, поэтому берём (100 - priceIndex).
+
+6. Seed данные
+
+Сидай минимум 12 клиник по Кишинёву и 3 по Бельцам, с реальными названиями не нужно, вымышленные. Пример объекта:
+
+{
+  slug: "life-dental-centru",
+  name: "Life Dental",
+  logoUrl: "/seed/life.png",
+  city: "Chișinău",
+  district: "Centru",
+  address: "bd. Ștefan cel Mare 100",
+  phone: "+373 22 000 000",
+  website: "https://example.md",
+  bookingUrl: "/book/life-dental-centru",
+  languages: ["ru","ro","en"],
+  specializations: ["implants","veneers","hygiene"],
+  tags: ["рассрочка","цифровая диагностика"],
+  verified: true,
+  cnam: true,
+  availToday: true,
+  availTomorrow: true,
+  priceIndex: 62,
+  trustIndex: 88,
+  reviewsIndex: 74,
+  accessIndex: 80,
+  packages: [
+    { code:"implant_standard", nameRu:"Имплант стандарт", nameRo:"Implant standard", priceMin:9800, priceMax:14500, priceMedian:12200 },
+    { code:"hygiene_pro", nameRu:"Профгигиена", nameRo:"Igienă profesională", priceMin:600, priceMax:1200, priceMedian:900 },
+    { code:"rct_molar", nameRu:"Лечение каналов моляр", nameRo:"Tratament canal molar", priceMin:2200, priceMax:3600, priceMedian:2900 }
+  ]
+}
+
+
+Сделай разнообразие значений, чтобы фильтры и сортировки были наглядны.
+
+7. UI тексты - i18n словари
+
+Создай locales/ru/common.json и locales/ro/common.json.
+
+RU:
+
+{
+  "appTitle": "Dent Moldova",
+  "searchPlaceholder": "Поиск клиники или услуги...",
+  "filters": "Фильтры",
+  "city": "Город",
+  "district": "Район",
+  "specialization": "Специализация",
+  "languages": "Языки",
+  "verified": "Проверено",
+  "urgentToday": "Запись сегодня",
+  "priceRange": "Диапазон цены",
+  "sortBy": "Сортировать",
+  "sort.dscore": "D-score",
+  "sort.price": "Цена",
+  "sort.trust": "Доверие",
+  "sort.reviews": "Отзывы",
+  "apply": "Применить",
+  "reset": "Сброс",
+  "price": "Цена",
+  "trust": "Доверие",
+  "reviews": "Отзывы",
+  "access": "Доступность",
+  "book": "Записаться",
+  "prices": "Цены",
+  "verifiedBadge": "Verified",
+  "cnamBadge": "CNAM",
+  "packages": "Пакеты",
+  "disclaimer": "Информация носит справочный характер и не является медсоветом."
+}
+
+
+RO:
+
+{
+  "appTitle": "Dent Moldova",
+  "searchPlaceholder": "Caută clinică sau serviciu...",
+  "filters": "Filtre",
+  "city": "Oraș",
+  "district": "Sector",
+  "specialization": "Specializare",
+  "languages": "Limbi",
+  "verified": "Verificat",
+  "urgentToday": "Programare azi",
+  "priceRange": "Interval preț",
+  "sortBy": "Sortează",
+  "sort.dscore": "D-score",
+  "sort.price": "Preț",
+  "sort.trust": "Încredere",
+  "sort.reviews": "Recenzii",
+  "apply": "Aplică",
+  "reset": "Resetează",
+  "price": "Preț",
+  "trust": "Încredere",
+  "reviews": "Recenzii",
+  "access": "Acces",
+  "book": "Programează",
+  "prices": "Prețuri",
+  "verifiedBadge": "Verificat",
+  "cnamBadge": "CNAM",
+  "packages": "Pachete",
+  "disclaimer": "Informațiile sunt cu caracter informativ, nu constituie sfat medical."
+}
+
+8. Компоненты интерфейса
+
+<LanguageToggle /> - сохраняй выбор в cookie.
+
+<SearchBar /> - controlled input, debounce.
+
+<Filters /> - компактные selects и sliders, state хранится в URL.
+
+<ClinicCard /> - квадрат, прогресс-бары, теги, кнопки.
+
+<ScoreBar value={0..100} label="Цена" /> - общая реализация для 4 шкал с цветом по диапазону.
+
+<ClinicDetail /> - страница с таблицей пакетов и бейджами.
+
+9. Серверная логика
+
+API GET /api/clinics - принимает query: q, city, districts[], specs[], langs[], verified, urgentToday, priceMin, priceMax, sort, page, limit. Возвращает список и total.
+
+API GET /api/clinics/:slug - детально.
+
+На бэке фильтрация по where, сортировка по выбранному полю. D-score хранится в БД, но может пересчитываться периодически кроном.
+
+10. Копирайт и брендинг
+
+Название проекта: Dent Moldova.
+
+Домены-кандидаты: dent.md, stom.md, denta.md, dentar.md, programare.md.
+
+В футере: © Dent Moldova. Политика приватности. Контакты.
+
+11. Тестовые сценарии - acceptance
+
+Поиск по «implant» выдаёт клиники со специализацией implants.
+
+Фильтр Verified показывает только verified.
+
+Toggle «Запись сегодня» оставляет только availToday=true.
+
+Сортировка по цене - сортирует по возрастанию priceIndex.
+
+Смена языка меняет все тексты, данные клиник остаются.
+
+Карточка клиники переходит на детальную страницу, где видны 3 пакета.
+
+D-score отображается корректно и согласован с компонентами.
+
+12. Что не делать в MVP
+
+Не подключать Google Places и карты.
+
+Не собирать отзывы пользователей.
+
+Не делать админку - только seed. Структуру кода заложи так, чтобы потом добавить.
+
+Сделай проект запускаемым одной командой dev. Добавь README с короткими инструкциями.
