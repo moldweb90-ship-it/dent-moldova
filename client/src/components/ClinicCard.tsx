@@ -146,8 +146,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="flex space-x-2">
           <Button 
             onClick={handleBookClick}
-            className={`flex-1 bg-blue-600 text-white shadow-lg text-xs md:text-sm transition-all duration-300 ${
-              isHovered ? 'bg-blue-700 scale-105 shadow-xl' : 'hover:bg-blue-700'
+            className={`flex-1 text-xs md:text-sm transition-all duration-300 ${
+              isHovered ? 'bg-blue-700 text-white scale-105 shadow-2xl z-10 transform border-2 border-blue-400' : 'bg-blue-600 text-white shadow-lg hover:bg-blue-700'
             }`}
             size="sm"
           >
@@ -156,8 +156,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <Button 
             onClick={handlePricesClick}
             variant="outline"
-            className={`flex-1 border-2 border-white bg-white text-gray-900 text-xs md:text-sm transition-all duration-300 ${
-              isHovered ? 'bg-gray-50 scale-105 shadow-xl border-gray-200' : 'hover:bg-gray-100'
+            className={`flex-1 text-xs md:text-sm transition-all duration-300 ${
+              isHovered ? 'bg-white text-gray-900 scale-105 shadow-2xl z-10 transform border-2 border-blue-400' : 'border-2 border-white bg-white text-gray-900 hover:bg-gray-100'
             }`}
             size="sm"
           >
@@ -174,57 +174,57 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}>
           {/* Progress bars - only visible on hover */}
-          <div className="space-y-2 bg-black bg-opacity-60 p-4 rounded-lg backdrop-blur-sm">
-            <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="space-y-1.5 md:space-y-2 bg-black bg-opacity-60 p-2 md:p-4 rounded-lg backdrop-blur-sm mx-2">
+            <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
               <div>
-                <div className="flex justify-between mb-1">
-                  <span>{t('price')}</span>
-                  <span>{100 - clinic.priceIndex}</span>
+                <div className="flex justify-between mb-0.5 md:mb-1">
+                  <span className="text-xs">{t('price')}</span>
+                  <span className="text-xs">{100 - clinic.priceIndex}</span>
                 </div>
-                <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-700 delay-100 ${getDScoreColor(100 - clinic.priceIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-100 ${getDScoreColor(100 - clinic.priceIndex)}`}
                     style={{ width: isHovered ? `${100 - clinic.priceIndex}%` : '0%' }}
                   />
                 </div>
               </div>
               
               <div>
-                <div className="flex justify-between mb-1">
-                  <span>{t('trust')}</span>
-                  <span>{clinic.trustIndex}</span>
+                <div className="flex justify-between mb-0.5 md:mb-1">
+                  <span className="text-xs">{t('trust')}</span>
+                  <span className="text-xs">{clinic.trustIndex}</span>
                 </div>
-                <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-700 delay-200 ${getDScoreColor(clinic.trustIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-200 ${getDScoreColor(clinic.trustIndex)}`}
                     style={{ width: isHovered ? `${clinic.trustIndex}%` : '0%' }}
                   />
                 </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
               <div>
-                <div className="flex justify-between mb-1">
-                  <span>{t('reviews')}</span>
-                  <span>{clinic.reviewsIndex}</span>
+                <div className="flex justify-between mb-0.5 md:mb-1">
+                  <span className="text-xs">{t('reviews')}</span>
+                  <span className="text-xs">{clinic.reviewsIndex}</span>
                 </div>
-                <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-700 delay-300 ${getDScoreColor(clinic.reviewsIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-300 ${getDScoreColor(clinic.reviewsIndex)}`}
                     style={{ width: isHovered ? `${clinic.reviewsIndex}%` : '0%' }}
                   />
                 </div>
               </div>
               
               <div>
-                <div className="flex justify-between mb-1">
-                  <span>{t('access')}</span>
-                  <span>{clinic.accessIndex}</span>
+                <div className="flex justify-between mb-0.5 md:mb-1">
+                  <span className="text-xs">{t('access')}</span>
+                  <span className="text-xs">{clinic.accessIndex}</span>
                 </div>
-                <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-700 delay-400 ${getDScoreColor(clinic.accessIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-400 ${getDScoreColor(clinic.accessIndex)}`}
                     style={{ width: isHovered ? `${clinic.accessIndex}%` : '0%' }}
                   />
                 </div>

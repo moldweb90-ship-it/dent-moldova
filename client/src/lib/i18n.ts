@@ -13,22 +13,45 @@ const translations: Record<Language, Translations> = {
   ro
 };
 
+// Global language state
+let globalLanguage: Language = 'ru';
+const listeners: Set<() => void> = new Set();
+
+// Initialize from localStorage
+if (typeof window !== 'undefined') {
+  const saved = localStorage.getItem('language');
+  globalLanguage = (saved as Language) || 'ru';
+}
+
+function setGlobalLanguage(lang: Language) {
+  globalLanguage = lang;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('language', lang);
+  }
+  // Notify all listeners
+  listeners.forEach(listener => listener());
+}
+
 export function useTranslation() {
-  const [language, setLanguage] = useState<Language>(() => {
-    const saved = localStorage.getItem('language');
-    return (saved as Language) || 'ru';
-  });
+  const [language, setLanguage] = useState<Language>(globalLanguage);
 
   useEffect(() => {
-    localStorage.setItem('language', language);
-  }, [language]);
+    const listener = () => {
+      setLanguage(globalLanguage);
+    };
+    listeners.add(listener);
+    
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
 
   const t = (key: string): string => {
     return translations[language][key] || key;
   };
 
   const changeLanguage = (lang: Language) => {
-    setLanguage(lang);
+    setGlobalLanguage(lang);
   };
 
   return { t, language, changeLanguage };
