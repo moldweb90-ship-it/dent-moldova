@@ -89,9 +89,47 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
   const clinicImage = `https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`;
   const fallbackImage = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300';
 
+  // Определяем стиль рамки для выделения
+  const getPromotionalBorder = () => {
+    if (!clinic.promotionalLabels || clinic.promotionalLabels.length === 0) return '';
+    
+    const label = clinic.promotionalLabels[0];
+    const borderStyles: Record<string, string> = {
+      top: 'border-4 border-yellow-400 shadow-lg shadow-yellow-400/50',
+      premium: 'border-4 border-purple-400 shadow-lg shadow-purple-400/50',
+      high_rating: 'border-4 border-green-400 shadow-lg shadow-green-400/50',
+      verified_plus: 'border-4 border-blue-400 shadow-lg shadow-blue-400/50',
+      popular: 'border-4 border-red-400 shadow-lg shadow-red-400/50',
+      new: 'border-4 border-orange-400 shadow-lg shadow-orange-400/50',
+      discount: 'border-4 border-pink-400 shadow-lg shadow-pink-400/50',
+      fast_service: 'border-4 border-teal-400 shadow-lg shadow-teal-400/50'
+    };
+    
+    return borderStyles[label] || '';
+  };
+
+  // Получаем иконку для лейбла
+  const getPromotionalIcon = () => {
+    if (!clinic.promotionalLabels || clinic.promotionalLabels.length === 0) return null;
+    
+    const label = clinic.promotionalLabels[0];
+    const icons: Record<string, string> = {
+      top: '👑',
+      premium: '💎', 
+      high_rating: '⭐',
+      verified_plus: '✅',
+      popular: '🔥',
+      new: '🆕',
+      discount: '💰',
+      fast_service: '⚡'
+    };
+    
+    return icons[label] || '✨';
+  };
+
   return (
     <div 
-      className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[3/4] md:aspect-[4/3] group"
+      className={`relative rounded-2xl overflow-hidden cursor-pointer aspect-[3/4] md:aspect-[4/3] group ${getPromotionalBorder()}`}
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -120,28 +158,22 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         )}
       </div>
 
+      {/* Promotional icon in top right */}
+      {getPromotionalIcon() && (
+        <div className="absolute top-3 right-3 z-10">
+          <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-lg shadow-lg">
+            {getPromotionalIcon()}
+          </div>
+        </div>
+      )}
+
 
       {/* Always visible content */}
       <div className="absolute inset-0 flex flex-col justify-between text-white p-4">
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
-              {/* Promotional labels next to name */}
-              {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
-                <>
-                  {clinic.promotionalLabels.slice(0, 2).map((label: string) => (
-                    <Badge 
-                      key={label}
-                      className={`text-xs font-bold px-2 py-0.5 ${promotionalLabelStyles[label] || 'bg-gray-500 text-white'}`}
-                    >
-                      {promotionalLabelText[label] || label}
-                    </Badge>
-                  ))}
-                </>
-              )}
-            </div>
+            <h3 className="text-base md:text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
             <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
               {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
