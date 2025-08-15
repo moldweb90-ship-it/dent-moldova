@@ -30,7 +30,6 @@ interface ClinicGridProps {
   onPageChange: (page: number) => void;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
-  onPricesClick: (clinic: Clinic) => void;
 }
 
 export function ClinicGrid({ 
@@ -40,8 +39,7 @@ export function ClinicGrid({
   limit, 
   onPageChange, 
   onClinicClick, 
-  onBookClick, 
-  onPricesClick 
+  onBookClick
 }: ClinicGridProps) {
   const { t } = useTranslation();
   const totalPages = Math.ceil(total / limit);
@@ -63,7 +61,7 @@ export function ClinicGrid({
             clinic={clinic}
             onClinicClick={onClinicClick}
             onBookClick={onBookClick}
-            onPricesClick={onPricesClick}
+            onPricesClick={(slug) => onClinicClick(slug)}
           />
         ))}
       </div>

@@ -8,7 +8,6 @@ import { SearchBar } from '../components/SearchBar';
 import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
 import { ClinicGrid } from '../components/ClinicGrid';
 import { ClinicDetail } from '../components/ClinicDetail';
-import { PricingModal } from '../components/PricingModal';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
@@ -20,9 +19,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [pricingOpen, setPricingOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [pricingClinic, setPricingClinic] = useState<any>(null);
   const [bookingClinic, setBookingClinic] = useState<any>(null);
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -137,10 +134,6 @@ export default function Home() {
     setBookingOpen(true);
   }, []);
 
-  const handlePricesClick = useCallback((clinic: any) => {
-    setPricingClinic(clinic);
-    setPricingOpen(true);
-  }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
@@ -235,7 +228,7 @@ export default function Home() {
             {/* Grid Skeleton */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200">
+                <div key={i} className="relative rounded-2xl overflow-hidden aspect-[3/4] md:aspect-[4/3] bg-gray-200">
                   <div className="animate-pulse">
                     {/* Background placeholder */}
                     <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-400"></div>
@@ -261,7 +254,6 @@ export default function Home() {
             onPageChange={handlePageChange}
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
-            onPricesClick={handlePricesClick}
           />
         ) : (
           <div className="text-center py-12">
@@ -285,16 +277,6 @@ export default function Home() {
         onClose={() => {
           setDetailOpen(false);
           setSelectedClinic(null);
-        }}
-        onBookClick={handleBookClick}
-      />
-      
-      <PricingModal
-        clinic={pricingClinic}
-        open={pricingOpen}
-        onClose={() => {
-          setPricingOpen(false);
-          setPricingClinic(null);
         }}
         onBookClick={handleBookClick}
       />

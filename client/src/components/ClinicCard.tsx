@@ -29,7 +29,7 @@ interface ClinicCardProps {
   clinic: Clinic;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
-  onPricesClick: (clinic: Clinic) => void;
+  onPricesClick: (slug: string) => void;
 }
 
 export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }: ClinicCardProps) {
@@ -57,7 +57,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
 
   const handlePricesClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onPricesClick(clinic);
+    onPricesClick(clinic.slug);
   };
 
   // Generate clinic image based on ID for consistency
@@ -66,7 +66,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
 
   return (
     <div 
-      className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[4/3] group"
+      className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[3/4] md:aspect-[4/3] group"
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -146,7 +146,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="flex space-x-2">
           <Button 
             onClick={handleBookClick}
-            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg text-xs md:text-sm"
+            className={`flex-1 bg-blue-600 text-white shadow-lg text-xs md:text-sm transition-all duration-300 ${
+              isHovered ? 'bg-blue-700 scale-105 shadow-xl' : 'hover:bg-blue-700'
+            }`}
             size="sm"
           >
             {t('book')}
@@ -154,7 +156,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <Button 
             onClick={handlePricesClick}
             variant="outline"
-            className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs md:text-sm"
+            className={`flex-1 border-2 border-white bg-white text-gray-900 text-xs md:text-sm transition-all duration-300 ${
+              isHovered ? 'bg-gray-50 scale-105 shadow-xl border-gray-200' : 'hover:bg-gray-100'
+            }`}
             size="sm"
           >
             {t('prices')}
