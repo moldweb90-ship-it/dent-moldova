@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().min(1, 'Название обязательно'),
         cityId: z.string().min(1, 'Город обязателен'),
-        districtId: z.string().optional(),
+        districtId: z.string().optional().transform(val => val && val.trim() !== '' ? val : undefined),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -174,6 +174,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const clinicData = clinicSchema.parse(req.body);
+      
+      // Convert empty strings to null for database foreign key fields
+      if (clinicData.districtId === '') {
+        clinicData.districtId = null;
+      }
       
       // Generate slug from name
       const slug = clinicData.name.toLowerCase()
@@ -225,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().optional(),
         cityId: z.string().optional(),
-        districtId: z.string().optional(),
+        districtId: z.string().optional().transform(val => val && val.trim() !== '' ? val : undefined),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -247,6 +252,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
+      
+      // Convert empty strings to null for database foreign key fields
+      if (updates.districtId === '') {
+        updates.districtId = null;
+      }
       
       // Update logo if uploaded
       if (req.file) {
