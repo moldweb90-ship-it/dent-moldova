@@ -120,26 +120,28 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         )}
       </div>
 
-      {/* Top right promotional labels */}
-      {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
-        <div className="absolute top-3 right-3 z-10 space-y-1">
-          {clinic.promotionalLabels.slice(0, 2).map((label: string) => (
-            <Badge 
-              key={label}
-              className={`text-xs font-bold block ${promotionalLabelStyles[label] || 'bg-gray-500 text-white'}`}
-            >
-              {promotionalLabelText[label] || label}
-            </Badge>
-          ))}
-        </div>
-      )}
 
       {/* Always visible content */}
       <div className="absolute inset-0 flex flex-col justify-between text-white p-4">
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="text-base md:text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
+              {/* Promotional labels next to name */}
+              {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
+                <>
+                  {clinic.promotionalLabels.slice(0, 2).map((label: string) => (
+                    <Badge 
+                      key={label}
+                      className={`text-xs font-bold px-2 py-0.5 ${promotionalLabelStyles[label] || 'bg-gray-500 text-white'}`}
+                    >
+                      {promotionalLabelText[label] || label}
+                    </Badge>
+                  ))}
+                </>
+              )}
+            </div>
             <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
               {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}

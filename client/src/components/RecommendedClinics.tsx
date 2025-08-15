@@ -74,7 +74,9 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
       <div className="flex items-center space-x-2 mb-6">
         <Flame className="h-6 w-6 text-red-500" />
         <h2 className="text-2xl font-bold text-gray-900">Рекомендуем</h2>
-        <Badge className="bg-red-100 text-red-800">Приоритетное размещение</Badge>
+        <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold px-3 py-1">
+          ⭐ Лучший выбор
+        </Badge>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -106,19 +108,21 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
               </div>
             )}
 
-            {/* Clinic Logo/Image */}
-            <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-              {clinic.logoUrl ? (
-                <img
-                  src={clinic.logoUrl}
-                  alt={clinic.name}
-                  className="h-24 w-24 object-contain"
-                />
-              ) : (
-                <div className="text-4xl font-bold text-blue-600">
-                  {clinic.name.charAt(0)}
-                </div>
-              )}
+            {/* Clinic Image */}
+            <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden">
+              <img
+                src={`https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`}
+                alt={clinic.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  if (clinic.logoUrl && !(e.target as HTMLImageElement).src.includes(clinic.logoUrl)) {
+                    (e.target as HTMLImageElement).src = clinic.logoUrl;
+                    (e.target as HTMLImageElement).className = "h-24 w-24 object-contain mx-auto mt-12";
+                  } else {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300';
+                  }
+                }}
+              />
             </div>
 
             {/* Clinic Info */}
