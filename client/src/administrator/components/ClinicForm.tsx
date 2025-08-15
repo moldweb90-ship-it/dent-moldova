@@ -119,9 +119,13 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
       // Invalidate all clinic-related queries to refresh frontend data
       queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/recent-clinics'] });
       if (clinic?.slug) {
         queryClient.invalidateQueries({ queryKey: ['/api/clinics', clinic.slug] });
       }
+      // Clear all cache to ensure fresh data
+      queryClient.clear();
       toast({
         title: 'Клиника обновлена',
         description: 'Изменения были успешно сохранены'

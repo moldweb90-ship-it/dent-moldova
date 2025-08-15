@@ -15,7 +15,7 @@ const bookingSchema = z.object({
   firstName: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
   lastName: z.string().min(2, 'Фамилия должна содержать минимум 2 символа'),
   phone: z.string().min(10, 'Введите корректный номер телефона'),
-  email: z.string().email('Введите корректный email').optional().or(z.literal('')),
+  email: z.union([z.literal(''), z.string().email('Введите корректный email')]).optional(),
   service: z.string().min(1, 'Выберите услугу'),
   preferredDate: z.string().min(1, 'Выберите предпочтительную дату'),
   preferredTime: z.string().min(1, 'Выберите предпочтительное время'),
