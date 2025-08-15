@@ -24,7 +24,6 @@ export const clinics = pgTable("clinics", {
   name: text("name").notNull(),
   logoUrl: text("logo_url"),
   cityId: varchar("city_id").notNull().references(() => cities.id),
-  districtId: varchar("district_id").references(() => districts.id),
   address: text("address"),
   phone: text("phone"),
   website: text("website"),
@@ -126,10 +125,6 @@ export const clinicsRelations = relations(clinics, ({ one, many }) => ({
   city: one(cities, {
     fields: [clinics.cityId],
     references: [cities.id],
-  }),
-  district: one(districts, {
-    fields: [clinics.districtId],
-    references: [districts.id],
   }),
   packages: many(packages),
   services: many(services),

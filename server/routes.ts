@@ -155,7 +155,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().min(1, 'Название обязательно'),
         cityId: z.string().min(1, 'Город обязателен'),
-        districtId: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -225,7 +224,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().optional(),
         cityId: z.string().optional(),
-        districtId: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -330,7 +328,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const servicesSchema = z.array(z.object({
         name: z.string().min(1, 'Название услуги обязательно'),
-        price: z.number().min(1, 'Цена должна быть больше 0')
+        price: z.number().min(1, 'Цена должна быть больше 0'),
+        currency: z.string().default('MDL')
       }));
       
       // Check if clinic exists

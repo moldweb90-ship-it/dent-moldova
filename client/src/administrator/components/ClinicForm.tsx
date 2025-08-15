@@ -18,7 +18,6 @@ import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 const clinicSchema = z.object({
   name: z.string().min(2, 'Название должно содержать минимум 2 символа'),
   cityId: z.string().min(1, 'Выберите город'),
-  districtId: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
   website: z.string().optional(),
@@ -60,7 +59,6 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     defaultValues: {
       name: clinic?.name || '',
       cityId: clinic?.cityId || '',
-      districtId: clinic?.districtId || '',
       address: clinic?.address || '',
       phone: clinic?.phone || '',
       website: clinic?.website || '',
@@ -90,17 +88,6 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     }
   });
 
-  // Watch for city changes to load districts
-  const selectedCityId = form.watch('cityId');
-  const { data: districts } = useQuery({
-    queryKey: ['/api/cities', selectedCityId, 'districts'],
-    queryFn: async () => {
-      const response = await fetch(`/api/cities/${selectedCityId}/districts`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!selectedCityId
-  });
 
   // Load existing services
   const { data: existingServices } = useQuery({
@@ -272,11 +259,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
             <Label htmlFor="cityId">Город *</Label>
             <Select
               value={form.watch('cityId')}
-              onValueChange={(value) => {
-                form.setValue('cityId', value);
-                // Reset district when city changes
-                form.setValue('districtId', '');
-              }}
+              onValueChange={(value) => form.setValue('cityId', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите город" />
@@ -290,29 +273,6 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
               </SelectContent>
             </Select>
           </div>
-
-          {/* District Selection */}
-          {selectedCityId && districts && districts.length > 0 && (
-            <div>
-              <Label htmlFor="districtId">Район</Label>
-              <Select
-                value={form.watch('districtId') || 'no-district'}
-                onValueChange={(value) => form.setValue('districtId', value === 'no-district' ? '' : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите район" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no-district">Без района</SelectItem>
-                  {districts?.map((district: any) => (
-                    <SelectItem key={district.id} value={district.id}>
-                      {district.nameRu}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
 
           {/* Currency Selection */}
           <div>

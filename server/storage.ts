@@ -1,5 +1,5 @@
 import { 
-  cities, districts, clinics, packages, services, users, siteViews, siteSettings, bookings,
+  cities, clinics, packages, services, users, siteViews, siteSettings, bookings,
   type City, type District, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking,
   type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
 } from "@shared/schema";
@@ -22,7 +22,7 @@ export interface IStorage {
 
   // Clinic methods
   getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; services: Service[] })[]; total: number }>;
-  getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; services: Service[] }) | undefined>;
+  getClinicBySlug(slug: string): Promise<(Clinic & { city: City; services: Service[] }) | undefined>;
   createClinic(clinic: InsertClinic): Promise<Clinic>;
   updateClinicDScore(id: string, dScore: number): Promise<void>;
   
@@ -38,8 +38,8 @@ export interface IStorage {
   // View tracking methods
   recordView(view: InsertSiteView): Promise<SiteView>;
   getTodayViews(): Promise<number>;
-  getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
-  getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; services: Service[] })[]>;
+  getRecentClinics(limit?: number): Promise<(Clinic & { city: City })[]>;
+  getRecommendedClinics(): Promise<(Clinic & { city: City; services: Service[] })[]>;
   
   // Site settings methods
   getSiteSetting(key: string): Promise<SiteSetting | undefined>;
@@ -60,7 +60,7 @@ export interface IStorage {
 export interface ClinicFilters {
   q?: string;
   city?: string;
-  districts?: string[];
+  // Districts filter removed
   specializations?: string[];
   languages?: string[];
   verified?: boolean;
@@ -101,26 +101,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDistrictsByCity(cityId: string): Promise<District[]> {
-    return await db.select().from(districts).where(eq(districts.cityId, cityId));
+    // Districts functionality removed
+    return [];
   }
 
   async createDistrict(district: InsertDistrict): Promise<District> {
-    const [newDistrict] = await db.insert(districts).values(district).returning();
-    return newDistrict;
+    // Districts functionality removed
+    throw new Error('Districts are no longer supported');
   }
 
   async getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; services: Service[] })[]; total: number }> {
-    const { q, city, districts: filterDistricts, specializations, languages, verified, urgentToday, priceMin, priceMax, sort = 'dscore', page = 1, limit = 12 } = filters;
+    const { q, city, specializations, languages, verified, urgentToday, priceMin, priceMax, sort = 'dscore', page = 1, limit = 12 } = filters;
 
     let query = db
       .select({
         clinic: clinics,
         city: cities,
-        district: districts,
+
       })
       .from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
-      .leftJoin(districts, eq(clinics.districtId, districts.id));
+;
 
     const conditions = [];
 
@@ -149,10 +150,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(cities.id, city));
     }
 
-    // Districts filter
-    if (filterDistricts && filterDistricts.length > 0) {
-      conditions.push(inArray(clinics.districtId, filterDistricts));
-    }
+    // Districts filter removed
 
     // Specializations filter
     if (specializations && specializations.length > 0) {
@@ -225,7 +223,7 @@ export class DatabaseStorage implements IStorage {
     // Get total count
     let countQuery = db.select({ count: count() }).from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
-      .leftJoin(districts, eq(clinics.districtId, districts.id));
+;
 
     if (conditions.length > 0) {
       countQuery = countQuery.where(and(...conditions)) as any;
@@ -237,7 +235,7 @@ export class DatabaseStorage implements IStorage {
     const clinicsWithServices = results.map((result: any) => ({
       ...result.clinic,
       city: result.city!,
-      district: result.district,
+      // district: removed
       services: clinicServices.filter(service => service.clinicId === result.clinic.id)
     }));
 
@@ -249,11 +247,10 @@ export class DatabaseStorage implements IStorage {
       .select({
         clinic: clinics,
         city: cities,
-        district: districts,
+
       })
       .from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
-      .leftJoin(districts, eq(clinics.districtId, districts.id))
       .where(eq(clinics.slug, slug));
 
     if (!result) return undefined;
@@ -263,9 +260,8 @@ export class DatabaseStorage implements IStorage {
     return {
       ...result.clinic,
       city: result.city!,
-      district: result.district,
       services: clinicServices
-    };
+    } as any;
   }
 
   async createClinic(clinic: InsertClinic): Promise<Clinic> {
@@ -348,12 +344,11 @@ export class DatabaseStorage implements IStorage {
     return result.count || 0;
   }
 
-  async getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; services: Service[] })[]> {
+  async getRecommendedClinics(): Promise<(Clinic & { city: City; services: Service[] })[]> {
     const results = await db.query.clinics.findMany({
       where: eq(clinics.recommended, true),
       with: {
         city: true,
-        district: true,
         services: true,
       },
       orderBy: desc(clinics.dScore),
@@ -362,17 +357,16 @@ export class DatabaseStorage implements IStorage {
     return results as any;
   }
 
-  async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City; district: District | null })[]> {
+  async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City })[]> {
     const results = await db.query.clinics.findMany({
       with: {
         city: true,
-        district: true,
       },
       orderBy: [desc(clinics.createdAt)],
       limit: limit,
     });
 
-    return results as (Clinic & { city: City; district: District | null })[];
+    return results as (Clinic & { city: City })[];
   }
 
   // Site settings methods
