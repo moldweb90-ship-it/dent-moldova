@@ -54,6 +54,34 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const [services, setServices] = useState<{name: string, price: number, currency: string}[]>([]);
   const [newService, setNewService] = useState({ name: '', price: '', currency: 'MDL' });
 
+  // Initialize form first
+  const form = useForm<ClinicFormData>({
+    resolver: zodResolver(clinicSchema),
+    defaultValues: {
+      name: clinic?.name || '',
+      cityId: clinic?.cityId || '',
+      districtId: clinic?.districtId || '',
+      address: clinic?.address || '',
+      phone: clinic?.phone || '',
+      website: clinic?.website || '',
+      bookingUrl: clinic?.bookingUrl || '',
+      languages: clinic?.languages || [],
+      specializations: clinic?.specializations || [],
+      tags: clinic?.tags || [],
+      verified: clinic?.verified || false,
+      cnam: clinic?.cnam || false,
+      availToday: clinic?.availToday || false,
+      availTomorrow: clinic?.availTomorrow || false,
+      priceIndex: clinic?.priceIndex || 50,
+      trustIndex: clinic?.trustIndex || 50,
+      reviewsIndex: clinic?.reviewsIndex || 50,
+      accessIndex: clinic?.accessIndex || 50,
+      recommended: clinic?.recommended || false,
+      promotionalLabels: clinic?.promotionalLabels || [],
+      currency: clinic?.currency || 'MDL'
+    }
+  });
+
   const { data: cities } = useQuery({
     queryKey: ['/api/cities'],
     queryFn: async () => {
@@ -96,33 +124,6 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
       setServices(servicesWithCurrency);
     }
   }, [existingServices, clinic?.currency]);
-
-  const form = useForm<ClinicFormData>({
-    resolver: zodResolver(clinicSchema),
-    defaultValues: {
-      name: clinic?.name || '',
-      cityId: clinic?.cityId || '',
-      districtId: clinic?.districtId || '',
-      address: clinic?.address || '',
-      phone: clinic?.phone || '',
-      website: clinic?.website || '',
-      bookingUrl: clinic?.bookingUrl || '',
-      languages: clinic?.languages || [],
-      specializations: clinic?.specializations || [],
-      tags: clinic?.tags || [],
-      verified: clinic?.verified || false,
-      cnam: clinic?.cnam || false,
-      availToday: clinic?.availToday || false,
-      availTomorrow: clinic?.availTomorrow || false,
-      priceIndex: clinic?.priceIndex || 50,
-      trustIndex: clinic?.trustIndex || 50,
-      reviewsIndex: clinic?.reviewsIndex || 50,
-      accessIndex: clinic?.accessIndex || 50,
-      recommended: clinic?.recommended || false,
-      promotionalLabels: clinic?.promotionalLabels || [],
-      currency: clinic?.currency || 'MDL'
-    }
-  });
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
