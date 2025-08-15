@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().min(1, 'Название обязательно'),
         cityId: z.string().min(1, 'Город обязателен'),
-        district: z.string().optional(),
+        districtId: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -174,7 +174,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const clinicData = clinicSchema.parse(req.body);
-      
       
       // Generate slug from name
       const slug = clinicData.name.toLowerCase()
@@ -226,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().optional(),
         cityId: z.string().optional(),
-        district: z.string().optional(),
+        districtId: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -248,7 +247,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
-      
       
       // Update logo if uploaded
       if (req.file) {

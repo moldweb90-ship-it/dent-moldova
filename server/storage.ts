@@ -1,7 +1,7 @@
 import { 
-  cities, clinics, packages, services, users, siteViews, siteSettings, bookings,
-  type City, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking,
-  type InsertCity, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
+  cities, districts, clinics, packages, services, users, siteViews, siteSettings, bookings,
+  type City, type District, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -120,7 +120,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
-;
+      .leftJoin(districts, eq(clinics.districtId, districts.id));
 
     const conditions = [];
 
@@ -151,7 +151,7 @@ export class DatabaseStorage implements IStorage {
 
     // Districts filter
     if (filterDistricts && filterDistricts.length > 0) {
-      // District filtering removed - now using free text field
+      conditions.push(inArray(clinics.districtId, filterDistricts));
     }
 
     // Specializations filter
@@ -225,7 +225,7 @@ export class DatabaseStorage implements IStorage {
     // Get total count
     let countQuery = db.select({ count: count() }).from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
-;
+      .leftJoin(districts, eq(clinics.districtId, districts.id));
 
     if (conditions.length > 0) {
       countQuery = countQuery.where(and(...conditions)) as any;
@@ -253,6 +253,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(clinics)
       .leftJoin(cities, eq(clinics.cityId, cities.id))
+      .leftJoin(districts, eq(clinics.districtId, districts.id))
       .where(eq(clinics.slug, slug));
 
     if (!result) return undefined;
