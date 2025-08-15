@@ -21,7 +21,7 @@ declare module 'express-session' {
 }
 
 // File upload configuration
-const uploadDir = path.join(process.cwd(), 'uploads');
+const uploadDir = path.join(process.cwd(), 'img');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -68,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Serve uploaded files
-  app.use('/uploads', (req, res, next) => {
+  app.use('/img', (req, res, next) => {
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   }, express.static(uploadDir));
@@ -183,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add logo path if uploaded
       let logoUrl = null;
       if (req.file) {
-        logoUrl = `/uploads/${req.file.filename}`;
+        logoUrl = `/img/${req.file.filename}`;
       }
       
       // Calculate D-Score
@@ -245,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update logo if uploaded
       if (req.file) {
-        updates.logoUrl = `/uploads/${req.file.filename}`;
+        updates.logoUrl = `/img/${req.file.filename}`;
       }
       
       // Recalculate D-Score if rating indexes are provided
@@ -409,6 +409,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
         siteTitle: 'Dent Moldova - Каталог стоматологических клиник',
         metaDescription: 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'
       });
+    }
+  });
+
+  // Booking endpoints
+  app.post('/api/bookings', async (req, res) => {
+    try {
+      const { clinicId, firstName, lastName, phone, email, service, preferredDate, preferredTime, notes } = req.body;
+      
+      // Validate required fields
+      if (!clinicId || !firstName || !lastName || !phone || !service || !preferredDate || !preferredTime) {
+        return res.status(400).json({ message: 'Отсутствуют обязательные поля' });
+      }
+
+      const bookingData = {
+        clinicId,
+        firstName,
+        lastName,
+        phone,
+        email: email || null,
+        service,
+        preferredDate,
+        preferredTime,
+        notes: notes || null,
+      };
+
+      const booking = await storage.createBooking(bookingData);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      res.status(500).json({ message: "Ошибка при создании заявки" });
+    }
+  });
+
+  // Admin booking management
+  app.get('/api/admin/bookings', requireAdminAuth, async (req, res) => {
+    try {
+      const bookings = await storage.getBookings();
+      res.json({ bookings });
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ message: "Ошибка при получении заявок" });
+    }
+  });
+
+  app.get('/api/admin/bookings/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const booking = await storage.getBookingById(id);
+      
+      if (!booking) {
+        return res.status(404).json({ message: "Заявка не найдена" });
+      }
+      
+      res.json(booking);
+    } catch (error) {
+      console.error("Error fetching booking:", error);
+      res.status(500).json({ message: "Ошибка при получении заявки" });
+    }
+  });
+
+  app.put('/api/admin/bookings/:id/status', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ message: "Статус обязателен" });
+      }
+      
+      const booking = await storage.updateBookingStatus(id, status);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating booking status:", error);
+      res.status(500).json({ message: "Ошибка при обновлении статуса заявки" });
     }
   });
 

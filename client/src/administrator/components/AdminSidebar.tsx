@@ -6,11 +6,12 @@ import {
   BarChart3,
   Users,
   Settings,
-  FileText
+  FileText,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'settings';
+type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'bookings' | 'settings';
 
 interface AdminSidebarProps {
   currentPage: AdminPage;
@@ -43,6 +44,12 @@ export function AdminSidebar({ currentPage, onPageChange, isOpen }: AdminSidebar
       label: 'Города',
       icon: MapPin,
       description: 'Города и районы'
+    },
+    {
+      id: 'bookings' as AdminPage,
+      label: 'Заявки',
+      icon: Calendar,
+      description: 'Заявки на запись'
     },
     {
       id: 'settings' as AdminPage,

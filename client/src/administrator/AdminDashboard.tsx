@@ -6,8 +6,9 @@ import { Dashboard } from './components/Dashboard';
 import { PackagesManagement } from './components/PackagesManagement';
 import { CitiesManagement } from './components/CitiesManagement';
 import { Settings } from './components/Settings';
+import { BookingsManagement } from './components/BookingsManagement';
 
-type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'settings';
+type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'bookings' | 'settings';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -27,6 +28,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         return <PackagesManagement />;
       case 'cities':
         return <CitiesManagement />;
+      case 'bookings':
+        return <BookingsManagement />;
       case 'settings':
         return <Settings />;
       default:

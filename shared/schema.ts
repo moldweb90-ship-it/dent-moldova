@@ -77,6 +77,23 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Bookings table for clinic appointment requests
+export const bookings = pgTable("bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clinicId: varchar("clinic_id").notNull().references(() => clinics.id),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  service: text("service").notNull(),
+  preferredDate: text("preferred_date").notNull(),
+  preferredTime: text("preferred_time").notNull(),
+  notes: text("notes"),
+  status: varchar("status").notNull().default("new"), // new, contacted, confirmed, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const citiesRelations = relations(cities, ({ many }) => ({
   districts: many(districts),
@@ -117,6 +134,13 @@ export const siteViewsRelations = relations(siteViews, ({ one }) => ({
   }),
 }));
 
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  clinic: one(clinics, {
+    fields: [bookings.clinicId],
+    references: [clinics.id],
+  }),
+}));
+
 // Insert schemas
 export const insertCitySchema = createInsertSchema(cities).omit({
   id: true,
@@ -149,6 +173,12 @@ export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({
   updatedAt: true,
 });
 
+export const insertBookingSchema = createInsertSchema(bookings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type City = typeof cities.$inferSelect;
 export type District = typeof districts.$inferSelect;
@@ -156,6 +186,7 @@ export type Clinic = typeof clinics.$inferSelect;
 export type Package = typeof packages.$inferSelect;
 export type SiteView = typeof siteViews.$inferSelect;
 export type SiteSetting = typeof siteSettings.$inferSelect;
+export type Booking = typeof bookings.$inferSelect;
 
 export type InsertCity = z.infer<typeof insertCitySchema>;
 export type InsertDistrict = z.infer<typeof insertDistrictSchema>;
@@ -163,6 +194,7 @@ export type InsertClinic = z.infer<typeof insertClinicSchema>;
 export type InsertPackage = z.infer<typeof insertPackageSchema>;
 export type InsertSiteView = z.infer<typeof insertSiteViewSchema>;
 export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;
 
 // Keep existing user schema for compatibility
 export const users = pgTable("users", {

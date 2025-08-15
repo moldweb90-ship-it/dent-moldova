@@ -1,7 +1,7 @@
 import { 
-  cities, districts, clinics, packages, users, siteViews, siteSettings,
-  type City, type District, type Clinic, type Package, type User, type SiteView, type SiteSetting,
-  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView, type InsertSiteSetting
+  cities, districts, clinics, packages, users, siteViews, siteSettings, bookings,
+  type City, type District, type Clinic, type Package, type User, type SiteView, type SiteSetting, type Booking,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -44,6 +44,12 @@ export interface IStorage {
   getSiteSetting(key: string): Promise<SiteSetting | undefined>;
   setSiteSetting(key: string, value: string): Promise<SiteSetting>;
   getAllSiteSettings(): Promise<SiteSetting[]>;
+  
+  // Booking methods
+  createBooking(booking: InsertBooking): Promise<Booking>;
+  getBookings(): Promise<(Booking & { clinic: Clinic })[]>;
+  getBookingById(id: string): Promise<(Booking & { clinic: Clinic }) | undefined>;
+  updateBookingStatus(id: string, status: string): Promise<Booking>;
 }
 
 export interface ClinicFilters {
@@ -376,6 +382,55 @@ export class DatabaseStorage implements IStorage {
 
   async getAllSiteSettings(): Promise<SiteSetting[]> {
     return await db.select().from(siteSettings);
+  }
+
+  // Booking methods
+  async createBooking(bookingData: InsertBooking): Promise<Booking> {
+    const [booking] = await db.insert(bookings).values(bookingData).returning();
+    return booking;
+  }
+
+  async getBookings(): Promise<(Booking & { clinic: Clinic })[]> {
+    const results = await db
+      .select({
+        booking: bookings,
+        clinic: clinics,
+      })
+      .from(bookings)
+      .leftJoin(clinics, eq(bookings.clinicId, clinics.id))
+      .orderBy(desc(bookings.createdAt));
+
+    return results.map(result => ({
+      ...result.booking,
+      clinic: result.clinic!,
+    }));
+  }
+
+  async getBookingById(id: string): Promise<(Booking & { clinic: Clinic }) | undefined> {
+    const [result] = await db
+      .select({
+        booking: bookings,
+        clinic: clinics,
+      })
+      .from(bookings)
+      .leftJoin(clinics, eq(bookings.clinicId, clinics.id))
+      .where(eq(bookings.id, id));
+
+    if (!result) return undefined;
+
+    return {
+      ...result.booking,
+      clinic: result.clinic!,
+    };
+  }
+
+  async updateBookingStatus(id: string, status: string): Promise<Booking> {
+    const [booking] = await db
+      .update(bookings)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(bookings.id, id))
+      .returning();
+    return booking;
   }
 }
 

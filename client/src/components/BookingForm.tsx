@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { Calendar, Clock, Phone, User, Mail } from 'lucide-react';
 
 const bookingSchema = z.object({
@@ -55,8 +56,12 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
   const onSubmit = async (data: BookingFormData) => {
     setIsSubmitting(true);
     try {
-      // Here you would normally send the booking data to your backend
-      console.log('Booking data:', { ...data, clinicId: clinic?.id });
+      const bookingData = {
+        ...data,
+        clinicId: clinic?.id
+      };
+      
+      await apiRequest('POST', '/api/bookings', bookingData);
       
       toast({
         title: 'Заявка отправлена!',
@@ -65,10 +70,10 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
       
       form.reset();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось отправить заявку. Попробуйте еще раз.',
+        description: error.message || 'Не удалось отправить заявку. Попробуйте еще раз.',
         variant: 'destructive'
       });
     } finally {
