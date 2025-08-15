@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { X, Phone, Globe } from 'lucide-react';
 import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScoreBar } from './ScoreBar';
+import { BookingForm } from './BookingForm';
 
 interface Clinic {
   id: string;
@@ -44,6 +46,7 @@ interface ClinicDetailProps {
 
 export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetailProps) {
   const { t, language } = useTranslation();
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   if (!clinic) return null;
 
@@ -54,8 +57,8 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
   };
 
   const handleBookClick = () => {
-    onBookClick(clinic);
-    onClose();
+    setShowBookingForm(true);
+    // Don't close the main modal, just open booking form overlay
   };
 
   const handleCallClick = () => {
@@ -298,6 +301,13 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
           </div>
         </div>
       </DialogContent>
+      
+      {/* Booking Form Overlay */}
+      <BookingForm 
+        clinic={clinic}
+        open={showBookingForm}
+        onClose={() => setShowBookingForm(false)}
+      />
     </Dialog>
   );
 }

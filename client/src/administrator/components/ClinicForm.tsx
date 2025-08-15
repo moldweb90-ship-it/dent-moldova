@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
@@ -45,6 +45,7 @@ interface ClinicFormProps {
 
 export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const { data: cities } = useQuery({
@@ -92,6 +93,11 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const createMutation = useMutation({
     mutationFn: (data: FormData) => apiRequest('POST', '/api/admin/clinics', data),
     onSuccess: () => {
+      // Invalidate all clinic-related queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/recent-clinics'] });
       toast({
         title: 'Клиника создана',
         description: 'Клиника была успешно добавлена в систему'
@@ -110,6 +116,12 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const updateMutation = useMutation({
     mutationFn: (data: FormData) => apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data),
     onSuccess: () => {
+      // Invalidate all clinic-related queries to refresh frontend data
+      queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/clinics'] });
+      if (clinic?.slug) {
+        queryClient.invalidateQueries({ queryKey: ['/api/clinics', clinic.slug] });
+      }
       toast({
         title: 'Клиника обновлена',
         description: 'Изменения были успешно сохранены'
@@ -230,7 +242,20 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
           {/* Logo Upload */}
           <div>
             <Label>Логотип клиники</Label>
-            <div className="mt-2">
+            <div className="mt-2 space-y-3">
+              {/* Current Logo Display */}
+              {clinic?.logoUrl && !logoFile && (
+                <div className="relative">
+                  <img 
+                    src={clinic.logoUrl} 
+                    alt="Current logo" 
+                    className="w-32 h-32 object-cover rounded-lg border"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">Текущий логотип</p>
+                </div>
+              )}
+              
+              {/* File Upload */}
               <input
                 type="file"
                 accept="image/*"
@@ -245,10 +270,26 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
                 <div className="text-center">
                   <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                   <p className="text-sm text-gray-600">
-                    {logoFile ? logoFile.name : 'Выберите файл изображения'}
+                    {logoFile ? 
+                      `Выбран новый файл: ${logoFile.name}` : 
+                      clinic?.logoUrl ? 'Выберите новый логотип' : 'Выберите файл изображения'
+                    }
                   </p>
                 </div>
               </label>
+              
+              {logoFile && (
+                <div className="mt-2">
+                  <p className="text-sm text-green-600">Новый логотип будет загружен при сохранении</p>
+                  <button
+                    type="button"
+                    onClick={() => setLogoFile(null)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Отменить выбор файла
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
