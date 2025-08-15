@@ -152,7 +152,7 @@ export function MobileFiltersModal({
 
           {/* Specialization Filter */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Категории услуг</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">{t('specialization')}</label>
             <div className="space-y-2">
               {Object.entries(SPECIALIZATIONS).map(([key, value]) => (
                 <div key={key} className="flex items-center space-x-2">
@@ -172,7 +172,7 @@ export function MobileFiltersModal({
           {/* Price Range */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Ценовой уровень: {filters.priceRange[0]} - {filters.priceRange[1]}
+              {t('priceLevel')}: {filters.priceRange[0]} - {filters.priceRange[1]}
             </label>
             <Slider
               value={filters.priceRange}
@@ -186,7 +186,7 @@ export function MobileFiltersModal({
 
           {/* Status */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Статус приёма</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">{t('receptionStatus')}</label>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -209,7 +209,7 @@ export function MobileFiltersModal({
 
           {/* Sort */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Сортировка</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">{t('sorting')}</label>
             <Select value={filters.sort} onValueChange={(value) => updateFilter('sort', value)}>
               <SelectTrigger>
                 <SelectValue />

@@ -124,11 +124,11 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1 cursor-pointer">
                   <div className={`w-10 h-10 md:w-12 md:h-12 ${getDScoreColor(clinic.dScore)} rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-lg`}>
                     {clinic.dScore}
                   </div>
-                  <Info className="w-2.5 h-2.5 md:w-3 md:h-3 text-white opacity-70" />
+                  <Info className="w-4 h-4 md:w-5 md:h-5 text-white opacity-80 hover:opacity-100" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -143,12 +143,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         </div>
 
         {/* Bottom section - Action Buttons - always visible */}
-        <div className="flex space-x-2">
+        <div className={`flex space-x-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-90'}`}>
           <Button 
             onClick={handleBookClick}
-            className={`flex-1 text-xs md:text-sm transition-all duration-300 ${
-              isHovered ? 'bg-blue-700 text-white scale-105 shadow-2xl z-10 transform border-2 border-blue-400' : 'bg-blue-600 text-white shadow-lg hover:bg-blue-700'
-            }`}
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg text-xs md:text-sm"
             size="sm"
           >
             {t('book')}
@@ -156,9 +154,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <Button 
             onClick={handlePricesClick}
             variant="outline"
-            className={`flex-1 text-xs md:text-sm transition-all duration-300 ${
-              isHovered ? 'bg-white text-gray-900 scale-105 shadow-2xl z-10 transform border-2 border-blue-400' : 'border-2 border-white bg-white text-gray-900 hover:bg-gray-100'
-            }`}
+            className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs md:text-sm"
             size="sm"
           >
             {t('prices')}
