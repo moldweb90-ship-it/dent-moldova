@@ -185,7 +185,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <div className="flex-1">
             <div className="mb-1">
               <div className="flex items-center gap-1 flex-wrap">
-                {/* All badges before the name */}
+                {/* Only promotional badges before the name */}
                 {clinic.recommended && (
                   <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
                     ⭐ ТОП
@@ -196,16 +196,6 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                     {getPromotionalIcon()}
                   </div>
                 )}
-                {clinic.verified && (
-                  <span className="px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
-                    Verified
-                  </span>
-                )}
-                {clinic.cnam && (
-                  <span className="px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
-                    CNAM
-                  </span>
-                )}
                 {/* Clinic name */}
                 <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
               </div>
@@ -215,13 +205,23 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
             </p>
             
-            {/* Specializations only */}
+            {/* Address and badges */}
             <div className="flex flex-wrap gap-1 mb-2">
-              {clinic.specializations.slice(0, 2).map(spec => (
-                <span key={spec} className="px-1.5 md:px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
-                  {SPECIALIZATIONS[spec as keyof typeof SPECIALIZATIONS]?.[language] || spec}
+              {clinic.address && (
+                <span className="px-1.5 md:px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
+                  📍 {clinic.address}
                 </span>
-              ))}
+              )}
+              {clinic.verified && (
+                <span className="px-1.5 md:px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
+                  {t('verifiedBadge')}
+                </span>
+              )}
+              {clinic.cnam && (
+                <span className="px-1.5 md:px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
+                  {t('cnamBadge')}
+                </span>
+              )}
             </div>
             
             <div className="text-xs md:text-sm mb-1">
