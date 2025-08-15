@@ -128,7 +128,8 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       // First create clinic
-      const result = await apiRequest('POST', '/api/admin/clinics', data);
+      const response = await apiRequest('POST', '/api/admin/clinics', data);
+      const result = await response.json();
       
       // Then add services if any
       if (services.length > 0 && result.id) {
@@ -167,7 +168,8 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
       if (!clinic?.id) throw new Error('No clinic ID');
       
       // First update clinic data
-      const result = await apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data);
+      const response = await apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data);
+      const result = await response.json();
       
       // Then update services
       await fetch(`/api/admin/clinics/${clinic.id}/services`, {
