@@ -150,8 +150,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             }
           }}
         />
-        {/* Base overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        {/* Base overlay - slightly darker for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       </div>
 
 
