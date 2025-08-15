@@ -11,6 +11,7 @@ import { ClinicDetail } from '../components/ClinicDetail';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
+import { AdminModal } from '../components/AdminModal';
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
@@ -193,16 +195,6 @@ export default function Home() {
                 <span className="hidden sm:inline">{t('addClinic')}</span>
               </Button>
               
-              {/* Admin Button */}
-              <Button
-                onClick={() => setLocation('/admin')}
-                size="sm"
-                variant="outline"
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 flex items-center space-x-1"
-              >
-                <Shield className="h-4 w-4" />
-                <span className="hidden sm:inline">Админ</span>
-              </Button>
               
               {/* Language Toggle */}
               <LanguageToggle />
@@ -319,6 +311,12 @@ export default function Home() {
         open={clinicFormOpen}
         onClose={() => setClinicFormOpen(false)}
       />
+      
+      {/* Admin Modal */}
+      <AdminModal
+        open={adminModalOpen}
+        onClose={() => setAdminModalOpen(false)}
+      />
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-16">
@@ -327,9 +325,22 @@ export default function Home() {
             <div className="mb-4 md:mb-0">
               <p className="text-sm text-gray-600">© 2024 {t('appTitle')}. Все права защищены.</p>
             </div>
-            <div className="flex space-x-6 text-sm text-gray-600">
-              <a href="#" className="hover:text-gray-900 transition-colors">Политика приватности</a>
-              <a href="#" className="hover:text-gray-900 transition-colors">Контакты</a>
+            <div className="flex items-center space-x-6">
+              <div className="flex space-x-6 text-sm text-gray-600">
+                <a href="#" className="hover:text-gray-900 transition-colors">Политика приватности</a>
+                <a href="#" className="hover:text-gray-900 transition-colors">Контакты</a>
+              </div>
+              
+              {/* Admin Button */}
+              <Button
+                onClick={() => setAdminModalOpen(true)}
+                size="sm"
+                variant="outline"
+                className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 flex items-center space-x-1"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">Админ</span>
+              </Button>
             </div>
           </div>
         </div>

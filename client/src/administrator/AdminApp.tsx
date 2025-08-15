@@ -15,7 +15,7 @@ export function AdminApp() {
 
   const checkAuthStatus = async () => {
     try {
-      await apiRequest('/api/admin/auth/check');
+      await apiRequest('GET', '/api/admin/auth/check');
       setIsAuthenticated(true);
     } catch (error) {
       setIsAuthenticated(false);
@@ -27,13 +27,7 @@ export function AdminApp() {
   const handleLogin = async (username: string, password: string) => {
     setLoginError('');
     try {
-      await apiRequest('/api/admin/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      });
+      await apiRequest('POST', '/api/admin/auth/login', { username, password });
       setIsAuthenticated(true);
     } catch (error: any) {
       setLoginError(error.message || 'Неверный логин или пароль');
@@ -42,7 +36,7 @@ export function AdminApp() {
 
   const handleLogout = async () => {
     try {
-      await apiRequest('/api/admin/auth/logout', { method: 'POST' });
+      await apiRequest('POST', '/api/admin/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     }

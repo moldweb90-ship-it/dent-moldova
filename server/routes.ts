@@ -177,7 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
-        .trim('-');
+        .trim()
+        .replace(/^-+|-+$/g, '');
       
       // Add logo path if uploaded
       let logoUrl = null;
