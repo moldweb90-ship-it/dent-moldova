@@ -51,7 +51,7 @@ export interface IStorage {
   
   // Service methods  
   getClinicServices(clinicId: string): Promise<Service[]>;
-  updateClinicServices(clinicId: string, services: {name: string, price: number}[]): Promise<void>;
+  updateClinicServices(clinicId: string, services: {name: string, price: number, currency: string}[]): Promise<void>;
   getBookings(): Promise<(Booking & { clinic: Clinic })[]>;
   getBookingById(id: string): Promise<(Booking & { clinic: Clinic }) | undefined>;
   updateBookingStatus(id: string, status: string): Promise<Booking>;
@@ -454,7 +454,7 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(services).where(eq(services.clinicId, clinicId));
   }
 
-  async updateClinicServices(clinicId: string, serviceData: {name: string, price: number}[]): Promise<void> {
+  async updateClinicServices(clinicId: string, serviceData: {name: string, price: number, currency: string}[]): Promise<void> {
     // First delete all existing services for this clinic
     await db.delete(services).where(eq(services.clinicId, clinicId));
     
@@ -464,7 +464,8 @@ export class DatabaseStorage implements IStorage {
         serviceData.map(service => ({
           clinicId,
           name: service.name,
-          price: service.price
+          price: service.price,
+          currency: service.currency
         }))
       );
     }

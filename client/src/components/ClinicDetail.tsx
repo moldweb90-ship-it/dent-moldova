@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScoreBar } from './ScoreBar';
 import { BookingForm } from './BookingForm';
+import { CurrencyConverter } from './CurrencyConverter';
+import { type Currency } from '@/lib/currency';
 
 interface Service {
   id: string;
   name: string;
   price: number;
+  currency: Currency;
 }
 
 interface Clinic {
@@ -32,6 +35,7 @@ interface Clinic {
   reviewsIndex: number;
   accessIndex: number;
   dScore: number;
+  currency: Currency;
   services?: Service[];
 }
 
@@ -144,31 +148,15 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                   {language === 'ru' ? 'Услуги и цены' : 'Servicii și prețuri'}
                 </h3>
                 {clinic.services && clinic.services.length > 0 ? (
-                  <div className="bg-gray-50 rounded-lg overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                            {language === 'ru' ? 'Услуга' : 'Serviciu'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                            {language === 'ru' ? 'Цена' : 'Preț'}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {clinic.services.map(service => (
-                          <tr key={service.id}>
-                            <td className="px-4 py-3 text-sm text-gray-900">
-                              {service.name}
-                            </td>
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                              {service.price.toLocaleString()} {language === 'ru' ? 'лей' : 'lei'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="bg-white rounded-lg border">
+                    <CurrencyConverter 
+                      services={clinic.services.map(service => ({
+                        name: service.name,
+                        price: service.price,
+                        currency: service.currency || clinic.currency || 'MDL'
+                      }))}
+                      className="p-4"
+                    />
                   </div>
                 ) : (
                   <div className="bg-gray-50 rounded-lg p-8 text-center">

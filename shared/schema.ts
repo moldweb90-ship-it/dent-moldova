@@ -45,6 +45,7 @@ export const clinics = pgTable("clinics", {
   googleReviewsCount: integer("google_reviews_count"),
   recommended: boolean("recommended").default(false),
   promotionalLabels: json("promotional_labels").$type<string[]>().default([]),
+  currency: varchar("currency").notNull().default("MDL"), // MDL, EUR, USD
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -65,7 +66,8 @@ export const services = pgTable("services", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   clinicId: varchar("clinic_id").notNull().references(() => clinics.id),
   name: text("name").notNull(),
-  price: integer("price").notNull(), // Price in lei
+  price: integer("price").notNull(), // Base price
+  currency: varchar("currency").notNull().default("MDL"), // MDL, EUR, USD
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

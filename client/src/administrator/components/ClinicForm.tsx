@@ -35,7 +35,8 @@ const clinicSchema = z.object({
   reviewsIndex: z.number().min(0).max(100),
   accessIndex: z.number().min(0).max(100),
   recommended: z.boolean().default(false),
-  promotionalLabels: z.array(z.string()).default([])
+  promotionalLabels: z.array(z.string()).default([]),
+  currency: z.string().default('MDL')
 });
 
 type ClinicFormData = z.infer<typeof clinicSchema>;
@@ -50,8 +51,8 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [services, setServices] = useState<{name: string, price: number}[]>([]);
-  const [newService, setNewService] = useState({ name: '', price: '' });
+  const [services, setServices] = useState<{name: string, price: number, currency: string}[]>([]);
+  const [newService, setNewService] = useState({ name: '', price: '', currency: 'MDL' });
 
   const { data: cities } = useQuery({
     queryKey: ['/api/cities'],
@@ -61,14 +62,16 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     }
   });
 
+  // Watch for city changes to load districts
+  const selectedCityId = form.watch('cityId');
   const { data: districts } = useQuery({
-    queryKey: ['/api/cities', clinic?.cityId || '', 'districts'],
+    queryKey: ['/api/cities', selectedCityId, 'districts'],
     queryFn: async () => {
-      if (!clinic?.cityId) return [];
-      const response = await apiRequest('GET', `/api/cities/${clinic.cityId}/districts`);
+      const response = await fetch(`/api/cities/${selectedCityId}/districts`);
+      if (!response.ok) return [];
       return response.json();
     },
-    enabled: !!clinic?.cityId
+    enabled: !!selectedCityId
   });
 
   // Load existing services
@@ -85,9 +88,14 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
 
   useEffect(() => {
     if (existingServices) {
-      setServices(existingServices || []);
+      // Add currency field if missing (for backward compatibility)
+      const servicesWithCurrency = existingServices.map((service: any) => ({
+        ...service,
+        currency: service.currency || clinic?.currency || 'MDL'
+      }));
+      setServices(servicesWithCurrency);
     }
-  }, [existingServices]);
+  }, [existingServices, clinic?.currency]);
 
   const form = useForm<ClinicFormData>({
     resolver: zodResolver(clinicSchema),
@@ -111,7 +119,8 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
       reviewsIndex: clinic?.reviewsIndex || 50,
       accessIndex: clinic?.accessIndex || 50,
       recommended: clinic?.recommended || false,
-      promotionalLabels: clinic?.promotionalLabels || []
+      promotionalLabels: clinic?.promotionalLabels || [],
+      currency: clinic?.currency || 'MDL'
     }
   });
 
@@ -260,7 +269,11 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
             <Label htmlFor="cityId">Город *</Label>
             <Select
               value={form.watch('cityId')}
-              onValueChange={(value) => form.setValue('cityId', value)}
+              onValueChange={(value) => {
+                form.setValue('cityId', value);
+                // Reset district when city changes
+                form.setValue('districtId', '');
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите город" />
@@ -271,6 +284,51 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
                     {city.nameRu}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* District Selection */}
+          {selectedCityId && districts && districts.length > 0 && (
+            <div>
+              <Label htmlFor="districtId">Район</Label>
+              <Select
+                value={form.watch('districtId')}
+                onValueChange={(value) => form.setValue('districtId', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите район" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts?.map((district: any) => (
+                    <SelectItem key={district.id} value={district.id}>
+                      {district.nameRu}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Currency Selection */}
+          <div>
+            <Label htmlFor="currency">Валюта цен</Label>
+            <Select
+              value={form.watch('currency')}
+              onValueChange={(value) => {
+                form.setValue('currency', value);
+                // Update currency for all existing services
+                setServices(services.map(s => ({...s, currency: value})));
+                setNewService({...newService, currency: value});
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите валюту" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MDL">MDL (лей)</SelectItem>
+                <SelectItem value="EUR">EUR (евро)</SelectItem>
+                <SelectItem value="USD">USD (доллар)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -479,100 +537,120 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
               <CardHeader>
                 <CardTitle>Услуги и цены</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Service List */}
-                  <div className="space-y-3">
-                    {services.map((service, index) => (
-                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <span className="font-medium">{service.name}</span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {service.price} лей
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const updatedServices = services.filter((_, i) => i !== index);
-                            setServices(updatedServices);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Add New Service */}
-                  <div className="border-t pt-4">
-                    <Label className="text-base font-medium mb-3 block">Добавить услугу</Label>
-                    <div className="flex space-x-3">
+              <CardContent className="space-y-6">
+                {/* Service List */}
+                <div className="space-y-3">
+                  {services.map((service, index) => (
+                    <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
-                        <Input
-                          placeholder="Название услуги (например: Имплант стандарт)"
-                          value={newService.name}
-                          onChange={(e) => setNewService({...newService, name: e.target.value})}
-                        />
+                        <span className="font-medium text-lg">{service.name}</span>
                       </div>
-                      <div className="w-32">
+                      <div className="text-base text-gray-700 font-semibold min-w-[120px] text-right">
+                        {service.price} {service.currency === 'MDL' ? 'лей' : service.currency}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updatedServices = services.filter((_, i) => i !== index);
+                          setServices(updatedServices);
+                        }}
+                        className="flex-shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add New Service */}
+                <div className="border-t pt-6">
+                  <Label className="text-lg font-medium mb-4 block">Добавить услугу</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className="md:col-span-8">
+                      <Input
+                        placeholder="Название услуги (например: Имплант стандарт)"
+                        value={newService.name}
+                        onChange={(e) => setNewService({...newService, name: e.target.value})}
+                        className="text-base"
+                      />
+                    </div>
+                    <div className="md:col-span-3">
+                      <div className="flex space-x-2">
                         <Input
                           type="number"
                           placeholder="Цена"
                           value={newService.price}
                           onChange={(e) => setNewService({...newService, price: e.target.value})}
+                          className="text-base flex-1"
                         />
+                        <div className="text-sm text-gray-500 flex items-center px-3 bg-gray-100 rounded border min-w-[60px] justify-center">
+                          {form.watch('currency') === 'MDL' ? 'лей' : form.watch('currency')}
+                        </div>
                       </div>
+                    </div>
+                    <div className="md:col-span-1">
                       <Button
                         type="button"
                         onClick={() => {
                           if (newService.name && newService.price) {
                             setServices([...services, {
                               name: newService.name,
-                              price: parseInt(newService.price)
+                              price: parseInt(newService.price),
+                              currency: form.watch('currency')
                             }]);
-                            setNewService({ name: '', price: '' });
+                            setNewService({ name: '', price: '', currency: form.watch('currency') });
                           }
                         }}
                         disabled={!newService.name || !newService.price}
+                        className="w-full"
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Добавить
                       </Button>
                     </div>
                   </div>
+                </div>
 
-                  {/* Service Templates */}
-                  <div className="border-t pt-4">
-                    <Label className="text-base font-medium mb-3 block">Быстрые шаблоны</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { name: 'Консультация стоматолога', price: 200 },
-                        { name: 'Профгигиена', price: 800 },
-                        { name: 'Лечение кариеса', price: 600 },
-                        { name: 'Имплант стандарт', price: 12000 },
-                        { name: 'Коронка керамика', price: 4000 },
-                        { name: 'Лечение каналов', price: 2500 }
-                      ].map((template, index) => (
-                        <Button
-                          key={index}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (!services.find(s => s.name === template.name)) {
-                              setServices([...services, template]);
-                            }
-                          }}
-                          disabled={!!services.find(s => s.name === template.name)}
-                        >
-                          {template.name} - {template.price} лей
-                        </Button>
-                      ))}
-                    </div>
+                {/* Service Templates */}
+                <div className="border-t pt-6">
+                  <Label className="text-lg font-medium mb-4 block">Быстрые шаблоны услуг</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {[
+                      'Консультация стоматолога',
+                      'Профгигиена', 
+                      'Лечение кариеса',
+                      'Имплант стандарт',
+                      'Коронка керамика',
+                      'Лечение каналов',
+                      'Удаление зуба',
+                      'Отбеливание',
+                      'Виниры',
+                      'Брекеты',
+                      'Протезирование',
+                      'Лечение десен'
+                    ].map((templateName, index) => (
+                      <Button
+                        key={index}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!services.find(s => s.name === templateName)) {
+                            setNewService({...newService, name: templateName, currency: form.watch('currency')});
+                          }
+                        }}
+                        disabled={!!services.find(s => s.name === templateName)}
+                        className="text-sm justify-start"
+                      >
+                        {templateName}
+                      </Button>
+                    ))}
                   </div>
+                  <p className="text-sm text-gray-500 mt-3">
+                    Нажмите на шаблон, чтобы добавить название в поле выше, затем укажите цену
+                  </p>
                 </div>
               </CardContent>
             </Card>
