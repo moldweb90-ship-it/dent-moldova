@@ -4,7 +4,7 @@ import {
   type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
+import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods (existing)
@@ -97,14 +97,27 @@ export class DatabaseStorage implements IStorage {
 
     const conditions = [];
 
-    // Search query - search in name, specializations, and tags
+    // Search query - search in name, specializations, tags, and packages
     if (q) {
-      const searchConditions = [
-        ilike(clinics.name, `%${q}%`),
-        sql`${clinics.specializations}::text ilike ${'%' + q + '%'}`,
-        sql`${clinics.tags}::text ilike ${'%' + q + '%'}`
-      ];
-      conditions.push(sql`(${searchConditions.join(' OR ')})`);
+      // Find clinics that have matching packages
+      const subquery = db
+        .select({ clinicId: packages.clinicId })
+        .from(packages)
+        .where(
+          or(
+            ilike(packages.nameRu, `%${q}%`),
+            ilike(packages.nameRo, `%${q}%`)
+          )
+        );
+      
+      conditions.push(
+        or(
+          ilike(clinics.name, `%${q}%`),
+          sql`${clinics.specializations}::text ilike ${`%${q}%`}`,
+          sql`${clinics.tags}::text ilike ${`%${q}%`}`,
+          sql`${clinics.id} IN (${subquery})`
+        )
+      );
     }
 
     // City filter
