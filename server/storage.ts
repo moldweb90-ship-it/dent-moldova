@@ -25,6 +25,12 @@ export interface IStorage {
   getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; packages: Package[] }) | undefined>;
   createClinic(clinic: InsertClinic): Promise<Clinic>;
   updateClinicDScore(id: string, dScore: number): Promise<void>;
+  
+  // Admin clinic methods
+  getClinicById(id: string): Promise<Clinic | undefined>;
+  updateClinic(id: string, updates: Partial<InsertClinic>): Promise<Clinic>;
+  deleteClinic(id: string): Promise<void>;
+  getAdminStats(): Promise<{ totalClinics: number; verifiedClinics: number; totalCities: number; averageDScore: number }>;
 
   // Package methods
   createPackage(pkg: InsertPackage): Promise<Package>;
@@ -258,6 +264,49 @@ export class DatabaseStorage implements IStorage {
   async createPackage(pkg: InsertPackage): Promise<Package> {
     const [newPackage] = await db.insert(packages).values(pkg).returning();
     return newPackage;
+  }
+
+  // Admin methods implementation
+  async getClinicById(id: string): Promise<Clinic | undefined> {
+    const [clinic] = await db.select().from(clinics).where(eq(clinics.id, id));
+    return clinic || undefined;
+  }
+
+  async updateClinic(id: string, updates: Partial<InsertClinic>): Promise<Clinic> {
+    const updateData = { ...updates, updatedAt: new Date() };
+    const [updatedClinic] = await db.update(clinics)
+      .set(updateData as any)
+      .where(eq(clinics.id, id))
+      .returning();
+    return updatedClinic;
+  }
+
+  async deleteClinic(id: string): Promise<void> {
+    // Delete associated packages first
+    await db.delete(packages).where(eq(packages.clinicId, id));
+    // Then delete clinic
+    await db.delete(clinics).where(eq(clinics.id, id));
+  }
+
+  async getAdminStats(): Promise<{ totalClinics: number; verifiedClinics: number; totalCities: number; averageDScore: number }> {
+    const [stats] = await db
+      .select({
+        totalClinics: count(),
+        verifiedClinics: sql<number>`sum(case when ${clinics.verified} then 1 else 0 end)`,
+        averageDScore: sql<number>`avg(${clinics.dScore})`,
+      })
+      .from(clinics);
+
+    const [cityStats] = await db
+      .select({ totalCities: count() })
+      .from(cities);
+
+    return {
+      totalClinics: stats.totalClinics,
+      verifiedClinics: Number(stats.verifiedClinics),
+      totalCities: cityStats.totalCities,
+      averageDScore: Number(stats.averageDScore) || 0,
+    };
   }
 }
 

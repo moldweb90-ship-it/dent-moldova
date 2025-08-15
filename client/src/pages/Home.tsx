@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
-import { Filter, X, Plus, Building2 } from 'lucide-react';
+import { Filter, X, Plus, Building2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '../components/SearchBar';
 import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
@@ -191,6 +191,17 @@ export default function Home() {
               >
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('addClinic')}</span>
+              </Button>
+              
+              {/* Admin Button */}
+              <Button
+                onClick={() => setLocation('/admin')}
+                size="sm"
+                variant="outline"
+                className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 flex items-center space-x-1"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">Админ</span>
               </Button>
               
               {/* Language Toggle */}
