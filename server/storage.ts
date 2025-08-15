@@ -1,7 +1,7 @@
 import { 
-  cities, districts, clinics, packages, users,
-  type City, type District, type Clinic, type Package, type User,
-  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser 
+  cities, districts, clinics, packages, users, siteViews,
+  type City, type District, type Clinic, type Package, type User, type SiteView,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -34,6 +34,11 @@ export interface IStorage {
 
   // Package methods
   createPackage(pkg: InsertPackage): Promise<Package>;
+
+  // View tracking methods
+  recordView(view: InsertSiteView): Promise<SiteView>;
+  getTodayViews(): Promise<number>;
+  getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
 }
 
 export interface ClinicFilters {
@@ -307,6 +312,40 @@ export class DatabaseStorage implements IStorage {
       totalCities: cityStats.totalCities,
       averageDScore: Number(stats.averageDScore) || 0,
     };
+  }
+
+  // View tracking methods
+  async recordView(view: InsertSiteView): Promise<SiteView> {
+    const [newView] = await db.insert(siteViews).values(view).returning();
+    return newView;
+  }
+
+  async getTodayViews(): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Count unique IP addresses for today
+    const [result] = await db
+      .select({ 
+        count: sql<number>`count(distinct ${siteViews.ipAddress})` 
+      })
+      .from(siteViews)
+      .where(gte(siteViews.createdAt, today));
+      
+    return result.count || 0;
+  }
+
+  async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City; district: District | null })[]> {
+    const results = await db.query.clinics.findMany({
+      with: {
+        city: true,
+        district: true,
+      },
+      orderBy: [desc(clinics.createdAt)],
+      limit: limit,
+    });
+
+    return results as (Clinic & { city: City; district: District | null })[];
   }
 }
 

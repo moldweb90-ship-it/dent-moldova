@@ -229,7 +229,7 @@ export function ClinicsManagement() {
                       size="sm"
                       variant="outline"
                       className="flex-1"
-                      onClick={() => window.open(`/clinics/${clinic.slug}`, '_blank')}
+                      onClick={() => window.open(`/clinic/${clinic.slug}`, '_blank')}
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Просмотр

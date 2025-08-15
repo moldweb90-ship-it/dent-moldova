@@ -313,13 +313,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recent clinics for admin dashboard
   app.get('/api/admin/recent-clinics', requireAdminAuth, async (req, res) => {
     try {
-      const result = await storage.getClinics({ page: 1, limit: 10, sort: 'dscore' });
-      res.json(result.clinics);
+      const recentClinics = await storage.getRecentClinics(5);
+      res.json(recentClinics);
     } catch (error) {
       console.error('Error fetching recent clinics:', error);
       res.status(500).json({ message: 'Ошибка при получении клиник' });
     }
   });
+
+  // Get today's view statistics
+  app.get('/api/admin/today-views', requireAdminAuth, async (req, res) => {
+    try {
+      const viewsCount = await storage.getTodayViews();
+      res.json({ views: viewsCount });
+    } catch (error) {
+      console.error('Error fetching today views:', error);
+      res.status(500).json({ message: 'Ошибка при получении статистики просмотров' });
+    }
+  });
+
+  // Record a view (middleware for tracking)
+  const recordViewMiddleware = async (req: any, res: any, next: any) => {
+    try {
+      const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent') || '';
+      const route = req.path;
+      
+      // Extract clinic ID if it's a clinic page
+      let clinicId = null;
+      if (route.includes('/clinic/')) {
+        const slug = route.split('/clinic/')[1];
+        if (slug) {
+          const clinic = await storage.getClinicBySlug(slug);
+          clinicId = clinic?.id || null;
+        }
+      }
+      
+      // Record the view asynchronously (don't block the response)
+      storage.recordView({
+        ipAddress,
+        userAgent,
+        route,
+        clinicId,
+      }).catch(error => console.error('Error recording view:', error));
+      
+    } catch (error) {
+      console.error('Error in view tracking middleware:', error);
+    }
+    next();
+  };
 
   // ===== PUBLIC ROUTES (existing) =====
   // Get cities
@@ -345,6 +387,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add view tracking middleware for all public routes
+  app.use('/api/clinics', recordViewMiddleware);
+  app.use('/clinic', recordViewMiddleware);
+  
   // Get clinics with filters
   app.get("/api/clinics", async (req, res) => {
     try {

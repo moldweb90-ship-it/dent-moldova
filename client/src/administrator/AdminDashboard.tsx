@@ -19,7 +19,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onNavigate={setCurrentPage} />;
       case 'clinics':
         return <ClinicsManagement />;
       case 'packages':
@@ -27,7 +27,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       case 'cities':
         return <CitiesManagement />;
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={setCurrentPage} />;
     }
   };
 

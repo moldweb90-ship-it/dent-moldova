@@ -58,6 +58,16 @@ export const packages = pgTable("packages", {
   priceMedian: integer("price_median").notNull(),
 });
 
+// View tracking table for real IP-based analytics
+export const siteViews = pgTable("site_views", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ipAddress: varchar("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  route: varchar("route").notNull(),
+  clinicId: varchar("clinic_id").references(() => clinics.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const citiesRelations = relations(cities, ({ many }) => ({
   districts: many(districts),
@@ -91,6 +101,13 @@ export const packagesRelations = relations(packages, ({ one }) => ({
   }),
 }));
 
+export const siteViewsRelations = relations(siteViews, ({ one }) => ({
+  clinic: one(clinics, {
+    fields: [siteViews.clinicId],
+    references: [clinics.id],
+  }),
+}));
+
 // Insert schemas
 export const insertCitySchema = createInsertSchema(cities).omit({
   id: true,
@@ -112,16 +129,23 @@ export const insertPackageSchema = createInsertSchema(packages).omit({
   id: true,
 });
 
+export const insertSiteViewSchema = createInsertSchema(siteViews).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type City = typeof cities.$inferSelect;
 export type District = typeof districts.$inferSelect;
 export type Clinic = typeof clinics.$inferSelect;
 export type Package = typeof packages.$inferSelect;
+export type SiteView = typeof siteViews.$inferSelect;
 
 export type InsertCity = z.infer<typeof insertCitySchema>;
 export type InsertDistrict = z.infer<typeof insertDistrictSchema>;
 export type InsertClinic = z.infer<typeof insertClinicSchema>;
 export type InsertPackage = z.infer<typeof insertPackageSchema>;
+export type InsertSiteView = z.infer<typeof insertSiteViewSchema>;
 
 // Keep existing user schema for compatibility
 export const users = pgTable("users", {

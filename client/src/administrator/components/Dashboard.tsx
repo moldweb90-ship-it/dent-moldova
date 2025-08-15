@@ -9,11 +9,17 @@ interface Stats {
   totalCities: number;
   totalPackages: number;
   averageDScore: number;
-  totalViews: number;
-  topPerformingClinic: string;
 }
 
-export function Dashboard() {
+interface ViewStats {
+  views: number;
+}
+
+interface DashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['/api/admin/stats'],
     queryFn: async () => {
@@ -30,13 +36,23 @@ export function Dashboard() {
     }
   });
 
+  const { data: todayViews } = useQuery({
+    queryKey: ['/api/admin/today-views'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/today-views');
+      return response.json();
+    }
+  });
+
   const statsCards = [
     {
       title: 'Всего клиник',
       value: stats?.totalClinics || 0,
       icon: Building2,
       color: 'bg-blue-500',
-      change: '+2 за неделю'
+      change: '+2 за неделю',
+      clickable: true,
+      onClick: () => onNavigate?.('clinics')
     },
     {
       title: 'Городов',
@@ -93,7 +109,13 @@ export function Dashboard() {
         {statsCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="relative overflow-hidden">
+            <Card 
+              key={index} 
+              className={`relative overflow-hidden ${
+                stat.clickable ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''
+              }`}
+              onClick={stat.onClick}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -125,7 +147,11 @@ export function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {recentClinics?.slice(0, 5).map((clinic: any) => (
-                <div key={clinic.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div 
+                  key={clinic.id} 
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => onNavigate?.('clinics')}
+                >
                   <div>
                     <h4 className="font-medium text-gray-900">{clinic.name}</h4>
                     <p className="text-sm text-gray-600">{clinic.city?.nameRu}</p>
@@ -161,9 +187,11 @@ export function Dashboard() {
               <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center">
                   <Eye className="h-4 w-4 mr-2 text-blue-600" />
-                  <span className="text-sm font-medium">Просмотры сегодня</span>
+                  <span className="text-sm font-medium">Уникальные просмотры сегодня</span>
                 </div>
-                <span className="text-lg font-bold text-blue-600">1,234</span>
+                <span className="text-lg font-bold text-blue-600">
+                  {todayViews?.views || 0}
+                </span>
               </div>
               
               <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
