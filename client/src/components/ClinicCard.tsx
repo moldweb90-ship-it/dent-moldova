@@ -183,20 +183,24 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
-              {/* Recommended badge next to name */}
-              {clinic.recommended && (
-                <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0">
-                  ⭐ ТОП
+            <div className="mb-1">
+              <div className="flex items-start gap-2">
+                <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight flex-1">{clinic.name}</h3>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {/* Recommended badge next to name */}
+                  {clinic.recommended && (
+                    <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
+                      ⭐ ТОП
+                    </div>
+                  )}
+                  {/* Promotional icon next to name */}
+                  {getPromotionalIcon() && (
+                    <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md">
+                      {getPromotionalIcon()}
+                    </div>
+                  )}
                 </div>
-              )}
-              {/* Promotional icon next to name */}
-              {getPromotionalIcon() && (
-                <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md flex-shrink-0">
-                  {getPromotionalIcon()}
-                </div>
-              )}
+              </div>
             </div>
             <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
               {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
