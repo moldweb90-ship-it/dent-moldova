@@ -175,9 +175,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const clinicData = clinicSchema.parse(req.body);
       
-      // Convert empty strings to undefined for database foreign key fields
-      if (clinicData.districtId === '') {
-        clinicData.districtId = undefined;
+      // Clean districtId - remove if empty or undefined
+      if (!clinicData.districtId || clinicData.districtId.trim() === '') {
+        delete (clinicData as any).districtId;
       }
       
       console.log('Creating clinic with districtId:', clinicData.districtId);
@@ -255,9 +255,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
       
-      // Convert empty strings to undefined for database foreign key fields
-      if (updates.districtId === '') {
-        updates.districtId = undefined;
+      // Clean districtId - remove if empty or undefined
+      if (!updates.districtId || updates.districtId.trim() === '') {
+        delete updates.districtId;
       }
       
       console.log('Updating clinic with districtId:', updates.districtId);
