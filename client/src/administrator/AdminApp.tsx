@@ -53,13 +53,19 @@ export function AdminApp() {
 
   if (!isAuthenticated) {
     return (
-      <AdminLogin
-        onLogin={handleLogin}
-        error={loginError}
-        loading={false}
-      />
+      <div className="min-h-screen bg-gray-100">
+        <AdminLogin
+          onLogin={handleLogin}
+          error={loginError}
+          loading={false}
+        />
+      </div>
     );
   }
 
-  return <AdminDashboard onLogout={handleLogout} />;
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <AdminDashboard onLogout={handleLogout} />
+    </div>
+  );
 }

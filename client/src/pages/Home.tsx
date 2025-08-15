@@ -11,7 +11,6 @@ import { ClinicDetail } from '../components/ClinicDetail';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
-import { AdminModal } from '../components/AdminModal';
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -25,7 +24,6 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
-  const [adminModalOpen, setAdminModalOpen] = useState(false);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
@@ -311,12 +309,6 @@ export default function Home() {
         open={clinicFormOpen}
         onClose={() => setClinicFormOpen(false)}
       />
-      
-      {/* Admin Modal */}
-      <AdminModal
-        open={adminModalOpen}
-        onClose={() => setAdminModalOpen(false)}
-      />
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-16">
@@ -333,7 +325,7 @@ export default function Home() {
               
               {/* Admin Button */}
               <Button
-                onClick={() => setAdminModalOpen(true)}
+                onClick={() => setLocation('/admin')}
                 size="sm"
                 variant="outline"
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 flex items-center space-x-1"
