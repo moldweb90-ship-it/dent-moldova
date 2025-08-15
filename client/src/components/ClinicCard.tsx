@@ -85,8 +85,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
     onPricesClick(clinic.slug);
   };
 
-  // Generate clinic image based on ID for consistency
-  const clinicImage = `https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`;
+  // Приоритет: загруженное фото клиники -> сгенерированное изображение -> резервное
+  const clinicImage = clinic.logoUrl || `https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`;
   const fallbackImage = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300';
 
   // Определяем стиль рамки для выделения
@@ -141,7 +141,13 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           alt={clinic.name}
           className="w-full h-full object-cover"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = fallbackImage;
+            // Если не загрузилось загруженное фото, пробуем сгенерированное
+            if (clinic.logoUrl && (e.target as HTMLImageElement).src === clinic.logoUrl) {
+              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`;
+            } else {
+              // Иначе используем резервное изображение
+              (e.target as HTMLImageElement).src = fallbackImage;
+            }
           }}
         />
         {/* Base overlay */}
