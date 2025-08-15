@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Plus, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '../components/SearchBar';
 import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
@@ -10,6 +10,8 @@ import { ClinicGrid } from '../components/ClinicGrid';
 import { ClinicDetail } from '../components/ClinicDetail';
 import { PricingModal } from '../components/PricingModal';
 import { BookingModal } from '../components/BookingModal';
+import { MobileFiltersModal } from '../components/MobileFiltersModal';
+import { AddClinicModal } from '../components/AddClinicModal';
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -23,6 +25,8 @@ export default function Home() {
   const [pricingClinic, setPricingClinic] = useState<any>(null);
   const [bookingClinic, setBookingClinic] = useState<any>(null);
   const [filtersVisible, setFiltersVisible] = useState(true);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [clinicFormOpen, setClinicFormOpen] = useState(false);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
@@ -154,13 +158,24 @@ export default function Home() {
               <h1 className="text-xl font-bold text-gray-900">{t('appTitle')}</h1>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Filter Toggle */}
+            <div className="flex items-center space-x-2 md:space-x-4">
+              {/* Mobile Filter Toggle */}
+              <Button
+                onClick={() => setMobileFiltersOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex md:hidden items-center space-x-2"
+              >
+                <Filter className="h-4 w-4" />
+                <span>{t('filters')}</span>
+              </Button>
+              
+              {/* Desktop Filter Toggle */}
               <Button
                 onClick={() => setFiltersVisible(!filtersVisible)}
                 variant="outline"
                 size="sm"
-                className="flex items-center space-x-2"
+                className="hidden md:flex items-center space-x-2"
               >
                 {filtersVisible ? (
                   <>
@@ -175,6 +190,16 @@ export default function Home() {
                 )}
               </Button>
               
+              {/* Add Clinic Button */}
+              <Button
+                onClick={() => setClinicFormOpen(true)}
+                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-2"
+                size="sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('addClinic')}</span>
+              </Button>
+              
               {/* Language Toggle */}
               <LanguageToggle />
             </div>
@@ -183,9 +208,9 @@ export default function Home() {
       </header>
 
       <div className="flex">
-        {/* Left Sidebar - Filters */}
+        {/* Left Sidebar - Filters (Desktop) */}
         {filtersVisible && (
-          <div className="w-80 flex-shrink-0">
+          <div className="hidden md:block w-80 flex-shrink-0">
             <FiltersSidebar
               cities={cities}
               districts={districts}
@@ -199,7 +224,7 @@ export default function Home() {
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 px-8 py-8 ${!filtersVisible ? 'max-w-full' : ''}`}>
+        <main className={`flex-1 px-4 md:px-8 py-4 md:py-8 ${!filtersVisible ? 'max-w-full' : ''}`}>
         {isLoading ? (
           <div className="space-y-8">
             {/* Results Info Skeleton */}
@@ -208,7 +233,7 @@ export default function Home() {
             </div>
 
             {/* Grid Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200">
                   <div className="animate-pulse">
@@ -281,6 +306,25 @@ export default function Home() {
           setBookingOpen(false);
           setBookingClinic(null);
         }}
+      />
+      
+      {/* Mobile Filters Modal */}
+      <MobileFiltersModal
+        cities={cities}
+        districts={districts}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        onSearch={handleSearch}
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+      />
+      
+      {/* Add Clinic Modal */}
+      <AddClinicModal
+        open={clinicFormOpen}
+        onClose={() => setClinicFormOpen(false)}
       />
 
       {/* Footer */}

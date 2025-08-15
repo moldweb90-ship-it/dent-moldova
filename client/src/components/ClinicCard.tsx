@@ -90,32 +90,32 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
-            <p className="text-sm drop-shadow-md opacity-90 mb-2">
+            <h3 className="text-base md:text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
+            <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
               {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
             </p>
             
             {/* Specializations and badges */}
             <div className="flex flex-wrap gap-1 mb-2">
-              {clinic.specializations.slice(0, 2).map(spec => (
-                <span key={spec} className="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
+              {clinic.specializations.slice(0, 1).map(spec => (
+                <span key={spec} className="px-1.5 md:px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
                   {SPECIALIZATIONS[spec as keyof typeof SPECIALIZATIONS]?.[language] || spec}
                 </span>
               ))}
               {clinic.verified && (
-                <span className="px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
+                <span className="px-1.5 md:px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
                   {t('verifiedBadge')}
                 </span>
               )}
               {clinic.cnam && (
-                <span className="px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
+                <span className="px-1.5 md:px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
                   {t('cnamBadge')}
                 </span>
               )}
             </div>
             
-            <div className="text-sm mb-1">
+            <div className="text-xs md:text-sm mb-1">
               {t('price')}: от {Math.round(clinic.priceIndex * 10)} лей
             </div>
           </div>
@@ -125,10 +125,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center space-x-1">
-                  <div className={`w-12 h-12 ${getDScoreColor(clinic.dScore)} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                  <div className={`w-10 h-10 md:w-12 md:h-12 ${getDScoreColor(clinic.dScore)} rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-lg`}>
                     {clinic.dScore}
                   </div>
-                  <Info className="w-3 h-3 text-white opacity-70" />
+                  <Info className="w-2.5 h-2.5 md:w-3 md:h-3 text-white opacity-70" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -146,7 +146,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="flex space-x-2">
           <Button 
             onClick={handleBookClick}
-            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg text-xs md:text-sm"
             size="sm"
           >
             {t('book')}
@@ -154,7 +154,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <Button 
             onClick={handlePricesClick}
             variant="outline"
-            className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100"
+            className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs md:text-sm"
             size="sm"
           >
             {t('prices')}
