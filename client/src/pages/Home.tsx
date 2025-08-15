@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { SearchBar } from '../components/SearchBar';
-import { Filters, FilterValues } from '../components/Filters';
+import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
 import { ClinicGrid } from '../components/ClinicGrid';
 import { ClinicDetail } from '../components/ClinicDetail';
+import { PricingModal } from '../components/PricingModal';
+import { BookingModal } from '../components/BookingModal';
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -14,6 +16,10 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [pricingClinic, setPricingClinic] = useState<any>(null);
+  const [bookingClinic, setBookingClinic] = useState<any>(null);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
@@ -26,7 +32,7 @@ export default function Home() {
   });
   
   const [page, setPage] = useState(1);
-  const limit = 12;
+  const limit = 50;
 
   // Fetch cities
   const { data: cities = [] } = useQuery<any[]>({
@@ -120,15 +126,13 @@ export default function Home() {
   }, []);
 
   const handleBookClick = useCallback((clinic: any) => {
-    // Implement booking logic
-    console.log('Book appointment for:', clinic.name);
-    alert(`Запись в ${clinic.name} будет доступна в полной версии приложения`);
+    setBookingClinic(clinic);
+    setBookingOpen(true);
   }, []);
 
   const handlePricesClick = useCallback((clinic: any) => {
-    // Show prices or navigate to clinic detail
-    setSelectedClinic(clinic.slug);
-    setDetailOpen(true);
+    setPricingClinic(clinic);
+    setPricingOpen(true);
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
@@ -140,18 +144,12 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">{t('appTitle')}</h1>
             </div>
-            
-            {/* Search Bar */}
-            <SearchBar 
-              onSearch={handleSearch}
-              className="flex-1 max-w-lg mx-8"
-            />
             
             {/* Language Toggle */}
             <LanguageToggle />
@@ -159,51 +157,48 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
-        <div className="mb-8">
-          <Filters
+      <div className="flex">
+        {/* Left Sidebar - Filters */}
+        <div className="w-80 flex-shrink-0">
+          <FiltersSidebar
             cities={cities}
             districts={districts}
             filters={filters}
             onFiltersChange={handleFiltersChange}
             onApply={handleApplyFilters}
             onReset={handleResetFilters}
+            onSearch={handleSearch}
           />
         </div>
 
-        {/* Clinics Grid */}
+        {/* Main Content */}
+        <main className="flex-1 px-8 py-8">
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 aspect-square">
-                <div className="animate-pulse">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="w-12 h-12 bg-gray-200 rounded-lg mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <div className="space-y-8">
+            {/* Results Info Skeleton */}
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-48"></div>
+            </div>
+
+            {/* Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200">
+                  <div className="animate-pulse">
+                    {/* Background placeholder */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-400"></div>
+                    
+                    {/* Content overlay */}
+                    <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6">
+                      {/* Clinic name placeholder */}
+                      <div className="h-6 bg-white bg-opacity-40 rounded w-3/4 mb-2"></div>
+                      {/* Location placeholder */}
+                      <div className="h-4 bg-white bg-opacity-30 rounded w-1/2"></div>
                     </div>
-                    <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
-                  </div>
-                  <div className="space-y-3 mb-4">
-                    {Array.from({ length: 4 }).map((_, j) => (
-                      <div key={j}>
-                        <div className="flex justify-between mb-1">
-                          <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-8"></div>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2"></div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex space-x-2">
-                    <div className="flex-1 h-8 bg-gray-200 rounded"></div>
-                    <div className="flex-1 h-8 bg-gray-200 rounded"></div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : clinicsData?.clinics?.length > 0 ? (
           <ClinicGrid
@@ -228,9 +223,10 @@ export default function Home() {
             </p>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
-      {/* Clinic Detail Modal */}
+      {/* Modals */}
       <ClinicDetail
         clinic={clinicDetail}
         open={detailOpen}
@@ -239,6 +235,25 @@ export default function Home() {
           setSelectedClinic(null);
         }}
         onBookClick={handleBookClick}
+      />
+      
+      <PricingModal
+        clinic={pricingClinic}
+        open={pricingOpen}
+        onClose={() => {
+          setPricingOpen(false);
+          setPricingClinic(null);
+        }}
+        onBookClick={handleBookClick}
+      />
+      
+      <BookingModal
+        clinic={bookingClinic}
+        open={bookingOpen}
+        onClose={() => {
+          setBookingOpen(false);
+          setBookingClinic(null);
+        }}
       />
 
       {/* Footer */}
