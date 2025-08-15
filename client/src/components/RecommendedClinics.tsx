@@ -109,15 +109,16 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
             )}
 
             {/* Clinic Image */}
-            <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden">
+            <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden relative">
               <img
                 src={`https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`}
                 alt={clinic.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover absolute inset-0"
                 onError={(e) => {
                   if (clinic.logoUrl && !(e.target as HTMLImageElement).src.includes(clinic.logoUrl)) {
                     (e.target as HTMLImageElement).src = clinic.logoUrl;
-                    (e.target as HTMLImageElement).className = "h-24 w-24 object-contain mx-auto mt-12";
+                    // Оставляем класс w-full h-full object-cover для логотипа тоже
+                    (e.target as HTMLImageElement).className = "w-full h-full object-cover absolute inset-0";
                   } else {
                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300';
                   }
