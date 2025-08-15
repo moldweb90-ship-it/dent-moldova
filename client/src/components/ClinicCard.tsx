@@ -148,15 +148,6 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       </div>
 
-      {/* Top left badges */}
-      <div className="absolute top-3 left-3 z-10 space-y-1">
-        {clinic.recommended && (
-          <Badge className="bg-red-500 text-white font-semibold text-xs">
-            <Flame className="h-2 w-2 mr-1" />
-            Рекомендуем
-          </Badge>
-        )}
-      </div>
 
 
 
@@ -167,6 +158,12 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
+              {/* Recommended flame icon next to name */}
+              {clinic.recommended && (
+                <div className="bg-red-500 rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md flex-shrink-0">
+                  <Flame className="h-3 w-3 text-white" />
+                </div>
+              )}
               {/* Promotional icon next to name */}
               {getPromotionalIcon() && (
                 <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md flex-shrink-0">
