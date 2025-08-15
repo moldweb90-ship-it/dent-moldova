@@ -68,6 +68,15 @@ export const siteViews = pgTable("site_views", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Site settings table for admin configuration
+export const siteSettings = pgTable("site_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key").notNull().unique(),
+  value: text("value"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const citiesRelations = relations(cities, ({ many }) => ({
   districts: many(districts),
@@ -134,18 +143,26 @@ export const insertSiteViewSchema = createInsertSchema(siteViews).omit({
   createdAt: true,
 });
 
+export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type City = typeof cities.$inferSelect;
 export type District = typeof districts.$inferSelect;
 export type Clinic = typeof clinics.$inferSelect;
 export type Package = typeof packages.$inferSelect;
 export type SiteView = typeof siteViews.$inferSelect;
+export type SiteSetting = typeof siteSettings.$inferSelect;
 
 export type InsertCity = z.infer<typeof insertCitySchema>;
 export type InsertDistrict = z.infer<typeof insertDistrictSchema>;
 export type InsertClinic = z.infer<typeof insertClinicSchema>;
 export type InsertPackage = z.infer<typeof insertPackageSchema>;
 export type InsertSiteView = z.infer<typeof insertSiteViewSchema>;
+export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
 
 // Keep existing user schema for compatibility
 export const users = pgTable("users", {

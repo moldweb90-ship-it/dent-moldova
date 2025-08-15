@@ -5,8 +5,9 @@ import { ClinicsManagement } from './components/ClinicsManagement';
 import { Dashboard } from './components/Dashboard';
 import { PackagesManagement } from './components/PackagesManagement';
 import { CitiesManagement } from './components/CitiesManagement';
+import { Settings } from './components/Settings';
 
-type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities';
+type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'settings';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -26,6 +27,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         return <PackagesManagement />;
       case 'cities':
         return <CitiesManagement />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }

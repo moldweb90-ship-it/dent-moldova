@@ -1,7 +1,7 @@
 import { 
-  cities, districts, clinics, packages, users, siteViews,
-  type City, type District, type Clinic, type Package, type User, type SiteView,
-  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView
+  cities, districts, clinics, packages, users, siteViews, siteSettings,
+  type City, type District, type Clinic, type Package, type User, type SiteView, type SiteSetting,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView, type InsertSiteSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -39,6 +39,11 @@ export interface IStorage {
   recordView(view: InsertSiteView): Promise<SiteView>;
   getTodayViews(): Promise<number>;
   getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
+  
+  // Site settings methods
+  getSiteSetting(key: string): Promise<SiteSetting | undefined>;
+  setSiteSetting(key: string, value: string): Promise<SiteSetting>;
+  getAllSiteSettings(): Promise<SiteSetting[]>;
 }
 
 export interface ClinicFilters {
@@ -346,6 +351,31 @@ export class DatabaseStorage implements IStorage {
     });
 
     return results as (Clinic & { city: City; district: District | null })[];
+  }
+
+  // Site settings methods
+  async getSiteSetting(key: string): Promise<SiteSetting | undefined> {
+    const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
+    return setting || undefined;
+  }
+
+  async setSiteSetting(key: string, value: string): Promise<SiteSetting> {
+    const [setting] = await db
+      .insert(siteSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        target: siteSettings.key,
+        set: {
+          value,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return setting;
+  }
+
+  async getAllSiteSettings(): Promise<SiteSetting[]> {
+    return await db.select().from(siteSettings);
   }
 }
 

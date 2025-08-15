@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities';
+type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'settings';
 
 interface AdminSidebarProps {
   currentPage: AdminPage;
@@ -43,6 +43,12 @@ export function AdminSidebar({ currentPage, onPageChange, isOpen }: AdminSidebar
       label: 'Города',
       icon: MapPin,
       description: 'Города и районы'
+    },
+    {
+      id: 'settings' as AdminPage,
+      label: 'Настройки',
+      icon: Settings,
+      description: 'SEO и конфигурация'
     }
   ];
 

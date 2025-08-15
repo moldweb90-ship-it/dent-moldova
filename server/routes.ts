@@ -333,6 +333,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Settings endpoints
+  app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
+    try {
+      const settings = await storage.getAllSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error getting settings:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
+    try {
+      const { siteTitle, metaDescription, robotsTxt } = req.body;
+      
+      // Save each setting individually
+      const promises = [];
+      if (siteTitle !== undefined) {
+        promises.push(storage.setSiteSetting('siteTitle', siteTitle));
+      }
+      if (metaDescription !== undefined) {
+        promises.push(storage.setSiteSetting('metaDescription', metaDescription));
+      }
+      if (robotsTxt !== undefined) {
+        promises.push(storage.setSiteSetting('robotsTxt', robotsTxt));
+      }
+      
+      await Promise.all(promises);
+      
+      // Create robots.txt file in public directory
+      if (robotsTxt !== undefined) {
+        const publicDir = path.join(process.cwd(), 'public');
+        if (!fs.existsSync(publicDir)) {
+          fs.mkdirSync(publicDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(publicDir, 'robots.txt'), robotsTxt);
+      }
+      
+      res.json({ message: 'Settings saved successfully' });
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Serve robots.txt
+  app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      res.sendFile(robotsPath);
+    } else {
+      // Default robots.txt if file doesn't exist
+      res.type('text/plain');
+      res.send('User-agent: *\nDisallow: /admin\nDisallow: /api\n');
+    }
+  });
+
+  // API endpoint to get SEO settings for frontend
+  app.get('/api/seo-settings', async (req, res) => {
+    try {
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      
+      res.json({
+        siteTitle: settingsMap.siteTitle || 'Dent Moldova - Каталог стоматологических клиник',
+        metaDescription: settingsMap.metaDescription || 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'
+      });
+    } catch (error) {
+      console.error("Error getting SEO settings:", error);
+      res.json({
+        siteTitle: 'Dent Moldova - Каталог стоматологических клиник',
+        metaDescription: 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'
+      });
+    }
+  });
+
   // Record a view (middleware for tracking)
   const recordViewMiddleware = async (req: any, res: any, next: any) => {
     try {
