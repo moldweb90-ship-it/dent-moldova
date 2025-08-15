@@ -49,12 +49,19 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
 
   const { data: cities } = useQuery({
     queryKey: ['/api/cities'],
-    queryFn: () => apiRequest('/api/cities')
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/cities');
+      return response.json();
+    }
   });
 
   const { data: districts } = useQuery({
     queryKey: ['/api/cities', clinic?.cityId || '', 'districts'],
-    queryFn: () => clinic?.cityId ? apiRequest(`/api/cities/${clinic.cityId}/districts`) : [],
+    queryFn: async () => {
+      if (!clinic?.cityId) return [];
+      const response = await apiRequest('GET', `/api/cities/${clinic.cityId}/districts`);
+      return response.json();
+    },
     enabled: !!clinic?.cityId
   });
 
@@ -83,10 +90,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest('/api/admin/clinics', {
-      method: 'POST',
-      body: data
-    }),
+    mutationFn: (data: FormData) => apiRequest('POST', '/api/admin/clinics', data),
     onSuccess: () => {
       toast({
         title: 'Клиника создана',
@@ -104,10 +108,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest(`/api/admin/clinics/${clinic.id}`, {
-      method: 'PUT',
-      body: data
-    }),
+    mutationFn: (data: FormData) => apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data),
     onSuccess: () => {
       toast({
         title: 'Клиника обновлена',

@@ -16,12 +16,18 @@ interface Stats {
 export function Dashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['/api/admin/stats'],
-    queryFn: () => apiRequest('/api/admin/stats')
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/stats');
+      return response.json();
+    }
   });
 
   const { data: recentClinics } = useQuery({
     queryKey: ['/api/admin/recent-clinics'],
-    queryFn: () => apiRequest('/api/admin/recent-clinics')
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/recent-clinics');
+      return response.json();
+    }
   });
 
   const statsCards = [

@@ -49,13 +49,14 @@ export function ClinicsManagement() {
 
   const { data: clinicsData, isLoading } = useQuery({
     queryKey: ['/api/admin/clinics', { q: searchQuery }],
-    queryFn: () => apiRequest(`/api/admin/clinics?q=${searchQuery}`)
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/admin/clinics?q=${searchQuery}`);
+      return response.json();
+    }
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/admin/clinics/${id}`, {
-      method: 'DELETE'
-    }),
+    mutationFn: (id: string) => apiRequest('DELETE', `/api/admin/clinics/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/clinics'] });
       toast({
