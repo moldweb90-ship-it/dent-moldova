@@ -191,9 +191,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                     ⭐ ТОП
                   </div>
                 )}
-                {getPromotionalIcon() && (
-                  <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md">
-                    {getPromotionalIcon()}
+                {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
+                  <div className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-md ${promotionalLabelStyles[clinic.promotionalLabels[0]]}`}>
+                    {promotionalLabelText[clinic.promotionalLabels[0]]}
                   </div>
                 )}
                 {/* Clinic name */}
