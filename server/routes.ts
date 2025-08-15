@@ -175,8 +175,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const clinicData = clinicSchema.parse(req.body);
       
-      console.log('Creating clinic with district:', clinicData.district);
-      console.log('All clinic data:', clinicData);
       
       // Generate slug from name
       const slug = clinicData.name.toLowerCase()
@@ -251,8 +249,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
       
-      console.log('Updating clinic with district:', updates.district);
-      console.log('All updates:', updates);
       
       // Update logo if uploaded
       if (req.file) {
