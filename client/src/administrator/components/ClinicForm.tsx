@@ -90,17 +90,6 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     }
   });
 
-  // Watch for city changes to load districts
-  const selectedCityId = form.watch('cityId');
-  const { data: districts } = useQuery({
-    queryKey: ['/api/cities', selectedCityId, 'districts'],
-    queryFn: async () => {
-      const response = await fetch(`/api/cities/${selectedCityId}/districts`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!selectedCityId
-  });
 
   // Load existing services
   const { data: existingServices } = useQuery({
@@ -272,11 +261,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
             <Label htmlFor="cityId">Город *</Label>
             <Select
               value={form.watch('cityId')}
-              onValueChange={(value) => {
-                form.setValue('cityId', value);
-                // Reset district when city changes
-                form.setValue('districtId', '');
-              }}
+              onValueChange={(value) => form.setValue('cityId', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите город" />
@@ -291,28 +276,15 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
             </Select>
           </div>
 
-          {/* District Selection */}
-          {selectedCityId && districts && districts.length > 0 && (
-            <div>
-              <Label htmlFor="districtId">Район</Label>
-              <Select
-                value={form.watch('districtId') || 'no-district'}
-                onValueChange={(value) => form.setValue('districtId', value === 'no-district' ? '' : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите район" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no-district">Без района</SelectItem>
-                  {districts?.map((district: any) => (
-                    <SelectItem key={district.id} value={district.id}>
-                      {district.nameRu}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* District Input */}
+          <div>
+            <Label htmlFor="districtId">Район</Label>
+            <Input
+              id="districtId"
+              {...form.register('districtId')}
+              placeholder="Введите район (необязательно)"
+            />
+          </div>
 
           {/* Currency Selection */}
           <div>
