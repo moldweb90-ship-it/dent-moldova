@@ -175,10 +175,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const clinicData = clinicSchema.parse(req.body);
       
-      // Convert empty strings to null for database foreign key fields
+      // Convert empty strings to undefined for database foreign key fields
       if (clinicData.districtId === '') {
-        clinicData.districtId = null;
+        clinicData.districtId = undefined;
       }
+      
+      console.log('Creating clinic with districtId:', clinicData.districtId);
       
       // Generate slug from name
       const slug = clinicData.name.toLowerCase()
@@ -253,10 +255,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
       
-      // Convert empty strings to null for database foreign key fields
+      // Convert empty strings to undefined for database foreign key fields
       if (updates.districtId === '') {
-        updates.districtId = null;
+        updates.districtId = undefined;
       }
+      
+      console.log('Updating clinic with districtId:', updates.districtId);
       
       // Update logo if uploaded
       if (req.file) {
