@@ -1,0 +1,139 @@
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, varchar, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const cities = pgTable("cities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nameRu: text("name_ru").notNull(),
+  nameRo: text("name_ro").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const districts = pgTable("districts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  cityId: varchar("city_id").notNull().references(() => cities.id),
+  nameRu: text("name_ru").notNull(),
+  nameRo: text("name_ro").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const clinics = pgTable("clinics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: varchar("slug").notNull().unique(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url"),
+  cityId: varchar("city_id").notNull().references(() => cities.id),
+  districtId: varchar("district_id").references(() => districts.id),
+  address: text("address"),
+  phone: text("phone"),
+  website: text("website"),
+  bookingUrl: text("booking_url"),
+  languages: json("languages").$type<string[]>().default([]),
+  specializations: json("specializations").$type<string[]>().default([]),
+  tags: json("tags").$type<string[]>().default([]),
+  verified: boolean("verified").default(false),
+  cnam: boolean("cnam").default(false),
+  availToday: boolean("avail_today").default(false),
+  availTomorrow: boolean("avail_tomorrow").default(false),
+  priceIndex: integer("price_index").notNull(),
+  trustIndex: integer("trust_index").notNull(),
+  reviewsIndex: integer("reviews_index").notNull(),
+  accessIndex: integer("access_index").notNull(),
+  dScore: integer("d_score").notNull(),
+  googleRating: integer("google_rating"),
+  googleReviewsCount: integer("google_reviews_count"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const packages = pgTable("packages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clinicId: varchar("clinic_id").notNull().references(() => clinics.id),
+  code: varchar("code").notNull(), // "implant_standard" | "hygiene_pro" | "rct_molar"
+  nameRu: text("name_ru").notNull(),
+  nameRo: text("name_ro").notNull(),
+  priceMin: integer("price_min").notNull(),
+  priceMax: integer("price_max").notNull(),
+  priceMedian: integer("price_median").notNull(),
+});
+
+// Relations
+export const citiesRelations = relations(cities, ({ many }) => ({
+  districts: many(districts),
+  clinics: many(clinics),
+}));
+
+export const districtsRelations = relations(districts, ({ one, many }) => ({
+  city: one(cities, {
+    fields: [districts.cityId],
+    references: [cities.id],
+  }),
+  clinics: many(clinics),
+}));
+
+export const clinicsRelations = relations(clinics, ({ one, many }) => ({
+  city: one(cities, {
+    fields: [clinics.cityId],
+    references: [cities.id],
+  }),
+  district: one(districts, {
+    fields: [clinics.districtId],
+    references: [districts.id],
+  }),
+  packages: many(packages),
+}));
+
+export const packagesRelations = relations(packages, ({ one }) => ({
+  clinic: one(clinics, {
+    fields: [packages.clinicId],
+    references: [clinics.id],
+  }),
+}));
+
+// Insert schemas
+export const insertCitySchema = createInsertSchema(cities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDistrictSchema = createInsertSchema(districts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertClinicSchema = createInsertSchema(clinics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPackageSchema = createInsertSchema(packages).omit({
+  id: true,
+});
+
+// Types
+export type City = typeof cities.$inferSelect;
+export type District = typeof districts.$inferSelect;
+export type Clinic = typeof clinics.$inferSelect;
+export type Package = typeof packages.$inferSelect;
+
+export type InsertCity = z.infer<typeof insertCitySchema>;
+export type InsertDistrict = z.infer<typeof insertDistrictSchema>;
+export type InsertClinic = z.infer<typeof insertClinicSchema>;
+export type InsertPackage = z.infer<typeof insertPackageSchema>;
+
+// Keep existing user schema for compatibility
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
