@@ -296,14 +296,14 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
             <div>
               <Label htmlFor="districtId">Район</Label>
               <Select
-                value={form.watch('districtId')}
-                onValueChange={(value) => form.setValue('districtId', value)}
+                value={form.watch('districtId') || 'no-district'}
+                onValueChange={(value) => form.setValue('districtId', value === 'no-district' ? '' : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите район" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Без района</SelectItem>
+                  <SelectItem value="no-district">Без района</SelectItem>
                   {districts?.map((district: any) => (
                     <SelectItem key={district.id} value={district.id}>
                       {district.nameRu}
