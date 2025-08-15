@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
+import { Filter, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { SearchBar } from '../components/SearchBar';
 import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
 import { ClinicGrid } from '../components/ClinicGrid';
@@ -20,6 +22,7 @@ export default function Home() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [pricingClinic, setPricingClinic] = useState<any>(null);
   const [bookingClinic, setBookingClinic] = useState<any>(null);
+  const [filtersVisible, setFiltersVisible] = useState(true);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
@@ -151,28 +154,52 @@ export default function Home() {
               <h1 className="text-xl font-bold text-gray-900">{t('appTitle')}</h1>
             </div>
             
-            {/* Language Toggle */}
-            <LanguageToggle />
+            <div className="flex items-center space-x-4">
+              {/* Filter Toggle */}
+              <Button
+                onClick={() => setFiltersVisible(!filtersVisible)}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                {filtersVisible ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    <span>{t('hideFilters')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Filter className="h-4 w-4" />
+                    <span>{t('showFilters')}</span>
+                  </>
+                )}
+              </Button>
+              
+              {/* Language Toggle */}
+              <LanguageToggle />
+            </div>
           </div>
         </div>
       </header>
 
       <div className="flex">
         {/* Left Sidebar - Filters */}
-        <div className="w-80 flex-shrink-0">
-          <FiltersSidebar
-            cities={cities}
-            districts={districts}
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onApply={handleApplyFilters}
-            onReset={handleResetFilters}
-            onSearch={handleSearch}
-          />
-        </div>
+        {filtersVisible && (
+          <div className="w-80 flex-shrink-0">
+            <FiltersSidebar
+              cities={cities}
+              districts={districts}
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onApply={handleApplyFilters}
+              onReset={handleResetFilters}
+              onSearch={handleSearch}
+            />
+          </div>
+        )}
 
         {/* Main Content */}
-        <main className="flex-1 px-8 py-8">
+        <main className={`flex-1 px-8 py-8 ${!filtersVisible ? 'max-w-full' : ''}`}>
         {isLoading ? (
           <div className="space-y-8">
             {/* Results Info Skeleton */}
@@ -181,7 +208,7 @@ export default function Home() {
             </div>
 
             {/* Grid Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200">
                   <div className="animate-pulse">

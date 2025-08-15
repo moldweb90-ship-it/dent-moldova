@@ -86,72 +86,91 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
       </div>
 
       {/* Always visible content */}
-      <div className="absolute inset-0 flex flex-col justify-center items-center text-white text-center p-6">
-        <h3 className="text-2xl font-bold mb-2 drop-shadow-lg">{clinic.name}</h3>
-        <p className="text-lg drop-shadow-md">
-          {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
-          {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
-        </p>
-      </div>
-
-      {/* Hover overlay */}
-      <div className={`absolute inset-0 bg-black transition-all duration-300 ${
-        isHovered ? 'bg-opacity-60' : 'bg-opacity-0 pointer-events-none'
-      }`}>
-        <div className={`h-full flex flex-col justify-between p-6 text-white transform transition-all duration-300 ${
-          isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}>
-          
-          {/* Top section */}
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {clinic.specializations.slice(0, 2).map(spec => (
-                  <span key={spec} className="px-2 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
-                    {SPECIALIZATIONS[spec as keyof typeof SPECIALIZATIONS]?.[language] || spec}
-                  </span>
-                ))}
-                {clinic.verified && (
-                  <span className="px-2 py-1 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
-                    {t('verifiedBadge')}
-                  </span>
-                )}
-                {clinic.cnam && (
-                  <span className="px-2 py-1 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
-                    {t('cnamBadge')}
-                  </span>
-                )}
-              </div>
-              
-              <div className="text-sm mb-1">
-                {t('price')}: от {Math.round(clinic.priceIndex * 10)} лей
-              </div>
+      <div className="absolute inset-0 flex flex-col justify-between text-white p-4">
+        {/* Top section - always visible */}
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
+            <p className="text-sm drop-shadow-md opacity-90 mb-2">
+              {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
+              {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
+            </p>
+            
+            {/* Specializations and badges */}
+            <div className="flex flex-wrap gap-1 mb-2">
+              {clinic.specializations.slice(0, 2).map(spec => (
+                <span key={spec} className="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
+                  {SPECIALIZATIONS[spec as keyof typeof SPECIALIZATIONS]?.[language] || spec}
+                </span>
+              ))}
+              {clinic.verified && (
+                <span className="px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
+                  {t('verifiedBadge')}
+                </span>
+              )}
+              {clinic.cnam && (
+                <span className="px-2 py-0.5 bg-blue-500 bg-opacity-80 text-white text-xs rounded-full">
+                  {t('cnamBadge')}
+                </span>
+              )}
             </div>
             
-            {/* D-Score with tooltip */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center space-x-1">
-                    <div className={`w-14 h-14 ${getDScoreColor(clinic.dScore)} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                      {clinic.dScore}
-                    </div>
-                    <Info className="w-4 h-4 text-white opacity-70" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="text-sm">
-                    <p className="font-semibold">D-Score - комплексная оценка</p>
-                    <p>Доверие: 30% • Отзывы: 25%</p>
-                    <p>Цена: 25% • Доступность: 20%</p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="text-sm mb-1">
+              {t('price')}: от {Math.round(clinic.priceIndex * 10)} лей
+            </div>
           </div>
+          
+          {/* D-Score - always visible */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center space-x-1">
+                  <div className={`w-12 h-12 ${getDScoreColor(clinic.dScore)} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                    {clinic.dScore}
+                  </div>
+                  <Info className="w-3 h-3 text-white opacity-70" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-sm">
+                  <p className="font-semibold">D-Score - комплексная оценка</p>
+                  <p>Доверие: 30% • Отзывы: 25%</p>
+                  <p>Цена: 25% • Доступность: 20%</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
-          {/* Center - Progress bars */}
-          <div className="space-y-2">
+        {/* Bottom section - Action Buttons - always visible */}
+        <div className="flex space-x-2">
+          <Button 
+            onClick={handleBookClick}
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
+            size="sm"
+          >
+            {t('book')}
+          </Button>
+          <Button 
+            onClick={handlePricesClick}
+            variant="outline"
+            className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100"
+            size="sm"
+          >
+            {t('prices')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Hover overlay - Progress bars only */}
+      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none ${
+        isHovered ? 'bg-black bg-opacity-40' : 'bg-transparent'
+      }`}>
+        <div className={`text-white transform transition-all duration-300 ${
+          isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+        }`}>
+          {/* Progress bars - only visible on hover */}
+          <div className="space-y-2 bg-black bg-opacity-60 p-4 rounded-lg backdrop-blur-sm">
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <div className="flex justify-between mb-1">
@@ -160,8 +179,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-500 ${getDScoreColor(100 - clinic.priceIndex)}`}
-                    style={{ width: `${100 - clinic.priceIndex}%` }}
+                    className={`h-1.5 rounded-full transition-all duration-700 delay-100 ${getDScoreColor(100 - clinic.priceIndex)}`}
+                    style={{ width: isHovered ? `${100 - clinic.priceIndex}%` : '0%' }}
                   />
                 </div>
               </div>
@@ -173,8 +192,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-500 ${getDScoreColor(clinic.trustIndex)}`}
-                    style={{ width: `${clinic.trustIndex}%` }}
+                    className={`h-1.5 rounded-full transition-all duration-700 delay-200 ${getDScoreColor(clinic.trustIndex)}`}
+                    style={{ width: isHovered ? `${clinic.trustIndex}%` : '0%' }}
                   />
                 </div>
               </div>
@@ -188,8 +207,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-500 ${getDScoreColor(clinic.reviewsIndex)}`}
-                    style={{ width: `${clinic.reviewsIndex}%` }}
+                    className={`h-1.5 rounded-full transition-all duration-700 delay-300 ${getDScoreColor(clinic.reviewsIndex)}`}
+                    style={{ width: isHovered ? `${clinic.reviewsIndex}%` : '0%' }}
                   />
                 </div>
               </div>
@@ -201,31 +220,12 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1.5">
                   <div 
-                    className={`h-1.5 rounded-full transition-all duration-500 ${getDScoreColor(clinic.accessIndex)}`}
-                    style={{ width: `${clinic.accessIndex}%` }}
+                    className={`h-1.5 rounded-full transition-all duration-700 delay-400 ${getDScoreColor(clinic.accessIndex)}`}
+                    style={{ width: isHovered ? `${clinic.accessIndex}%` : '0%' }}
                   />
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Bottom section - Action Buttons */}
-          <div className="flex space-x-3">
-            <Button 
-              onClick={handleBookClick}
-              className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
-              size="sm"
-            >
-              {t('book')}
-            </Button>
-            <Button 
-              onClick={handlePricesClick}
-              variant="outline"
-              className="flex-1 border-white text-white hover:bg-white hover:text-gray-900"
-              size="sm"
-            >
-              {t('prices')}
-            </Button>
           </div>
         </div>
       </div>
