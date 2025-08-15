@@ -1,7 +1,7 @@
 import { 
-  cities, districts, clinics, packages, users, siteViews, siteSettings, bookings,
-  type City, type District, type Clinic, type Package, type User, type SiteView, type SiteSetting, type Booking,
-  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
+  cities, districts, clinics, packages, services, users, siteViews, siteSettings, bookings,
+  type City, type District, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -21,8 +21,8 @@ export interface IStorage {
   createDistrict(district: InsertDistrict): Promise<District>;
 
   // Clinic methods
-  getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; packages: Package[] })[]; total: number }>;
-  getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; packages: Package[] }) | undefined>;
+  getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; services: Service[] })[]; total: number }>;
+  getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; services: Service[] }) | undefined>;
   createClinic(clinic: InsertClinic): Promise<Clinic>;
   updateClinicDScore(id: string, dScore: number): Promise<void>;
   
@@ -39,7 +39,7 @@ export interface IStorage {
   recordView(view: InsertSiteView): Promise<SiteView>;
   getTodayViews(): Promise<number>;
   getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
-  getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; packages: Package[] })[]>;
+  getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; services: Service[] })[]>;
   
   // Site settings methods
   getSiteSetting(key: string): Promise<SiteSetting | undefined>;
@@ -48,6 +48,10 @@ export interface IStorage {
   
   // Booking methods
   createBooking(booking: InsertBooking): Promise<Booking>;
+  
+  // Service methods  
+  getClinicServices(clinicId: string): Promise<Service[]>;
+  updateClinicServices(clinicId: string, services: {name: string, price: number}[]): Promise<void>;
   getBookings(): Promise<(Booking & { clinic: Clinic })[]>;
   getBookingById(id: string): Promise<(Booking & { clinic: Clinic }) | undefined>;
   updateBookingStatus(id: string, status: string): Promise<Booking>;
@@ -105,7 +109,7 @@ export class DatabaseStorage implements IStorage {
     return newDistrict;
   }
 
-  async getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; packages: Package[] })[]; total: number }> {
+  async getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; services: Service[] })[]; total: number }> {
     const { q, city, districts: filterDistricts, specializations, languages, verified, urgentToday, priceMin, priceMax, sort = 'dscore', page = 1, limit = 12 } = filters;
 
     let query = db
@@ -120,17 +124,14 @@ export class DatabaseStorage implements IStorage {
 
     const conditions = [];
 
-    // Search query - search in name, specializations, tags, and packages
+    // Search query - search in name, specializations, tags, and services
     if (q) {
-      // Find clinics that have matching packages
+      // Find clinics that have matching services
       const subquery = db
-        .select({ clinicId: packages.clinicId })
-        .from(packages)
+        .select({ clinicId: services.clinicId })
+        .from(services)
         .where(
-          or(
-            ilike(packages.nameRu, `%${q}%`),
-            ilike(packages.nameRo, `%${q}%`)
-          )
+          ilike(services.name, `%${q}%`)
         );
       
       conditions.push(
@@ -215,10 +216,10 @@ export class DatabaseStorage implements IStorage {
     const offset = (page - 1) * limit;
     const results = await finalQuery.limit(limit).offset(offset);
 
-    // Get packages for each clinic
+    // Get services for each clinic
     const clinicIds = results.map((r: any) => r.clinic.id);
-    const clinicPackages = clinicIds.length > 0 
-      ? await db.select().from(packages).where(inArray(packages.clinicId, clinicIds))
+    const clinicServices = clinicIds.length > 0 
+      ? await db.select().from(services).where(inArray(services.clinicId, clinicIds))
       : [];
 
     // Get total count
@@ -233,17 +234,17 @@ export class DatabaseStorage implements IStorage {
     const [{ count: total }] = await countQuery;
 
     // Combine results
-    const clinicsWithPackages = results.map((result: any) => ({
+    const clinicsWithServices = results.map((result: any) => ({
       ...result.clinic,
       city: result.city!,
       district: result.district,
-      packages: clinicPackages.filter(pkg => pkg.clinicId === result.clinic.id)
+      services: clinicServices.filter(service => service.clinicId === result.clinic.id)
     }));
 
-    return { clinics: clinicsWithPackages, total };
+    return { clinics: clinicsWithServices, total };
   }
 
-  async getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; packages: Package[] }) | undefined> {
+  async getClinicBySlug(slug: string): Promise<(Clinic & { city: City; district: District | null; services: Service[] }) | undefined> {
     const [result] = await db
       .select({
         clinic: clinics,
@@ -257,13 +258,13 @@ export class DatabaseStorage implements IStorage {
 
     if (!result) return undefined;
 
-    const clinicPackages = await db.select().from(packages).where(eq(packages.clinicId, result.clinic.id));
+    const clinicServices = await db.select().from(services).where(eq(services.clinicId, result.clinic.id));
 
     return {
       ...result.clinic,
       city: result.city!,
       district: result.district,
-      packages: clinicPackages
+      services: clinicServices
     };
   }
 
@@ -347,13 +348,13 @@ export class DatabaseStorage implements IStorage {
     return result.count || 0;
   }
 
-  async getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; packages: Package[] })[]> {
+  async getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; services: Service[] })[]> {
     const results = await db.query.clinics.findMany({
       where: eq(clinics.recommended, true),
       with: {
         city: true,
         district: true,
-        packages: true,
+        services: true,
       },
       orderBy: desc(clinics.dScore),
       limit: 6,
@@ -446,6 +447,27 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bookings.id, id))
       .returning();
     return booking;
+  }
+
+  // Service methods
+  async getClinicServices(clinicId: string): Promise<Service[]> {
+    return db.select().from(services).where(eq(services.clinicId, clinicId));
+  }
+
+  async updateClinicServices(clinicId: string, serviceData: {name: string, price: number}[]): Promise<void> {
+    // First delete all existing services for this clinic
+    await db.delete(services).where(eq(services.clinicId, clinicId));
+    
+    // Then insert new services if any
+    if (serviceData.length > 0) {
+      await db.insert(services).values(
+        serviceData.map(service => ({
+          clinicId,
+          name: service.name,
+          price: service.price
+        }))
+      );
+    }
   }
 }
 

@@ -2,6 +2,12 @@ import { ClinicCard } from './ClinicCard';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useTranslation } from '../lib/i18n';
 
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface Clinic {
   id: string;
   slug: string;
@@ -22,6 +28,7 @@ interface Clinic {
   dScore: number;
   recommended?: boolean;
   promotionalLabels?: string[];
+  services?: Service[];
 }
 
 interface ClinicGridProps {

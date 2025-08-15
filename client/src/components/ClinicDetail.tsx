@@ -6,6 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScoreBar } from './ScoreBar';
 import { BookingForm } from './BookingForm';
 
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface Clinic {
   id: string;
   slug: string;
@@ -26,15 +32,7 @@ interface Clinic {
   reviewsIndex: number;
   accessIndex: number;
   dScore: number;
-  packages: Array<{
-    id: string;
-    code: string;
-    nameRu: string;
-    nameRo: string;
-    priceMin: number;
-    priceMax: number;
-    priceMedian: number;
-  }>;
+  services?: Service[];
 }
 
 interface ClinicDetailProps {
@@ -140,43 +138,52 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                 )}
               </div>
 
-              {/* Price Packages */}
+              {/* Services and Prices */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('packages')}</h3>
-                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                          {language === 'ru' ? 'Услуга' : 'Serviciu'}
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                          {language === 'ru' ? 'Диапазон' : 'Interval'}
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                          {language === 'ru' ? 'Медиана' : 'Mediană'}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {clinic.packages.map(pkg => (
-                        <tr key={pkg.id}>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {language === 'ru' ? pkg.nameRu : pkg.nameRo}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            {pkg.priceMin.toLocaleString()} - {pkg.priceMax.toLocaleString()} {language === 'ru' ? 'лей' : 'lei'}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {pkg.priceMedian.toLocaleString()} {language === 'ru' ? 'лей' : 'lei'}
-                          </td>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {language === 'ru' ? 'Услуги и цены' : 'Servicii și prețuri'}
+                </h3>
+                {clinic.services && clinic.services.length > 0 ? (
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                            {language === 'ru' ? 'Услуга' : 'Serviciu'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                            {language === 'ru' ? 'Цена' : 'Preț'}
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {clinic.services.map(service => (
+                          <tr key={service.id}>
+                            <td className="px-4 py-3 text-sm text-gray-900">
+                              {service.name}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                              {service.price.toLocaleString()} {language === 'ru' ? 'лей' : 'lei'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-8 text-center">
+                    <p className="text-gray-500">
+                      {language === 'ru' 
+                        ? 'Услуги и цены уточняются. Свяжитесь с клиникой для получения актуальной информации.' 
+                        : 'Serviciile și prețurile sunt în curs de actualizare. Contactați clinica pentru informații actuale.'}
+                    </p>
+                  </div>
+                )}
                 <p className="text-xs text-gray-500 mt-2">
-                  {t('pricesProvidedBy')}. {t('lastUpdated')}: 15.01.2024
+                  {language === 'ru' 
+                    ? 'Цены предоставлены клиникой. Последнее обновление: ' 
+                    : 'Prețurile sunt furnizate de clinică. Ultima actualizare: '
+                  }{new Date().toLocaleDateString()}
                 </p>
               </div>
 

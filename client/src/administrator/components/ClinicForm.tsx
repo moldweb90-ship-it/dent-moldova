@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 
 const clinicSchema = z.object({
   name: z.string().min(2, 'Название должно содержать минимум 2 символа'),
@@ -49,6 +50,8 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [services, setServices] = useState<{name: string, price: number}[]>([]);
+  const [newService, setNewService] = useState({ name: '', price: '' });
 
   const { data: cities } = useQuery({
     queryKey: ['/api/cities'],
@@ -67,6 +70,24 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     },
     enabled: !!clinic?.cityId
   });
+
+  // Load existing services
+  const { data: existingServices } = useQuery({
+    queryKey: ['/api/admin/clinics', clinic?.id, 'services'],
+    queryFn: async () => {
+      if (!clinic?.id) return [];
+      const response = await fetch(`/api/admin/clinics/${clinic.id}/services`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!clinic?.id
+  });
+
+  useEffect(() => {
+    if (existingServices) {
+      setServices(existingServices || []);
+    }
+  }, [existingServices]);
 
   const form = useForm<ClinicFormData>({
     resolver: zodResolver(clinicSchema),
@@ -95,7 +116,21 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest('POST', '/api/admin/clinics', data),
+    mutationFn: async (data: FormData) => {
+      // First create clinic
+      const result = await apiRequest('POST', '/api/admin/clinics', data);
+      
+      // Then add services if any
+      if (services.length > 0 && result.id) {
+        await fetch(`/api/admin/clinics/${result.id}/services`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(services)
+        });
+      }
+      
+      return result;
+    },
     onSuccess: () => {
       // Invalidate all clinic-related queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
@@ -118,7 +153,21 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data),
+    mutationFn: async (data: FormData) => {
+      if (!clinic?.id) throw new Error('No clinic ID');
+      
+      // First update clinic data
+      const result = await apiRequest('PUT', `/api/admin/clinics/${clinic.id}`, data);
+      
+      // Then update services
+      await fetch(`/api/admin/clinics/${clinic.id}/services`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(services)
+      });
+      
+      return result;
+    },
     onSuccess: () => {
       // Invalidate all clinic-related queries to refresh frontend data
       queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
@@ -424,6 +473,109 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
                 ))}
               </div>
             </div>
+
+            {/* Services Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Услуги и цены</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Service List */}
+                  <div className="space-y-3">
+                    {services.map((service, index) => (
+                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <span className="font-medium">{service.name}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {service.price} лей
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const updatedServices = services.filter((_, i) => i !== index);
+                            setServices(updatedServices);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add New Service */}
+                  <div className="border-t pt-4">
+                    <Label className="text-base font-medium mb-3 block">Добавить услугу</Label>
+                    <div className="flex space-x-3">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="Название услуги (например: Имплант стандарт)"
+                          value={newService.name}
+                          onChange={(e) => setNewService({...newService, name: e.target.value})}
+                        />
+                      </div>
+                      <div className="w-32">
+                        <Input
+                          type="number"
+                          placeholder="Цена"
+                          value={newService.price}
+                          onChange={(e) => setNewService({...newService, price: e.target.value})}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (newService.name && newService.price) {
+                            setServices([...services, {
+                              name: newService.name,
+                              price: parseInt(newService.price)
+                            }]);
+                            setNewService({ name: '', price: '' });
+                          }
+                        }}
+                        disabled={!newService.name || !newService.price}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Добавить
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Service Templates */}
+                  <div className="border-t pt-4">
+                    <Label className="text-base font-medium mb-3 block">Быстрые шаблоны</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { name: 'Консультация стоматолога', price: 200 },
+                        { name: 'Профгигиена', price: 800 },
+                        { name: 'Лечение кариеса', price: 600 },
+                        { name: 'Имплант стандарт', price: 12000 },
+                        { name: 'Коронка керамика', price: 4000 },
+                        { name: 'Лечение каналов', price: 2500 }
+                      ].map((template, index) => (
+                        <Button
+                          key={index}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (!services.find(s => s.name === template.name)) {
+                              setServices([...services, template]);
+                            }
+                          }}
+                          disabled={!!services.find(s => s.name === template.name)}
+                        >
+                          {template.name} - {template.price} лей
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

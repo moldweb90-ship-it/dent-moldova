@@ -60,6 +60,16 @@ export const packages = pgTable("packages", {
   priceMedian: integer("price_median").notNull(),
 });
 
+// Services table for custom clinic services managed by admin
+export const services = pgTable("services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clinicId: varchar("clinic_id").notNull().references(() => clinics.id),
+  name: text("name").notNull(),
+  price: integer("price").notNull(), // Price in lei
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // View tracking table for real IP-based analytics
 export const siteViews = pgTable("site_views", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -120,11 +130,19 @@ export const clinicsRelations = relations(clinics, ({ one, many }) => ({
     references: [districts.id],
   }),
   packages: many(packages),
+  services: many(services),
 }));
 
 export const packagesRelations = relations(packages, ({ one }) => ({
   clinic: one(clinics, {
     fields: [packages.clinicId],
+    references: [clinics.id],
+  }),
+}));
+
+export const servicesRelations = relations(services, ({ one }) => ({
+  clinic: one(clinics, {
+    fields: [services.clinicId],
     references: [clinics.id],
   }),
 }));
@@ -164,6 +182,12 @@ export const insertPackageSchema = createInsertSchema(packages).omit({
   id: true,
 });
 
+export const insertServiceSchema = createInsertSchema(services).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertSiteViewSchema = createInsertSchema(siteViews).omit({
   id: true,
   createdAt: true,
@@ -186,6 +210,7 @@ export type City = typeof cities.$inferSelect;
 export type District = typeof districts.$inferSelect;
 export type Clinic = typeof clinics.$inferSelect;
 export type Package = typeof packages.$inferSelect;
+export type Service = typeof services.$inferSelect;
 export type SiteView = typeof siteViews.$inferSelect;
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
@@ -194,6 +219,7 @@ export type InsertCity = z.infer<typeof insertCitySchema>;
 export type InsertDistrict = z.infer<typeof insertDistrictSchema>;
 export type InsertClinic = z.infer<typeof insertClinicSchema>;
 export type InsertPackage = z.infer<typeof insertPackageSchema>;
+export type InsertService = z.infer<typeof insertServiceSchema>;
 export type InsertSiteView = z.infer<typeof insertSiteViewSchema>;
 export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;

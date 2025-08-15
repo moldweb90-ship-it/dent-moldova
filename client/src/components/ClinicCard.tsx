@@ -6,6 +6,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Info, Flame } from 'lucide-react';
 import { useState } from 'react';
 
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface Clinic {
   id: string;
   slug: string;
@@ -26,6 +32,7 @@ interface Clinic {
   dScore: number;
   recommended?: boolean;
   promotionalLabels?: string[];
+  services?: Service[];
 }
 
 interface ClinicCardProps {
@@ -38,6 +45,17 @@ interface ClinicCardProps {
 export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }: ClinicCardProps) {
   const { t, language } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
+
+  // Calculate minimum service price or fallback to priceIndex calculation
+  const getMinPrice = () => {
+    if (clinic.services && clinic.services.length > 0) {
+      return Math.min(...clinic.services.map(service => service.price));
+    }
+    // Fallback to old calculation if no services
+    return Math.round(clinic.priceIndex * 10);
+  };
+
+  const minPrice = getMinPrice();
 
   const promotionalLabelStyles: Record<string, string> = {
     top: 'bg-yellow-500 text-white',
@@ -202,7 +220,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             </div>
             
             <div className="text-xs md:text-sm mb-1">
-              {t('price')}: от {Math.round(clinic.priceIndex * 10)} лей
+              {t('price')}: от {minPrice} лей
             </div>
           </div>
           

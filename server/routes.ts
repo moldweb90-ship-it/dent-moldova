@@ -305,6 +305,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get clinic services
+  app.get('/api/admin/clinics/:id/services', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Check if clinic exists
+      const existingClinic = await storage.getClinicById(id);
+      if (!existingClinic) {
+        return res.status(404).json({ message: 'Клиника не найдена' });
+      }
+      
+      const services = await storage.getClinicServices(id);
+      res.json(services);
+    } catch (error) {
+      console.error('Error fetching clinic services:', error);
+      res.status(500).json({ message: 'Ошибка при получении услуг клиники' });
+    }
+  });
+
+  // Update clinic services
+  app.put('/api/admin/clinics/:id/services', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const servicesSchema = z.array(z.object({
+        name: z.string().min(1, 'Название услуги обязательно'),
+        price: z.number().min(1, 'Цена должна быть больше 0')
+      }));
+      
+      // Check if clinic exists
+      const existingClinic = await storage.getClinicById(id);
+      if (!existingClinic) {
+        return res.status(404).json({ message: 'Клиника не найдена' });
+      }
+      
+      const validatedServices = servicesSchema.parse(req.body);
+      await storage.updateClinicServices(id, validatedServices);
+      
+      res.json({ success: true, message: 'Услуги клиники обновлены' });
+    } catch (error: any) {
+      console.error('Error updating clinic services:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Неверные данные услуг' });
+      }
+      res.status(500).json({ message: 'Ошибка при обновлении услуг клиники' });
+    }
+  });
+
   // Get admin statistics
   app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
     try {
