@@ -48,10 +48,6 @@ export function ClinicGrid({
 
   return (
     <div className="space-y-8">
-      {/* Results Info */}
-      <div className="text-sm text-gray-700">
-        {t('showingResults')} <span className="font-medium">{startResult}</span> {t('to')} <span className="font-medium">{endResult}</span> {t('of')} <span className="font-medium">{total}</span> {t('results')}
-      </div>
 
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
@@ -87,9 +83,6 @@ export function ClinicGrid({
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
-                {t('showingResults')} <span className="font-medium">{startResult}</span> {t('to')} <span className="font-medium">{endResult}</span> {t('of')} <span className="font-medium">{total}</span> {t('results')}
-              </p>
             </div>
             <Pagination>
               <PaginationContent>

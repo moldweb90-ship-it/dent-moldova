@@ -97,11 +97,14 @@ export class DatabaseStorage implements IStorage {
 
     const conditions = [];
 
-    // Search query
+    // Search query - search in name, specializations, and tags
     if (q) {
-      conditions.push(
-        ilike(clinics.name, `%${q}%`)
-      );
+      const searchConditions = [
+        ilike(clinics.name, `%${q}%`),
+        sql`${clinics.specializations}::text ilike ${'%' + q + '%'}`,
+        sql`${clinics.tags}::text ilike ${'%' + q + '%'}`
+      ];
+      conditions.push(sql`(${searchConditions.join(' OR ')})`);
     }
 
     // City filter

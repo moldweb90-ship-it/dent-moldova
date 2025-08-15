@@ -15,17 +15,29 @@ async function seed() {
   await db.delete(cities);
 
   // Create cities
-  const [chisinau, balti] = await db.insert(cities).values([
+  const [chisinau, balti, comrat, tiraspol, cahul, orhei, soroca, ungheni] = await db.insert(cities).values([
     { nameRu: "Кишинёв", nameRo: "Chișinău" },
-    { nameRu: "Бельцы", nameRo: "Bălți" }
+    { nameRu: "Бельцы", nameRo: "Bălți" },
+    { nameRu: "Комрат", nameRo: "Comrat" },
+    { nameRu: "Тирасполь", nameRo: "Tiraspol" },
+    { nameRu: "Кахул", nameRo: "Cahul" },
+    { nameRu: "Орхей", nameRo: "Orhei" },
+    { nameRu: "Сорока", nameRo: "Soroca" },
+    { nameRu: "Унгены", nameRo: "Ungheni" }
   ]).returning();
 
   // Create districts
-  const [centru, botanica, riscani, baltiCentru] = await db.insert(districts).values([
+  const [centru, botanica, riscani, baltiCentru, comratCentru, tiraspolCentru, cahulCentru, orheiCentru, sorocaCentru, ungheniCentru] = await db.insert(districts).values([
     { cityId: chisinau.id, nameRu: "Центр", nameRo: "Centru" },
     { cityId: chisinau.id, nameRu: "Ботаника", nameRo: "Botanica" },
     { cityId: chisinau.id, nameRu: "Рышкань", nameRo: "Rîșcani" },
-    { cityId: balti.id, nameRu: "Центр", nameRo: "Centru" }
+    { cityId: balti.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: comrat.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: tiraspol.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: cahul.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: orhei.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: soroca.id, nameRu: "Центр", nameRo: "Centru" },
+    { cityId: ungheni.id, nameRu: "Центр", nameRo: "Centru" }
   ]).returning();
 
   // Create clinics data
@@ -34,7 +46,7 @@ async function seed() {
     {
       slug: "life-dental-centru",
       name: "Life Dental",
-      logoUrl: "/images/clinics/life-dental.jpg",
+      logoUrl: "/images/clinics/dental-clinic-01.jpg",
       cityId: chisinau.id,
       districtId: centru.id,
       address: "bd. Ștefan cel Mare 100",
@@ -57,7 +69,7 @@ async function seed() {
     {
       slug: "denta-pro-botanica",
       name: "Denta Pro",
-      logoUrl: "/images/clinics/denta-pro.jpg",
+      logoUrl: "/images/clinics/modern-office-02.jpg",
       cityId: chisinau.id,
       districtId: botanica.id,
       address: "str. Dacia 15",
@@ -80,7 +92,7 @@ async function seed() {
     {
       slug: "smilecare-riscani",
       name: "SmileCare",
-      logoUrl: "/images/clinics/smilecare.jpg",
+      logoUrl: "/images/clinics/white-office-03.jpg",
       cityId: chisinau.id,
       districtId: riscani.id,
       address: "str. Alba Iulia 45",
@@ -103,7 +115,7 @@ async function seed() {
     {
       slug: "dental-plus-centru",
       name: "Dental Plus",
-      logoUrl: "/images/clinics/dental-plus.jpg",
+      logoUrl: "/images/clinics/professional-dental-04.jpg",
       cityId: chisinau.id,
       districtId: centru.id,
       address: "bd. Ștefan cel Mare 75",
@@ -126,7 +138,7 @@ async function seed() {
     {
       slug: "family-dental-botanica",
       name: "Family Dental",
-      logoUrl: "/images/clinics/family-dental.jpg",
+      logoUrl: "/images/clinics/family-clinic-05.jpg",
       cityId: chisinau.id,
       districtId: botanica.id,
       address: "str. Calea Iesilor 25",
@@ -149,7 +161,7 @@ async function seed() {
     {
       slug: "modern-dent-riscani",
       name: "Modern Dent",
-      logoUrl: "/images/clinics/modern-dent.jpg",
+      logoUrl: "/images/clinics/contemporary-06.jpg",
       cityId: chisinau.id,
       districtId: riscani.id,
       address: "str. Mihail Kogalniceanu 88",
@@ -172,7 +184,7 @@ async function seed() {
     {
       slug: "white-smile-centru",
       name: "White Smile",
-      logoUrl: "/images/clinics/white-smile.jpg",
+      logoUrl: "/images/clinics/bright-smile-07.jpg",
       cityId: chisinau.id,
       districtId: centru.id,
       address: "str. Puskin 22",
@@ -195,7 +207,7 @@ async function seed() {
     {
       slug: "dentomax-botanica",
       name: "DentoMax",
-      logoUrl: "/images/clinics/dentomax.jpg",
+      logoUrl: "/images/clinics/premium-dental-08.jpg",
       cityId: chisinau.id,
       districtId: botanica.id,
       address: "str. Independentei 55",
@@ -218,7 +230,7 @@ async function seed() {
     {
       slug: "clinic-32-riscani",
       name: "Клиника 32",
-      logoUrl: "/images/clinics/clinic-32.jpg",
+      logoUrl: "/images/clinics/comfort-clinic-09.jpg",
       cityId: chisinau.id,
       districtId: riscani.id,
       address: "bd. Moscovei 125",
@@ -241,7 +253,7 @@ async function seed() {
     {
       slug: "brilliant-dental-centru",
       name: "Brilliant Dental",
-      logoUrl: "/images/clinics/brilliant-dental.jpg",
+      logoUrl: "/images/clinics/luxury-dental-10.jpg",
       cityId: chisinau.id,
       districtId: centru.id,
       address: "str. Armeneasca 15",
@@ -264,7 +276,7 @@ async function seed() {
     {
       slug: "dental-art-botanica",
       name: "Dental Art",
-      logoUrl: "/images/clinics/dental-art.jpg",
+      logoUrl: "/images/clinics/artistic-dental-11.jpg",
       cityId: chisinau.id,
       districtId: botanica.id,
       address: "str. Tighina 35",
@@ -287,7 +299,7 @@ async function seed() {
     {
       slug: "perfect-smile-riscani",
       name: "Perfect Smile",
-      logoUrl: "/images/clinics/perfect-smile.jpg",
+      logoUrl: "/images/clinics/perfect-care-12.jpg",
       cityId: chisinau.id,
       districtId: riscani.id,
       address: "str. Vadul lui Voda 88",
@@ -312,7 +324,7 @@ async function seed() {
     {
       slug: "kidssmile-balti",
       name: "KidsSmile",
-      logoUrl: "/images/clinics/kidssmile.jpg",
+      logoUrl: "/images/clinics/children-clinic-13.jpg",
       cityId: balti.id,
       districtId: baltiCentru.id,
       address: "str. Stefan cel Mare 45",
@@ -335,7 +347,7 @@ async function seed() {
     {
       slug: "nord-dental-balti",
       name: "Nord Dental",
-      logoUrl: "/images/clinics/nord-dental.jpg",
+      logoUrl: "/images/clinics/northern-dental-14.jpg",
       cityId: balti.id,
       districtId: baltiCentru.id,
       address: "str. Independentei 12",
@@ -358,7 +370,7 @@ async function seed() {
     {
       slug: "balti-smile-center",
       name: "Bălți Smile Center",
-      logoUrl: "/images/clinics/balti-smile.jpg",
+      logoUrl: "/images/clinics/smile-center-15.jpg",
       cityId: balti.id,
       districtId: baltiCentru.id,
       address: "str. Vasile Alecsandri 8",
@@ -376,6 +388,131 @@ async function seed() {
       trustIndex: 88,
       reviewsIndex: 83,
       accessIndex: 85,
+      dScore: 0
+    },
+
+    // Comrat clinics
+    {
+      slug: "comrat-dental-center",
+      name: "Comrat Dental Center",
+      logoUrl: "/images/clinics/southern-clinic-16.jpg",
+      cityId: comrat.id,
+      districtId: comratCentru.id,
+      address: "str. Lenin 25",
+      phone: "+373 29 000 100",
+      website: "https://comratdental.md",
+      bookingUrl: "/book/comrat-dental-center",
+      languages: ["ru", "ro", "bg"],
+      specializations: ["hygiene", "endo", "implants"],
+      tags: ["региональный центр", "опыт"],
+      verified: true,
+      cnam: true,
+      availToday: true,
+      availTomorrow: true,
+      priceIndex: 58,
+      trustIndex: 75,
+      reviewsIndex: 68,
+      accessIndex: 72,
+      dScore: 0
+    },
+
+    // Tiraspol clinic
+    {
+      slug: "pridnestrovie-smile",
+      name: "Приднестровье Смайл",
+      logoUrl: "/images/clinics/east-clinic-17.jpg",
+      cityId: tiraspol.id,
+      districtId: tiraspolCentru.id,
+      address: "ул. 25 Октября 45",
+      phone: "+373 53 000 100",
+      website: "https://pridnestroviesmile.md",
+      bookingUrl: "/book/pridnestrovie-smile",
+      languages: ["ru", "ro"],
+      specializations: ["hygiene", "ortho", "kids"],
+      tags: ["семейная стоматология", "рассрочка"],
+      verified: false,
+      cnam: false,
+      availToday: false,
+      availTomorrow: true,
+      priceIndex: 72,
+      trustIndex: 65,
+      reviewsIndex: 58,
+      accessIndex: 68,
+      dScore: 0
+    },
+
+    // Cahul clinic
+    {
+      slug: "south-dental-cahul",
+      name: "South Dental",
+      logoUrl: "/images/clinics/border-clinic-18.jpg",
+      cityId: cahul.id,
+      districtId: cahulCentru.id,
+      address: "str. Stefan cel Mare 88",
+      phone: "+373 29 200 100",
+      website: "https://southdental.md",
+      bookingUrl: "/book/south-dental-cahul",
+      languages: ["ro", "ru"],
+      specializations: ["implants", "hygiene", "veneers"],
+      tags: ["современное оборудование", "качество"],
+      verified: true,
+      cnam: true,
+      availToday: true,
+      availTomorrow: false,
+      priceIndex: 48,
+      trustIndex: 82,
+      reviewsIndex: 75,
+      accessIndex: 78,
+      dScore: 0
+    },
+
+    // Orhei clinic
+    {
+      slug: "orhei-family-dental",
+      name: "Orhei Family Dental",
+      logoUrl: "/images/clinics/countryside-19.jpg",
+      cityId: orhei.id,
+      districtId: orheiCentru.id,
+      address: "str. Vasile Lupu 12",
+      phone: "+373 23 500 100",
+      website: "https://orheifamily.md",
+      bookingUrl: "/book/orhei-family-dental",
+      languages: ["ru", "ro"],
+      specializations: ["hygiene", "endo", "kids"],
+      tags: ["семейный подход", "уют"],
+      verified: false,
+      cnam: true,
+      availToday: true,
+      availTomorrow: true,
+      priceIndex: 65,
+      trustIndex: 72,
+      reviewsIndex: 68,
+      accessIndex: 75,
+      dScore: 0
+    },
+
+    // Soroca clinic
+    {
+      slug: "soroca-modern-dental",
+      name: "Soroca Modern Dental",
+      logoUrl: "/images/clinics/fortress-clinic-20.jpg",
+      cityId: soroca.id,
+      districtId: sorocaCentru.id,
+      address: "str. Independentei 33",
+      phone: "+373 23 000 555",
+      website: "https://sorocamodern.md",
+      bookingUrl: "/book/soroca-modern-dental",
+      languages: ["ru", "ro"],
+      specializations: ["implants", "ortho", "hygiene"],
+      tags: ["северная Молдова", "профессионализм"],
+      verified: true,
+      cnam: false,
+      availToday: false,
+      availTomorrow: true,
+      priceIndex: 52,
+      trustIndex: 78,
+      reviewsIndex: 72,
+      accessIndex: 80,
       dScore: 0
     }
   ];
