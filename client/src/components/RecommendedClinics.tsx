@@ -31,6 +31,44 @@ const promotionalLabelText: Record<string, string> = {
 };
 
 export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedClinicsProps) {
+  // Определяем стиль рамки для выделения
+  const getPromotionalBorder = (clinic: any) => {
+    if (!clinic.promotionalLabels || clinic.promotionalLabels.length === 0) return '';
+    
+    const label = clinic.promotionalLabels[0];
+    const borderStyles: Record<string, string> = {
+      top: 'border-4 border-yellow-400 shadow-lg shadow-yellow-400/50',
+      premium: 'border-4 border-purple-400 shadow-lg shadow-purple-400/50',
+      high_rating: 'border-4 border-green-400 shadow-lg shadow-green-400/50',
+      verified_plus: 'border-4 border-blue-400 shadow-lg shadow-blue-400/50',
+      popular: 'border-4 border-red-400 shadow-lg shadow-red-400/50',
+      new: 'border-4 border-orange-400 shadow-lg shadow-orange-400/50',
+      discount: 'border-4 border-pink-400 shadow-lg shadow-pink-400/50',
+      fast_service: 'border-4 border-teal-400 shadow-lg shadow-teal-400/50'
+    };
+    
+    return borderStyles[label] || '';
+  };
+
+  // Получаем иконку для лейбла
+  const getPromotionalIcon = (clinic: any) => {
+    if (!clinic.promotionalLabels || clinic.promotionalLabels.length === 0) return null;
+    
+    const label = clinic.promotionalLabels[0];
+    const icons: Record<string, string> = {
+      top: '👑',
+      premium: '💎', 
+      high_rating: '⭐',
+      verified_plus: '✅',
+      popular: '🔥',
+      new: '🆕',
+      discount: '💰',
+      fast_service: '⚡'
+    };
+    
+    return icons[label] || '✨';
+  };
+
   const { data: clinicsData, isLoading } = useQuery({
     queryKey: ['/api/recommended-clinics'],
     queryFn: async () => {
@@ -83,7 +121,7 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
         {clinics.map((clinic: any) => (
           <div
             key={clinic.id}
-            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden"
+            className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden ${getPromotionalBorder(clinic)}`}
             onClick={() => onClinicClick(clinic.slug)}
           >
             {/* Recommended Badge */}
@@ -94,19 +132,6 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
               </Badge>
             </div>
 
-            {/* Promotional Labels */}
-            {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
-              <div className="absolute top-3 right-3 z-10 space-x-1">
-                {clinic.promotionalLabels.slice(0, 2).map((label: string) => (
-                  <Badge 
-                    key={label}
-                    className={`text-xs font-bold ${promotionalLabelStyles[label] || 'bg-gray-500 text-white'}`}
-                  >
-                    {promotionalLabelText[label] || label}
-                  </Badge>
-                ))}
-              </div>
-            )}
 
             {/* Clinic Image */}
             <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden relative">
@@ -128,9 +153,17 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
 
             {/* Clinic Info */}
             <div className="p-4">
-              <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                {clinic.name}
-              </h3>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-lg text-gray-900">
+                  {clinic.name}
+                </h3>
+                {/* Promotional icon next to name */}
+                {getPromotionalIcon(clinic) && (
+                  <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md flex-shrink-0">
+                    {getPromotionalIcon(clinic)}
+                  </div>
+                )}
+              </div>
               
               <div className="space-y-2 mb-3">
                 <div className="flex items-center text-gray-600 text-sm">
