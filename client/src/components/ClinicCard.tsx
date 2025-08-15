@@ -184,7 +184,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="mb-1">
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-1">
                 <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight flex-1">{clinic.name}</h3>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {/* Recommended badge next to name */}
