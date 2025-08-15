@@ -158,14 +158,6 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         )}
       </div>
 
-      {/* Promotional icon in top right */}
-      {getPromotionalIcon() && (
-        <div className="absolute top-3 right-3 z-10">
-          <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-lg shadow-lg">
-            {getPromotionalIcon()}
-          </div>
-        </div>
-      )}
 
 
       {/* Always visible content */}
@@ -173,7 +165,15 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="text-base md:text-lg font-bold mb-1 drop-shadow-lg leading-tight">{clinic.name}</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-base md:text-lg font-bold drop-shadow-lg leading-tight">{clinic.name}</h3>
+              {/* Promotional icon next to name */}
+              {getPromotionalIcon() && (
+                <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md flex-shrink-0">
+                  {getPromotionalIcon()}
+                </div>
+              )}
+            </div>
             <p className="text-xs md:text-sm drop-shadow-md opacity-90 mb-2">
               {language === 'ru' ? clinic.city.nameRu : clinic.city.nameRo}
               {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
