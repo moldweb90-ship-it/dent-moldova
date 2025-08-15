@@ -18,7 +18,7 @@ import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 const clinicSchema = z.object({
   name: z.string().min(2, 'Название должно содержать минимум 2 символа'),
   cityId: z.string().min(1, 'Выберите город'),
-  districtId: z.string().optional(),
+  district: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
   website: z.string().optional(),
@@ -60,7 +60,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
     defaultValues: {
       name: clinic?.name || '',
       cityId: clinic?.cityId || '',
-      districtId: clinic?.districtId || '',
+      district: clinic?.district || '',
       address: clinic?.address || '',
       phone: clinic?.phone || '',
       website: clinic?.website || '',
@@ -278,10 +278,10 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
 
           {/* District Input */}
           <div>
-            <Label htmlFor="districtId">Район</Label>
+            <Label htmlFor="district">Район</Label>
             <Input
-              id="districtId"
-              {...form.register('districtId')}
+              id="district"
+              {...form.register('district')}
               placeholder="Введите район (необязательно)"
             />
           </div>

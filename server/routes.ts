@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().min(1, 'Название обязательно'),
         cityId: z.string().min(1, 'Город обязателен'),
-        districtId: z.string().optional().transform(val => val && val.trim() !== '' ? val : undefined),
+        district: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -175,12 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const clinicData = clinicSchema.parse(req.body);
       
-      // Clean districtId - remove if empty or undefined
-      if (!clinicData.districtId || clinicData.districtId.trim() === '') {
-        delete (clinicData as any).districtId;
-      }
-      
-      console.log('Creating clinic with districtId:', clinicData.districtId);
+      console.log('Creating clinic with district:', clinicData.district);
       
       // Generate slug from name
       const slug = clinicData.name.toLowerCase()
@@ -232,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clinicSchema = z.object({
         name: z.string().optional(),
         cityId: z.string().optional(),
-        districtId: z.string().optional().transform(val => val && val.trim() !== '' ? val : undefined),
+        district: z.string().optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
         website: z.string().optional(),
@@ -255,12 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedUpdates = clinicSchema.parse(req.body);
       const updates: any = { ...parsedUpdates };
       
-      // Clean districtId - remove if empty or undefined
-      if (!updates.districtId || updates.districtId.trim() === '') {
-        delete updates.districtId;
-      }
-      
-      console.log('Updating clinic with districtId:', updates.districtId);
+      console.log('Updating clinic with district:', updates.district);
       
       // Update logo if uploaded
       if (req.file) {

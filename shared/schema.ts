@@ -25,6 +25,7 @@ export const clinics = pgTable("clinics", {
   logoUrl: text("logo_url"),
   cityId: varchar("city_id").notNull().references(() => cities.id),
   districtId: varchar("district_id").references(() => districts.id),
+  district: text("district"), // Free text district name
   address: text("address"),
   phone: text("phone"),
   website: text("website"),
