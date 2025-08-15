@@ -79,11 +79,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/auth/login', async (req: any, res) => {
     try {
       const { username, password } = req.body;
+      console.log('Login attempt:', { username, password, expectedUser: ADMIN_USERNAME, expectedPass: ADMIN_PASSWORD });
       
       if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         req.session.isAdminAuthenticated = true;
+        console.log('Login successful for:', username);
         res.json({ success: true, message: 'Успешный вход в админ панель' });
       } else {
+        console.log('Login failed - wrong credentials');
         res.status(401).json({ message: 'Неверный логин или пароль' });
       }
     } catch (error) {
