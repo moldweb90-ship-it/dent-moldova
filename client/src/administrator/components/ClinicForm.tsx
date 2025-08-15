@@ -303,6 +303,7 @@ export function ClinicForm({ clinic, onSuccess, onCancel }: ClinicFormProps) {
                   <SelectValue placeholder="Выберите район" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">Без района</SelectItem>
                   {districts?.map((district: any) => (
                     <SelectItem key={district.id} value={district.id}>
                       {district.nameRu}
