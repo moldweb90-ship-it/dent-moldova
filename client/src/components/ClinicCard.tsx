@@ -21,6 +21,7 @@ interface Clinic {
   logoUrl?: string;
   city: { nameRu: string; nameRo: string };
   district?: { nameRu: string; nameRo: string } | null;
+  address?: string;
   languages: string[];
   specializations: string[];
   tags: string[];
@@ -90,23 +91,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on buttons
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
+    if ((e.target as HTMLElement).closest('button')) {
       return;
     }
     onClinicClick(clinic.slug);
-  };
-
-  const handleCardMouseDown = (e: React.MouseEvent) => {
-    // Faster response on mouse down for better feel
-    const target = e.target as HTMLElement;
-    if (target.tagName !== 'BUTTON' && !target.closest('button')) {
-      e.currentTarget.style.transform = 'scale(0.98)';
-    }
-  };
-
-  const handleCardMouseUp = (e: React.MouseEvent) => {
-    e.currentTarget.style.transform = '';
   };
 
   const handleBookClick = (e: React.MouseEvent) => {
@@ -163,10 +151,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
 
   return (
     <div 
-      className={`relative rounded-2xl overflow-hidden cursor-pointer aspect-[3/4] md:aspect-[4/3] group transition-transform duration-75 hover:scale-[1.02] active:scale-[0.98] ${getPromotionalBorder()}`}
+      className={`relative rounded-2xl overflow-hidden cursor-pointer aspect-[3/4] md:aspect-[4/3] group ${getPromotionalBorder()}`}
       onClick={handleCardClick}
-      onMouseDown={handleCardMouseDown}
-      onMouseUp={handleCardMouseUp}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -222,6 +208,11 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             
             {/* Address and badges */}
             <div className="flex flex-wrap gap-1 mb-2">
+              {clinic.address && (
+                <span className="px-1.5 md:px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full backdrop-blur-sm">
+                  📍 {clinic.address}
+                </span>
+              )}
               {clinic.verified && (
                 <span className="px-1.5 md:px-2 py-0.5 bg-green-500 bg-opacity-80 text-white text-xs rounded-full">
                   {t('verifiedBadge')}
@@ -262,7 +253,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         </div>
 
         {/* Bottom section - Action Buttons - always visible */}
-        <div className={`flex space-x-2 transition-opacity duration-150 ${isHovered ? 'opacity-100' : 'opacity-90'}`}>
+        <div className={`flex space-x-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-90'}`}>
           <Button 
             onClick={handleBookClick}
             className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-lg text-xs md:text-sm"
@@ -282,10 +273,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
       </div>
 
       {/* Hover overlay - Progress bars only */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-200 pointer-events-none ${
+      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none ${
         isHovered ? 'bg-black bg-opacity-40' : 'bg-transparent'
       }`}>
-        <div className={`text-white transform transition-all duration-150 ${
+        <div className={`text-white transform transition-all duration-300 ${
           isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}>
           {/* Progress bars - only visible on hover */}
@@ -298,7 +289,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1 md:h-1.5 rounded-full transition-all duration-300 ${getDScoreColor(100 - clinic.priceIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-100 ${getDScoreColor(100 - clinic.priceIndex)}`}
                     style={{ width: isHovered ? `${100 - clinic.priceIndex}%` : '0%' }}
                   />
                 </div>
@@ -311,7 +302,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1 md:h-1.5 rounded-full transition-all duration-300 delay-100 ${getDScoreColor(clinic.trustIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-200 ${getDScoreColor(clinic.trustIndex)}`}
                     style={{ width: isHovered ? `${clinic.trustIndex}%` : '0%' }}
                   />
                 </div>
@@ -326,7 +317,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1 md:h-1.5 rounded-full transition-all duration-300 delay-150 ${getDScoreColor(clinic.reviewsIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-300 ${getDScoreColor(clinic.reviewsIndex)}`}
                     style={{ width: isHovered ? `${clinic.reviewsIndex}%` : '0%' }}
                   />
                 </div>
@@ -339,7 +330,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5">
                   <div 
-                    className={`h-1 md:h-1.5 rounded-full transition-all duration-300 delay-200 ${getDScoreColor(clinic.accessIndex)}`}
+                    className={`h-1 md:h-1.5 rounded-full transition-all duration-700 delay-400 ${getDScoreColor(clinic.accessIndex)}`}
                     style={{ width: isHovered ? `${clinic.accessIndex}%` : '0%' }}
                   />
                 </div>
