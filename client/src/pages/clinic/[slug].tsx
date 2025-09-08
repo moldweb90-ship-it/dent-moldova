@@ -482,7 +482,17 @@ export default function ClinicPage() {
               </Card>
 
               {/* Reviews */}
-              <ReviewsList clinicId={clinic.id} />
+              <Card>
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                    Отзывы пациентов
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ReviewsList clinicId={clinic.id} cardStyle={true} />
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

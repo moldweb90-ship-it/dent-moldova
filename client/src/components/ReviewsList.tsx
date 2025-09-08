@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '../lib/i18n';
 import { Star, Quote, User, Calendar } from 'lucide-react';
@@ -18,6 +18,7 @@ interface Review {
 interface ReviewsListProps {
   clinicId: string;
   compact?: boolean;
+  cardStyle?: boolean; // Использовать карточный стиль (для страниц) или нет (для модалов)
 }
 
 const StarRating: React.FC<{ rating: number; size?: number }> = ({ rating, size = 16 }) => {
@@ -68,7 +69,8 @@ const StarRating: React.FC<{ rating: number; size?: number }> = ({ rating, size 
 
 const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, compact = false }) => {
   const { t } = useTranslation();
-  
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU', {
@@ -77,6 +79,12 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
       day: 'numeric'
     });
   };
+
+  const maxLength = 100;
+  const shouldTruncate = review.comment && review.comment.length > maxLength;
+  const displayText = shouldTruncate && !isExpanded 
+    ? review.comment.substring(0, maxLength) + '...'
+    : review.comment;
 
   if (compact) {
     return (
@@ -104,9 +112,20 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
         {/* Текст отзыва */}
         {review.comment && (
           <div className="relative">
-            <p className="text-gray-600 text-sm leading-relaxed italic">
-              "{review.comment.substring(0, 100)}{review.comment.length > 100 ? '...' : ''}"
+            <p 
+              className={`text-gray-600 text-sm leading-relaxed italic ${shouldTruncate ? 'cursor-pointer hover:text-gray-800 transition-colors' : ''}`}
+              onClick={() => shouldTruncate && setIsExpanded(!isExpanded)}
+            >
+              "{displayText}"
             </p>
+            {shouldTruncate && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium"
+              >
+                {isExpanded ? 'Свернуть' : 'Читать далее'}
+              </button>
+            )}
           </div>
         )}
         
@@ -150,22 +169,24 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
       </div>
 
       {/* Детальные оценки */}
-      <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">{t('quality')}:</span>
-          <StarRating rating={review.qualityRating} size={16} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">{t('service')}:</span>
-          <StarRating rating={review.serviceRating} size={16} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">{t('comfort')}:</span>
-          <StarRating rating={review.comfortRating} size={16} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">{t('prices')}:</span>
-          <StarRating rating={review.priceRating} size={16} />
+      <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div className="grid grid-cols-2 gap-6">
+          <div className="text-center">
+            <div className="text-sm font-medium text-gray-900 mb-2">Качество</div>
+            <StarRating rating={review.qualityRating} size={16} />
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-medium text-gray-900 mb-2">Сервис</div>
+            <StarRating rating={review.serviceRating} size={16} />
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-medium text-gray-900 mb-2">Комфорт</div>
+            <StarRating rating={review.comfortRating} size={16} />
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-medium text-gray-900 mb-2">Цены</div>
+            <StarRating rating={review.priceRating} size={16} />
+          </div>
         </div>
       </div>
 
@@ -174,9 +195,20 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
         <div className="relative">
           <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-blue-400 to-purple-500 rounded-full opacity-20"></div>
           <div className="pl-6">
-            <p className="text-gray-700 leading-relaxed text-base italic">
-              "{review.comment}"
+            <p 
+              className={`text-gray-700 leading-relaxed text-base italic ${shouldTruncate ? 'cursor-pointer hover:text-gray-900 transition-colors' : ''}`}
+              onClick={() => shouldTruncate && setIsExpanded(!isExpanded)}
+            >
+              "{displayText}"
             </p>
+            {shouldTruncate && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium"
+              >
+                {isExpanded ? 'Свернуть' : 'Читать далее'}
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -184,7 +216,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
   );
 };
 
-export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = false }) => {
+export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = false, cardStyle = false }) => {
   const { t } = useTranslation();
 
   const { data: reviewsData, isLoading, error } = useQuery({
@@ -202,6 +234,33 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
 
   if (isLoading) {
     const loadingItemCount = compact ? 2 : 3;
+    
+    if (cardStyle) {
+      return (
+        <div className="space-y-4">
+          {/* Скелетон метрики */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 animate-pulse">
+            <div className="h-4 w-20 bg-gray-300 rounded"></div>
+            <div className="h-4 w-16 bg-gray-300 rounded"></div>
+          </div>
+          {/* Скелетоны отзывов */}
+          <div className="space-y-4">
+            {Array.from({ length: loadingItemCount }).map((_, i) => (
+              <div key={i} className="rounded-2xl p-6 bg-white border border-gray-100 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="h-4 w-32 bg-gray-300 rounded mb-2"></div>
+                    <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="h-16 bg-gray-200 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div className="space-y-6">
@@ -240,6 +299,18 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
   }
 
   if (error) {
+    if (cardStyle) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Star size={24} className="text-red-500" />
+          </div>
+          <p className="text-red-600 font-medium">Ошибка загрузки отзывов</p>
+          <p className="text-gray-500 text-sm mt-1">Попробуйте обновить страницу</p>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
         <div className={compact ? "bg-white rounded-lg border border-gray-100 p-4" : "bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-100 p-6"}>
@@ -269,6 +340,22 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
   const reviews = reviewsData?.reviews || [];
 
   if (reviews.length === 0) {
+    if (cardStyle) {
+      return (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Star size={28} className="text-blue-400" />
+          </div>
+          <h4 className="text-base font-semibold text-gray-700 mb-2">
+            Пока нет отзывов
+          </h4>
+          <p className="text-sm text-gray-500 max-w-xs mx-auto">
+            Станьте первым, кто оставит отзыв о клинике
+          </p>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
         <div className={compact ? "bg-white rounded-lg border border-gray-100 p-4" : "bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-gray-100 p-6"}>
@@ -320,6 +407,47 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
     ? "text-base font-semibold" 
     : "text-lg font-semibold";
 
+  // Для карточного стиля (в Card на странице) не показываем заголовок, он уже есть в CardHeader
+  if (cardStyle) {
+    return (
+      <div className="space-y-4">
+        {/* Метрика рейтинга */}
+        {reviews.length > 0 && (
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-600">
+                {reviews.length} отзывов
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <StarRating rating={reviews.reduce((acc, r) => acc + r.averageRating, 0) / reviews.length} size={16} />
+              <span className="text-sm font-medium text-gray-700">
+                {(reviews.reduce((acc, r) => acc + r.averageRating, 0) / reviews.length).toFixed(1)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Список отзывов */}
+        <div className="space-y-4">
+          {reviews.map((review) => (
+            <ReviewCard key={review.id} review={review} compact={false} />
+          ))}
+        </div>
+
+        {/* Кнопка "Показать больше" */}
+        {reviewsData?.total > reviews.length && (
+          <div className="text-center pt-2">
+            <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
+              Показать больше отзывов
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Обычный стиль для модалов
   const headerContainerClass = compact 
     ? "bg-white rounded-lg border border-gray-100 p-4" 
     : "bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-gray-100 p-6";

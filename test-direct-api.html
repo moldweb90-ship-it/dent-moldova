@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Direct API</title>
+</head>
+<body>
+    <h1>Test Direct API</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testDirectAPI() {
+            const clinicId = '50700388-9022-46bf-ace0-8e2335b744bb';
+            const url = `http://localhost:5000/api/clinics/${clinicId}/reviews?status=approved&limit=1000`;
+            
+            try {
+                console.log('🔍 Testing direct API call to:', url);
+                const response = await fetch(url);
+                console.log('🔍 Response status:', response.status);
+                console.log('🔍 Response ok:', response.ok);
+                
+                const data = await response.json();
+                console.log('🔍 Response data:', data);
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>Response Status: ${response.status}</h2>
+                    <h3>Reviews Count: ${data.reviews ? data.reviews.length : 0}</h3>
+                    <h3>Reviews Array:</h3>
+                    <pre>${JSON.stringify(data.reviews, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('🔍 Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h2>Error:</h2>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        testDirectAPI();
+    </script>
+</body>
+</html>

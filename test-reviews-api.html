@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Reviews API</title>
+</head>
+<body>
+    <h1>Test Reviews API</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testReviewsAPI() {
+            const clinicId = '50700388-9022-46bf-ace0-8e2335b744bb';
+            const url = `http://localhost:5000/api/clinics/${clinicId}/reviews?status=approved&limit=1000`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>Response Status: ${response.status}</h2>
+                    <h3>Reviews Count: ${data.reviews ? data.reviews.length : 0}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h2>Error:</h2>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        testReviewsAPI();
+    </script>
+</body>
+</html>

@@ -12,6 +12,8 @@ import { toast } from '@/hooks/use-toast';
 import { WorkingHoursDisplay } from './WorkingHoursDisplay';
 import { Tooltip } from './Tooltip';
 import { useClinicRating } from '../hooks/useClinicRating';
+import { useClinicRealRatings } from '../hooks/useClinicRealRatings';
+import { AnimatedStarRating } from './AnimatedStarRating';
 
 interface Service {
   id: string;
@@ -66,6 +68,51 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
   
   // Получаем реальный рейтинг на основе отзывов
   const { ratingData } = useClinicRating(clinic.id);
+  
+  // Получаем детальные рейтинги из отзывов
+  const { data: realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRealRatings(clinic.id);
+  
+  // Принудительная отладка для Life Dental Чеканы
+  if (clinic.id === '50700388-9022-46bf-ace0-8e2335b744bb') {
+    console.log('🔍 Life Dental Чеканы - ClinicCard render:', {
+      clinicId: clinic.id,
+      realRatings,
+      ratingsLoading,
+      ratingsError,
+      hasRating: realRatings?.hasRating,
+      isHovered,
+      shouldShowOverlay: isHovered
+    });
+  }
+  
+            // Отладка рейтингов
+            console.log('🔍 ClinicCard:', {
+              clinicId: clinic.id,
+              clinicName: clinic.nameRu,
+              realRatings,
+              ratingsLoading,
+              ratingsError,
+              hasRating: realRatings?.hasRating,
+              isHovered,
+              shouldShowOverlay: isHovered
+            });
+  
+  // Принудительная проверка для Life Dental Чеканы
+  if (clinic.id === '50700388-9022-46bf-ace0-8e2335b744bb') {
+    console.log('🔍 Life Dental Чеканы - принудительная проверка:', {
+      clinicId: clinic.id,
+      realRatings,
+      hasRating: realRatings?.hasRating,
+      ratingsLoading,
+      ratingsError,
+      qualityRating: realRatings?.qualityRating,
+      serviceRating: realRatings?.serviceRating,
+      comfortRating: realRatings?.comfortRating,
+      priceRating: realRatings?.priceRating,
+      isHovered,
+      shouldShowOverlay: isHovered
+    });
+  }
   
   // Отладка названий клиник (временно отключено)
   // console.log('🔍 ClinicCard names:', {
@@ -400,97 +447,75 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
         )}
       </div>
 
-      {/* Hover overlay - Progress bars only */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none z-20 ${
-        isHovered ? 'bg-black bg-opacity-40' : 'bg-transparent'
-      }`}>
-        <div className={`text-white transform transition-all duration-300 ${
-          isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}>
-          {/* Progress bars - only visible on hover */}
-          <div className="space-y-1.5 md:space-y-2 bg-black bg-opacity-80 p-2 md:p-4 rounded-lg backdrop-blur-sm mx-2 shadow-xl">
-            <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
-              <div>
-                <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('quality')}</span>
-                  <AnimatedNumber
-                    value={isHovered ? clinic.reviewsIndex : 0}
-                    className="text-xs"
-                    duration={700}
+      {/* Hover overlay - Real ratings with stars */}
+      {isHovered && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 transition-all duration-300 pointer-events-none z-20">
+          <div className="text-white transform transition-all duration-300 translate-y-0 opacity-100">
+            {/* Real ratings with animated stars - only visible on hover */}
+            <div className="space-y-1.5 md:space-y-2 bg-black bg-opacity-80 p-2 md:p-4 rounded-lg backdrop-blur-sm mx-2 shadow-xl">
+              <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
+                <div>
+                  <div className="flex justify-between items-center mb-0.5 md:mb-1">
+                    <span className="text-xs">Качество</span>
+                    <span className="text-xs font-medium ml-1">
+                      {realRatings?.qualityRating?.toFixed(1) || '0.0'}
+                    </span>
+                  </div>
+                  <AnimatedStarRating
+                    rating={realRatings?.qualityRating || 0}
+                    size="sm"
                     delay={100}
                   />
                 </div>
-                <AnimatedProgressBar
-                  value={isHovered ? clinic.reviewsIndex : 0}
-                  className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5"
-                  barClassName={`h-1 md:h-1.5 rounded-full ${getDScoreColor(clinic.reviewsIndex)}`}
-                  duration={700}
-                  delay={100}
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('service')}</span>
-                  <AnimatedNumber
-                    value={isHovered ? clinic.trustIndex : 0}
-                    className="text-xs"
-                    duration={700}
+                
+                <div>
+                  <div className="flex justify-between items-center mb-0.5 md:mb-1">
+                    <span className="text-xs">Сервис</span>
+                    <span className="text-xs font-medium ml-1">
+                      {realRatings?.serviceRating?.toFixed(1) || '0.0'}
+                    </span>
+                  </div>
+                  <AnimatedStarRating
+                    rating={realRatings?.serviceRating || 0}
+                    size="sm"
                     delay={200}
                   />
                 </div>
-                <AnimatedProgressBar
-                  value={isHovered ? clinic.trustIndex : 0}
-                  className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5"
-                  barClassName={`h-1 md:h-1.5 rounded-full ${getDScoreColor(clinic.trustIndex)}`}
-                  duration={700}
-                  delay={200}
-                />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
-              <div>
-                <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('price')}</span>
-                  <AnimatedNumber
-                    value={isHovered ? clinic.priceIndex : 0}
-                    className="text-xs"
-                    duration={700}
+              
+              <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
+                <div>
+                  <div className="flex justify-between items-center mb-0.5 md:mb-1">
+                    <span className="text-xs">Цены</span>
+                    <span className="text-xs font-medium ml-1">
+                      {realRatings?.priceRating?.toFixed(1) || '0.0'}
+                    </span>
+                  </div>
+                  <AnimatedStarRating
+                    rating={realRatings?.priceRating || 0}
+                    size="sm"
                     delay={300}
                   />
                 </div>
-                <AnimatedProgressBar
-                  value={isHovered ? clinic.priceIndex : 0}
-                  className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5"
-                  barClassName={`h-1 md:h-1.5 rounded-full ${getDScoreColor(clinic.priceIndex)}`}
-                  duration={700}
-                  delay={300}
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('comfort')}</span>
-                  <AnimatedNumber
-                    value={isHovered ? clinic.accessIndex : 0}
-                    className="text-xs"
-                    duration={700}
+                
+                <div>
+                  <div className="flex justify-between items-center mb-0.5 md:mb-1">
+                    <span className="text-xs">Комфорт</span>
+                    <span className="text-xs font-medium ml-1">
+                      {realRatings?.comfortRating?.toFixed(1) || '0.0'}
+                    </span>
+                  </div>
+                  <AnimatedStarRating
+                    rating={realRatings?.comfortRating || 0}
+                    size="sm"
                     delay={400}
                   />
                 </div>
-                <AnimatedProgressBar
-                  value={isHovered ? clinic.accessIndex : 0}
-                  className="w-full bg-white bg-opacity-20 rounded-full h-1 md:h-1.5"
-                  barClassName={`h-1 md:h-1.5 rounded-full ${getDScoreColor(clinic.accessIndex)}`}
-                  duration={700}
-                  delay={400}
-                />
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Verification Modal */}
       {showVerificationModal && (

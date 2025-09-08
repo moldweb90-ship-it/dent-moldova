@@ -261,7 +261,6 @@ export const ru = {
   experience: "Опыт",
   convenience: "Удобство",
   quality: "Качество",
-  service: "Сервис",
   comfort: "Комфорт",
   
   // Система отзывов
@@ -293,7 +292,6 @@ export const ru = {
   beFirstReview: "Станьте первым, кто оставит отзыв о клинике",
   reviewsLoadError: "Ошибка загрузки отзывов",
   showMoreReviews: "Показать больше отзывов",
-  prices: "Цены",
   
   details: "Подробнее",
   detailsShort: "Подробно",

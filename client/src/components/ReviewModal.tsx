@@ -53,7 +53,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
   };
 
   const handleSubmit = async () => {
-    if (averageRating === 0) {
+    if (averageRating === 0 || !authorName.trim() || !authorEmail.trim()) {
       return;
     }
 
@@ -109,7 +109,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
     }
   };
 
-  const isFormValid = averageRating > 0;
+  const isFormValid = averageRating > 0 && authorName.trim() && authorEmail.trim();
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -142,7 +142,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('yourName')}
+                  {t('yourName')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -151,13 +151,13 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
                   placeholder={t('enterYourName')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   maxLength={100}
+                  required
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('yourEmail')}
-                  <span className="text-xs text-gray-500 ml-1">({t('optional')})</span>
+                  {t('yourEmail')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -166,6 +166,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
                   placeholder={t('enterYourEmail')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   maxLength={150}
+                  required
                 />
               </div>
             </div>

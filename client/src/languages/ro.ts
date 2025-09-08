@@ -261,7 +261,6 @@ export const ro = {
   experience: "Experiență",
   convenience: "Conveniență",
   quality: "Calitate",
-  service: "Serviciu",
   comfort: "Comfort",
   
   // Sistemul de recenzii
@@ -293,7 +292,6 @@ export const ro = {
   beFirstReview: "Fii primul care lasă o recenzie despre clinică",
   reviewsLoadError: "Eroare la încărcarea recenziilor",
   showMoreReviews: "Arată mai multe recenzii",
-  prices: "Prețuri",
   
   details: "Detalii",
   detailsShort: "Detalii",

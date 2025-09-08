@@ -1,41 +1,34 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
+  MessageSquare, 
+  Calendar, 
+  User, 
   Star, 
   Check, 
   X, 
-  Trash2, 
-  Eye, 
-  Calendar,
-  User,
-  MessageSquare,
-  Filter,
+  Trash2,
   Search
 } from 'lucide-react';
+import { apiRequest } from '../../lib/utils';
 
 interface Review {
   id: string;
   clinicId: string;
-  authorName?: string;
-  authorEmail?: string;
-  authorPhone?: string;
+  authorName: string;
+  authorEmail: string;
   qualityRating: string;
   serviceRating: string;
   comfortRating: string;
   priceRating: string;
   averageRating: string;
-  comment?: string;
+  comment: string;
   status: 'pending' | 'approved' | 'rejected';
-  ipAddress?: string;
-  userAgent?: string;
   createdAt: string;
   updatedAt: string;
-  approvedAt?: string;
-  rejectedAt?: string;
 }
 
 interface Clinic {
@@ -50,89 +43,86 @@ interface ReviewWithClinic {
 }
 
 export function ReviewsManagement() {
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [selectedReview, setSelectedReview] = useState<ReviewWithClinic | null>(null);
   const queryClient = useQueryClient();
 
   const { data: reviewsData, isLoading, error } = useQuery({
-    queryKey: ['admin-reviews', selectedStatus, page],
+    queryKey: ['admin-reviews', selectedStatus],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '20'
-      });
-      
+      const params = new URLSearchParams();
       if (selectedStatus !== 'all') {
-        params.set('status', selectedStatus);
+        params.append('status', selectedStatus);
       }
-
-      const response = await apiRequest('GET', `/api/admin/reviews?${params}`);
+      
+      const response = await apiRequest('GET', `/api/admin/reviews?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки отзывов');
+      }
       return response.json();
     },
   });
 
-  const updateReviewStatus = async (reviewId: string, status: string) => {
+  const reviews = reviewsData?.reviews || [];
+  const total = reviewsData?.total || 0;
+
+  const updateReviewStatus = async (reviewId: string, status: 'approved' | 'rejected') => {
     try {
-      const response = await fetch(`/api/admin/reviews/${reviewId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-      });
+      console.log('🔍 Updating review status:', { reviewId, status });
+      
+      const response = await apiRequest('PATCH', `/api/admin/reviews/${reviewId}/status`, { status });
 
-      if (!response.ok) throw new Error('Failed to update review status');
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response ok:', response.ok);
 
-      // Обновляем кэш
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 Error response:', errorText);
+        throw new Error('Ошибка обновления статуса');
+      }
+
+      console.log('✅ Review status updated successfully');
       queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
     } catch (error) {
-      console.error('Error updating review status:', error);
+      console.error('❌ Ошибка обновления статуса:', error);
     }
   };
 
   const deleteReview = async (reviewId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) return;
+    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+      return;
+    }
 
     try {
-      const response = await fetch(`/api/admin/reviews/${reviewId}`, {
-        method: 'DELETE',
-      });
+      const response = await apiRequest('DELETE', `/api/admin/reviews/${reviewId}`);
 
-      if (!response.ok) throw new Error('Failed to delete review');
+      if (!response.ok) {
+        throw new Error('Ошибка удаления отзыва');
+      }
 
-      // Обновляем кэш
       queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
     } catch (error) {
-      console.error('Error deleting review:', error);
+      console.error('Ошибка удаления отзыва:', error);
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
-    };
-
-    const labels = {
-      pending: 'Ожидает',
-      approved: 'Одобрен',
-      rejected: 'Отклонен'
-    };
-
-    return (
-      <Badge className={variants[status as keyof typeof variants]}>
-        {labels[status as keyof typeof labels]}
-      </Badge>
-    );
+    switch (status) {
+      case 'pending':
+        return <Badge variant="secondary">Ожидает</Badge>;
+      case 'approved':
+        return <Badge variant="default" className="bg-green-600">Одобрен</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Отклонен</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
   const renderStars = (rating: string) => {
     const numRating = parseFloat(rating);
     const stars = [];
-    
+
     for (let i = 1; i <= 5; i++) {
       if (i <= numRating) {
         stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />);
@@ -142,7 +132,7 @@ export function ReviewsManagement() {
         stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
       }
     }
-    
+
     return <div className="flex space-x-1">{stars}</div>;
   };
 
@@ -166,10 +156,6 @@ export function ReviewsManagement() {
       </div>
     );
   }
-
-  const reviews = reviewsData?.reviews || [];
-  const total = reviewsData?.total || 0;
-  const totalPages = Math.ceil(total / 20);
 
   return (
     <div className="space-y-6">
@@ -216,26 +202,27 @@ export function ReviewsManagement() {
             </CardContent>
           </Card>
         ) : (
-          reviews.map((item: ReviewWithClinic) => (
-            <Card key={item.review.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                  {/* Main Content */}
-                  <div className="flex-1 space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {reviews.map((item: ReviewWithClinic) => (
+              <Card key={item.review.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex flex-col gap-4">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div>
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900">
                           {item.clinic.nameRu}
                         </h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(item.review.createdAt).toLocaleDateString('ru-RU')}</span>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>{new Date(item.review.createdAt).toLocaleDateString('ru-RU')}</span>
+                          </div>
                           {item.review.authorName && (
-                            <>
+                            <div className="flex items-center gap-1">
                               <User className="w-4 h-4" />
                               <span>{item.review.authorName}</span>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -247,28 +234,28 @@ export function ReviewsManagement() {
                     {/* Ratings */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <p className="text-xs text-gray-600 mb-1">Качество</p>
+                        <p className="text-sm text-gray-600 mb-2">Качество</p>
                         <div className="flex justify-center mb-1">
                           {renderStars(item.review.qualityRating)}
                         </div>
                         <p className="text-sm font-medium">{item.review.qualityRating}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-600 mb-1">Сервис</p>
+                        <p className="text-sm text-gray-600 mb-2">Сервис</p>
                         <div className="flex justify-center mb-1">
                           {renderStars(item.review.serviceRating)}
                         </div>
                         <p className="text-sm font-medium">{item.review.serviceRating}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-600 mb-1">Комфорт</p>
+                        <p className="text-sm text-gray-600 mb-2">Комфорт</p>
                         <div className="flex justify-center mb-1">
                           {renderStars(item.review.comfortRating)}
                         </div>
                         <p className="text-sm font-medium">{item.review.comfortRating}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-600 mb-1">Цены</p>
+                        <p className="text-sm text-gray-600 mb-2">Цены</p>
                         <div className="flex justify-center mb-1">
                           {renderStars(item.review.priceRating)}
                         </div>
@@ -277,13 +264,13 @@ export function ReviewsManagement() {
                     </div>
 
                     {/* Average Rating */}
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Средний рейтинг</p>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Средний рейтинг</p>
                       <div className="flex justify-center items-center gap-2">
                         <div className="flex">
                           {renderStars(item.review.averageRating)}
                         </div>
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-xl font-bold text-gray-900">
                           {item.review.averageRating}
                         </span>
                       </div>
@@ -291,102 +278,70 @@ export function ReviewsManagement() {
 
                     {/* Comment */}
                     {item.review.comment && (
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-gray-700">{item.review.comment}</p>
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <p className="text-gray-700 italic">"{item.review.comment}"</p>
                       </div>
                     )}
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 lg:min-w-[200px]">
-                    {item.review.status === 'pending' && (
-                      <>
-                        <Button
-                          onClick={() => updateReviewStatus(item.review.id, 'approved')}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white"
-                          size="sm"
-                        >
-                          <Check className="w-4 h-4 mr-2" />
-                          Одобрить
-                        </Button>
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 pt-4 border-t">
+                      {item.review.status === 'pending' && (
+                        <>
+                          <Button
+                            onClick={() => updateReviewStatus(item.review.id, 'approved')}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            Одобрить
+                          </Button>
+                          <Button
+                            onClick={() => updateReviewStatus(item.review.id, 'rejected')}
+                            variant="outline"
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            Отклонить
+                          </Button>
+                        </>
+                      )}
+
+                      {item.review.status === 'approved' && (
                         <Button
                           onClick={() => updateReviewStatus(item.review.id, 'rejected')}
                           variant="outline"
-                          className="w-full border-red-300 text-red-600 hover:bg-red-50"
-                          size="sm"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
                         >
                           <X className="w-4 h-4 mr-2" />
                           Отклонить
                         </Button>
-                      </>
-                    )}
-                    
-                    {item.review.status === 'approved' && (
+                      )}
+
+                      {item.review.status === 'rejected' && (
+                        <Button
+                          onClick={() => updateReviewStatus(item.review.id, 'approved')}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          Одобрить
+                        </Button>
+                      )}
+
                       <Button
-                        onClick={() => updateReviewStatus(item.review.id, 'rejected')}
+                        onClick={() => deleteReview(item.review.id)}
                         variant="outline"
-                        className="w-full border-red-300 text-red-600 hover:bg-red-50"
-                        size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
                       >
-                        <X className="w-4 h-4 mr-2" />
-                        Отклонить
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Удалить
                       </Button>
-                    )}
-                    
-                    {item.review.status === 'rejected' && (
-                      <Button
-                        onClick={() => updateReviewStatus(item.review.id, 'approved')}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        size="sm"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Одобрить
-                      </Button>
-                    )}
-                    
-                    <Button
-                      onClick={() => deleteReview(item.review.id)}
-                      variant="outline"
-                      className="w-full border-red-300 text-red-600 hover:bg-red-50"
-                      size="sm"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Удалить
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center space-x-2">
-          <Button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            variant="outline"
-            size="sm"
-          >
-            Назад
-          </Button>
-          
-          <span className="flex items-center px-4 py-2 text-sm text-gray-600">
-            Страница {page} из {totalPages}
-          </span>
-          
-          <Button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-            variant="outline"
-            size="sm"
-          >
-            Вперед
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
