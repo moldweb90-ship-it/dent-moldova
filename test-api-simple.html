@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Reviews API</title>
+</head>
+<body>
+    <h1>Test Reviews API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/admin/reviews');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>API Response:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Reviews count: ${data.reviews?.length || 0}</p>
+                    <p>Total: ${data.total || 0}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

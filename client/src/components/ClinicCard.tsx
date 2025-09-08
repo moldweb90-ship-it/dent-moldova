@@ -11,6 +11,7 @@ import { trackClickDetails, trackClickBook, trackClickPhone, trackClickWebsite }
 import { toast } from '@/hooks/use-toast';
 import { WorkingHoursDisplay } from './WorkingHoursDisplay';
 import { Tooltip } from './Tooltip';
+import { useClinicRating } from '../hooks/useClinicRating';
 
 interface Service {
   id: string;
@@ -40,6 +41,8 @@ interface Clinic {
   reviewsIndex: number;
   accessIndex: number;
   dScore: number;
+  googleRating?: number;
+  googleReviewsCount?: number;
   recommended?: boolean;
   promotionalLabels?: string[];
   currency: Currency;
@@ -60,6 +63,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Получаем реальный рейтинг на основе отзывов
+  const { ratingData } = useClinicRating(clinic.id);
   
   // Отладка названий клиник (временно отключено)
   // console.log('🔍 ClinicCard names:', {
@@ -329,21 +335,22 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             </div>
           </div>
           
-          {/* D-Score - always visible */}
-          <div className="flex-shrink-0 ml-2">
-            <div className={`relative w-8 h-8 md:w-10 md:h-10 ${getDScoreColor(clinic.dScore)} rounded-xl flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-lg border-2 border-white/20 backdrop-blur-sm`}>
-              <AnimatedNumber
-                value={clinic.dScore}
-                className="text-white font-bold text-xs md:text-sm"
-                duration={1000}
-                delay={100}
-              />
-              {/* Modern gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
-              {/* Subtle glow effect */}
-              <div className={`absolute inset-0 rounded-xl ${getDScoreColor(clinic.dScore)} opacity-20 blur-sm`}></div>
+          {/* Star Rating - only show if has real rating */}
+          {ratingData.hasRating && (
+            <div className="flex-shrink-0 ml-2">
+              <div className="flex items-center">
+                <svg 
+                  className="w-6 h-6 md:w-7 md:h-7 text-yellow-400 fill-current mr-1" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">
+                  {ratingData.averageRating.toFixed(2)}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -405,7 +412,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
             <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
               <div>
                 <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('googleRating')}</span>
+                  <span className="text-xs">{t('quality')}</span>
                   <AnimatedNumber
                     value={isHovered ? clinic.reviewsIndex : 0}
                     className="text-xs"
@@ -424,7 +431,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               
               <div>
                 <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('experience')}</span>
+                  <span className="text-xs">{t('service')}</span>
                   <AnimatedNumber
                     value={isHovered ? clinic.trustIndex : 0}
                     className="text-xs"
@@ -464,7 +471,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               
               <div>
                 <div className="flex justify-between mb-0.5 md:mb-1">
-                  <span className="text-xs">{t('convenience')}</span>
+                  <span className="text-xs">{t('comfort')}</span>
                   <AnimatedNumber
                     value={isHovered ? clinic.accessIndex : 0}
                     className="text-xs"

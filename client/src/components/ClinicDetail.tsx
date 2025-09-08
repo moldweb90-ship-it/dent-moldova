@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Phone, Globe, ExternalLink, Calendar, Shield, Copy } from 'lucide-react';
+import { X, Phone, Globe, ExternalLink, Calendar, Shield, Copy, Star } from 'lucide-react';
 import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,9 +7,12 @@ import { ScoreBar } from './ScoreBar';
 import { BookingModal } from './BookingModal';
 import { CurrencyConverter } from './CurrencyConverter';
 import { DataSourcesInfo } from './DataSourcesInfo';
+import { ReviewsList } from './ReviewsList';
 import { WorkingHoursDisplay } from './WorkingHoursDisplay';
 import { Tooltip } from './Tooltip';
 import { SosButton } from './SosButton';
+import { ReviewModal } from './ReviewModal';
+import { useClinicRating } from '../hooks/useClinicRating';
 
 
 import { type Currency } from '@/lib/currency';
@@ -68,7 +71,11 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const phoneOptionsRef = useRef<HTMLDivElement>(null);
+  
+  // Получаем реальный рейтинг на основе отзывов
+  const { ratingData } = useClinicRating(clinic?.id || '');
 
   // Закрываем меню телефона при закрытии попапа
   useEffect(() => {
@@ -191,6 +198,25 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
     }
   };
 
+  const handleReviewSubmit = async (reviewData: any) => {
+    try {
+      // Здесь будет API для отправки отзыва
+      console.log('Review submitted:', reviewData);
+      
+      toast({
+        title: t('reviewSubmitted'),
+        description: t('reviewSubmitted'),
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: t('reviewError'),
+        description: t('reviewError'),
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-6xl max-h-[95vh] overflow-y-auto mx-auto z-[9999]">
@@ -217,30 +243,53 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                     {t('cnamBadge')}
                   </span>
                 )}
-                <div className={`relative w-8 h-8 sm:w-10 sm:h-10 ${getDScoreColor(clinic.dScore)} rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-lg border-2 border-white/20 backdrop-blur-sm`} title={t('overallRating')}>
-                  {clinic.dScore}
-                  {/* Modern gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
-                  {/* Subtle glow effect */}
-                  <div className={`absolute inset-0 rounded-xl ${getDScoreColor(clinic.dScore)} opacity-20 blur-sm`}></div>
+                {ratingData.hasRating && (
+                  <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
+                    <svg 
+                      className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 fill-current mr-1" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span className="text-gray-800 font-bold text-sm sm:text-base">
+                      {ratingData.averageRating.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {/* Mobile buttons - рядом с рейтингом */}
+                <div className="sm:hidden flex space-x-2">
+                  <Button
+                    onClick={() => setShowReviewModal(true)}
+                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full"
+                  >
+                    <Star className="h-3 w-3" />
+                  </Button>
+                  
+                  <Button
+                    onClick={handleViewFullPage}
+                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
                 </div>
-                {/* Mobile open button - рядом с рейтингом */}
-                <Button
-                  onClick={handleViewFullPage}
-                  className="sm:hidden flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                </Button>
               </div>
             </div>
-            {/* Desktop button to view full page */}
-            <div className="hidden sm:flex justify-end">
+            {/* Desktop buttons */}
+            <div className="hidden sm:flex justify-end space-x-3">
+              <Button
+                onClick={() => setShowReviewModal(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Star className="h-4 w-4" />
+                <span className="font-medium">{t('leaveReview')}</span>
+              </Button>
+              
               <Button
                 onClick={handleViewFullPage}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 mr-8"
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 <ExternalLink className="h-4 w-4" />
-                <span className="font-medium">{t('viewSeparately')}</span>
+                <span className="font-medium">{t('details')}</span>
               </Button>
             </div>
           </div>
@@ -352,6 +401,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                 )}
               </div>
 
+
               {/* Services and Prices */}
               {clinic.verified && (
                 <div>
@@ -419,100 +469,11 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                 />
               )}
 
-              {/* Score Explanation - Moved to right sidebar */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('scoreExplanation')}</h3>
-                <div className="space-y-3">
-                  {/* Google Rating */}
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">G</span>
-                        </div>
-                        <span className="font-semibold text-blue-900">{t('googleRating')}</span>
-                      </div>
-                      <div className="text-right whitespace-nowrap">
-                        <div className="text-lg font-bold text-blue-900">{clinic.reviewsIndex}<span className="text-xs text-blue-600">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <ScoreBar value={clinic.reviewsIndex} label="" />
-                    </div>
-                    <p className="text-xs text-blue-700">
-                      {t('googleRatingDesc')}
-                    </p>
-                  </div>
-                  
-                  {/* Doctor Experience */}
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">👨‍⚕️</span>
-                        </div>
-                        <span className="font-semibold text-green-900">{t('doctorExperience')}</span>
-                      </div>
-                      <div className="text-right whitespace-nowrap">
-                        <div className="text-lg font-bold text-green-900">{clinic.trustIndex}<span className="text-xs text-green-600">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <ScoreBar value={clinic.trustIndex} label="" />
-                    </div>
-                    <p className="text-xs text-green-700">
-                      {t('doctorExperienceDesc')}
-                    </p>
-                  </div>
-                  
-                  {/* Price Policy */}
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">💰</span>
-                        </div>
-                        <span className="font-semibold text-purple-900">{t('pricePolicy')}</span>
-                      </div>
-                      <div className="text-right whitespace-nowrap">
-                        <div className="text-lg font-bold text-purple-900">{clinic.priceIndex}<span className="text-xs text-purple-600">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <ScoreBar value={clinic.priceIndex} label="" />
-                    </div>
-                    <p className="text-xs text-purple-700">
-                      {t('pricePolicyDesc')}
-                    </p>
-                  </div>
-                  
-                  {/* Booking Convenience */}
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">📅</span>
-                        </div>
-                        <span className="font-semibold text-orange-900">{t('bookingConvenience')}</span>
-                      </div>
-                      <div className="text-right whitespace-nowrap">
-                        <div className="text-lg font-bold text-orange-900">{clinic.accessIndex}<span className="text-xs text-orange-600">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <ScoreBar value={clinic.accessIndex} label="" />
-                    </div>
-                    <p className="text-xs text-orange-700">
-                      {t('bookingConvenienceDesc')}
-                    </p>
-                  </div>
-                </div>
-              </div>
 
 
 
-              {/* Data Sources Info */}
-              <DataSourcesInfo />
+              {/* Reviews */}
+              <ReviewsList clinicId={clinic.id} compact={true} />
             </div>
           </div>
         </div>
@@ -674,6 +635,15 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
           </div>
         </div>
       )}
+
+      {/* Review Modal */}
+      <ReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        clinicId={clinic.id}
+        clinicName={language === 'ru' ? clinic.nameRu : clinic.nameRo}
+        onSubmit={handleReviewSubmit}
+      />
 
     </Dialog>
   );

@@ -11,10 +11,11 @@ import { PackagesManagement } from './components/PackagesManagement';
 import { Statistics } from './components/Statistics';
 import { Settings } from './components/Settings';
 import { NewClinicRequests } from './components/NewClinicRequests';
+import { ReviewsManagement } from './components/ReviewsManagement';
 
 import { apiRequest } from '@/lib/queryClient';
 
-type TabType = 'dashboard' | 'clinics' | 'cities' | 'bookings' | 'verification' | 'new-clinics' | 'packages' | 'statistics' | 'settings';
+type TabType = 'dashboard' | 'clinics' | 'cities' | 'bookings' | 'verification' | 'new-clinics' | 'packages' | 'statistics' | 'settings' | 'reviews';
 
 export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,13 +24,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     const urlParams = new URLSearchParams(window.location.search);
     const urlTab = urlParams.get('tab') as TabType;
     
-    if (urlTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings'].includes(urlTab)) {
+    if (urlTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings', 'reviews'].includes(urlTab)) {
       return urlTab;
     }
     
     // Затем проверяем localStorage
     const savedTab = localStorage.getItem('adminActiveTab') as TabType;
-    return savedTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings'].includes(savedTab) 
+    return savedTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings', 'reviews'].includes(savedTab) 
       ? savedTab 
       : 'dashboard';
   });
@@ -48,7 +49,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       const urlParams = new URLSearchParams(window.location.search);
       const urlTab = urlParams.get('tab') as TabType;
       
-      if (urlTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings'].includes(urlTab)) {
+      if (urlTab && ['dashboard', 'clinics', 'cities', 'bookings', 'verification', 'packages', 'statistics', 'settings', 'reviews'].includes(urlTab)) {
         setActiveTab(urlTab);
         localStorage.setItem('adminActiveTab', urlTab);
       }
@@ -247,6 +248,8 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         return <Statistics />;
       case 'settings':
         return <Settings />;
+      case 'reviews':
+        return <ReviewsManagement />;
 
       default:
         return <Dashboard onNavigate={handleTabChange} />;

@@ -442,3 +442,38 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Reviews table for clinic reviews
+export const reviews = pgTable("reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clinicId: varchar("clinic_id").notNull().references(() => clinics.id, { onDelete: 'cascade' }),
+  authorName: varchar("author_name", { length: 255 }),
+  authorEmail: varchar("author_email", { length: 255 }),
+  authorPhone: varchar("author_phone", { length: 50 }),
+  
+  // Рейтинги (1-5 с половинками)
+  qualityRating: decimal("quality_rating", { precision: 2, scale: 1 }).notNull(),
+  serviceRating: decimal("service_rating", { precision: 2, scale: 1 }).notNull(),
+  comfortRating: decimal("comfort_rating", { precision: 2, scale: 1 }).notNull(),
+  priceRating: decimal("price_rating", { precision: 2, scale: 1 }).notNull(),
+  averageRating: decimal("average_rating", { precision: 2, scale: 1 }).notNull(),
+  
+  // Текстовый отзыв
+  comment: text("comment"),
+  
+  // Статус модерации
+  status: varchar("status", { length: 20 }).notNull().default('pending'), // pending, approved, rejected
+  
+  // Метаданные
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  
+  // Временные метки
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;

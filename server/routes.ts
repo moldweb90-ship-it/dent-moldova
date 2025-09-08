@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { clinics, workingHours } from "@shared/schema";
+import { clinics, workingHours, reviews } from "@shared/schema";
 import { z } from "zod";
 import { eq, sql } from "drizzle-orm";
 import session from "express-session";
@@ -1967,6 +1967,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: error.message,
         stack: error.stack 
       });
+    }
+  });
+
+  // ===== REVIEWS API =====
+  
+  // Submit a new review
+  app.post('/api/reviews', async (req, res) => {
+    try {
+      const {
+        clinicId,
+        authorName,
+        authorEmail,
+        authorPhone,
+        qualityRating,
+        serviceRating,
+        comfortRating,
+        priceRating,
+        averageRating,
+        comment
+      } = req.body;
+
+      // Validate required fields
+      if (!clinicId || !qualityRating || !serviceRating || !comfortRating || !priceRating || !averageRating) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      // Validate ratings (1-5)
+      const ratings = [qualityRating, serviceRating, comfortRating, priceRating, averageRating];
+      for (const rating of ratings) {
+        if (rating < 1 || rating > 5) {
+          return res.status(400).json({ message: 'Ratings must be between 1 and 5' });
+        }
+      }
+
+      // Check if clinic exists
+      const [clinic] = await db.select().from(clinics).where(eq(clinics.id, clinicId));
+      if (!clinic) {
+        return res.status(404).json({ message: 'Clinic not found' });
+      }
+
+      // Create review using storage
+      const reviewData = {
+        clinicId,
+        authorName: authorName || null,
+        authorEmail: authorEmail || null,
+        authorPhone: authorPhone || null,
+        qualityRating: qualityRating.toString(),
+        serviceRating: serviceRating.toString(),
+        comfortRating: comfortRating.toString(),
+        priceRating: priceRating.toString(),
+        averageRating: averageRating.toString(),
+        comment: comment || null,
+        status: 'pending' as const,
+        ipAddress: req.ip || req.connection.remoteAddress,
+        userAgent: req.get('User-Agent'),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const newReview = await storage.createReview(reviewData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Review submitted successfully',
+        review: newReview
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Get reviews for admin (with pagination and filters)
+  app.get('/api/admin/reviews', requireAdminAuth, async (req, res) => {
+    try {
+      const { page = 1, limit = 20, status, clinicId } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const result = await storage.getReviews({
+        status: status as string,
+        clinicId: clinicId as string,
+        limit: Number(limit),
+        offset
+      });
+
+      res.json({
+        reviews: result.reviews.map(review => ({
+          review: {
+            id: review.id,
+            clinicId: review.clinicId,
+            authorName: review.authorName,
+            authorEmail: review.authorEmail,
+            authorPhone: review.authorPhone,
+            qualityRating: review.qualityRating,
+            serviceRating: review.serviceRating,
+            comfortRating: review.comfortRating,
+            priceRating: review.priceRating,
+            averageRating: review.averageRating,
+            comment: review.comment,
+            status: review.status,
+            ipAddress: review.ipAddress,
+            userAgent: review.userAgent,
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt,
+            approvedAt: review.approvedAt,
+            rejectedAt: review.rejectedAt
+          },
+          clinic: {
+            id: review.clinic.id,
+            nameRu: review.clinic.nameRu,
+            nameRo: review.clinic.nameRo
+          }
+        })),
+        total: result.total,
+        page: Number(page),
+        limit: Number(limit)
+      });
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+  });
+
+  // Update review status (approve/reject)
+  app.patch('/api/admin/reviews/:id/status', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+
+      const updatedReview = await storage.updateReviewStatus(id, status);
+
+      res.json({
+        success: true,
+        message: `Review ${status} successfully`,
+        review: updatedReview
+      });
+    } catch (error) {
+      console.error('Error updating review status:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Delete review
+  app.delete('/api/admin/reviews/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      await storage.deleteReview(id);
+
+      res.json({
+        success: true,
+        message: 'Review deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Get approved reviews for a clinic (public endpoint)
+  app.get('/api/clinics/:id/reviews', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const result = await storage.getReviews({
+        clinicId: id,
+        status: 'approved',
+        limit,
+        offset: (page - 1) * limit
+      });
+      
+      res.json({
+        reviews: result.reviews.map(review => ({
+          id: review.id,
+          authorName: review.authorName,
+          qualityRating: Number(review.qualityRating),
+          serviceRating: Number(review.serviceRating),
+          comfortRating: Number(review.comfortRating),
+          priceRating: Number(review.priceRating),
+          averageRating: Number(review.averageRating),
+          comment: review.comment,
+          createdAt: review.createdAt
+        })),
+        total: result.total,
+        page,
+        limit
+      });
+    } catch (error) {
+      console.error('Error fetching clinic reviews:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 

@@ -9,7 +9,7 @@ import * as sqliteSchema from "@shared/sqlite-schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_b0lfKBQnkx1W@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require";
 
 let db: any;
 let pool: any;

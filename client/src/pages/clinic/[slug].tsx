@@ -10,9 +10,11 @@ import { BookingModal } from '@/components/BookingModal';
 import { PhoneModal } from '@/components/PhoneModal';
 import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { DataSourcesInfo } from '@/components/DataSourcesInfo';
+import { ReviewsList } from '@/components/ReviewsList';
 import { WorkingHoursDisplay } from '@/components/WorkingHoursDisplay';
 import { Tooltip } from '@/components/Tooltip';
 import { SosButton } from '@/components/SosButton';
+import { useClinicRating } from '@/hooks/useClinicRating';
 
 import { type Currency } from '@/lib/currency';
 import { trackClickBook, trackClickPhone, trackClickWebsite } from '@/lib/analytics';
@@ -76,6 +78,9 @@ export default function ClinicPage() {
     staleTime: 0, // Отключаем кеширование
     gcTime: 0 // Отключаем кеширование
   });
+
+  // Получаем реальный рейтинг на основе отзывов
+  const { ratingData } = useClinicRating(clinic?.id || '');
 
   // SEO данные для мета-тегов
   const seoTitle = clinic ? (language === 'ru' 
@@ -295,18 +300,24 @@ export default function ClinicPage() {
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                 <LanguageToggle />
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className={`relative w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 ${getDScoreColor(clinic.dScore)} rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base lg:text-lg shadow-lg border-2 border-white/20 backdrop-blur-sm flex-shrink-0`}>
-                    {clinic.dScore}
-                    {/* Modern gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
-                    {/* Subtle glow effect */}
-                    <div className={`absolute inset-0 rounded-xl ${getDScoreColor(clinic.dScore)} opacity-20 blur-sm`}></div>
+                {ratingData.hasRating && (
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-white/20 flex-shrink-0">
+                      <svg 
+                        className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-yellow-400 fill-current mr-2" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <span className="text-gray-800 font-bold text-sm sm:text-base lg:text-lg">
+                        {ratingData.averageRating.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs sm:text-sm text-gray-500">{t('overallRating')}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs sm:text-sm text-gray-500">{t('overallRating')}</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -470,21 +481,8 @@ export default function ClinicPage() {
                 </CardContent>
               </Card>
 
-              {/* Ratings */}
-              <Card>
-                <CardHeader className="pb-3 sm:pb-4">
-                  <CardTitle className="text-base sm:text-lg">{t('ratings')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4">
-                  <ScoreBar label={t('trust')} value={clinic.trustIndex} />
-                  <ScoreBar label={t('reviews')} value={clinic.reviewsIndex} />
-                  <ScoreBar label={t('access')} value={clinic.accessIndex} />
-                  <ScoreBar label={t('prices')} value={clinic.priceIndex} />
-                </CardContent>
-              </Card>
-
-              {/* Data Sources */}
-              <DataSourcesInfo />
+              {/* Reviews */}
+              <ReviewsList clinicId={clinic.id} />
             </div>
           </div>
         </div>

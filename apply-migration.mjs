@@ -1,9 +1,9 @@
-import { db } from './server/db.js';
+import { db } from './server/db.ts';
 import fs from 'fs';
 
 async function applyMigration() {
   try {
-    const sql = fs.readFileSync('./migrations/0017_add_new_clinic_requests.sql', 'utf8');
+    const sql = fs.readFileSync('./create-table-simple.sql', 'utf8');
     await db.execute(sql);
     console.log('✅ Migration applied successfully');
   } catch (error) {

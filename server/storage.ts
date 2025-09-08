@@ -1,7 +1,7 @@
 import { 
-  cities, districts, clinics, packages, services, users, siteViews, siteSettings, bookings, analyticsEvents, verificationRequests, newClinicRequests, workingHours,
-  type City, type District, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking, type VerificationRequest, type NewClinicRequest, type WorkingHours,
-  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking, type InsertVerificationRequest, type InsertNewClinicRequest, type InsertWorkingHours
+  cities, districts, clinics, packages, services, users, siteViews, siteSettings, bookings, analyticsEvents, verificationRequests, newClinicRequests, workingHours, reviews,
+  type City, type District, type Clinic, type Package, type Service, type User, type SiteView, type SiteSetting, type Booking, type VerificationRequest, type NewClinicRequest, type WorkingHours, type Review,
+  type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking, type InsertVerificationRequest, type InsertNewClinicRequest, type InsertWorkingHours, type InsertReview
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -100,6 +100,13 @@ export interface IStorage {
   
   // New clinic requests methods
   createNewClinicRequest(request: InsertNewClinicRequest): Promise<NewClinicRequest>;
+  
+  // Reviews methods
+  createReview(review: InsertReview): Promise<Review>;
+  getReviews(filters?: { status?: string; clinicId?: string; limit?: number; offset?: number }): Promise<{ reviews: (Review & { clinic: Clinic })[]; total: number }>;
+  getReviewById(id: string): Promise<(Review & { clinic: Clinic }) | undefined>;
+  updateReviewStatus(id: string, status: 'approved' | 'rejected' | 'pending'): Promise<Review>;
+  deleteReview(id: string): Promise<void>;
   
   // Working hours methods
   getClinicWorkingHours(clinicId: string): Promise<WorkingHours[]>;
@@ -1668,6 +1675,128 @@ export class DatabaseStorage implements IStorage {
         topPackages: []
       };
     }
+  }
+
+  // ===== REVIEWS METHODS =====
+  
+  async createReview(review: InsertReview): Promise<Review> {
+    console.log('🔍 Creating review:', review);
+    
+    const [newReview] = await db
+      .insert(reviews)
+      .values(review)
+      .returning();
+    
+    console.log('✅ Review created:', newReview);
+    return newReview;
+  }
+
+  async getReviews(filters: { status?: string; clinicId?: string; limit?: number; offset?: number } = {}): Promise<{ reviews: (Review & { clinic: Clinic })[]; total: number }> {
+    console.log('🔍 Getting reviews with filters:', filters);
+    
+    const { status, clinicId, limit = 50, offset = 0 } = filters;
+    
+    let query = db
+      .select()
+      .from(reviews)
+      .leftJoin(clinics, eq(reviews.clinicId, clinics.id));
+    
+    if (status) {
+      query = query.where(eq(reviews.status, status));
+    }
+    
+    if (clinicId) {
+      query = query.where(eq(reviews.clinicId, clinicId));
+    }
+    
+    const totalQuery = db
+      .select({ count: count() })
+      .from(reviews);
+    
+    if (status) {
+      totalQuery.where(eq(reviews.status, status));
+    }
+    
+    if (clinicId) {
+      totalQuery.where(eq(reviews.clinicId, clinicId));
+    }
+    
+    const [totalResult] = await totalQuery;
+    const total = totalResult?.count || 0;
+    
+    const reviewsData = await query
+      .orderBy(desc(reviews.createdAt))
+      .limit(limit)
+      .offset(offset);
+    
+    const formattedReviews = reviewsData.map(row => ({
+      ...row.reviews,
+      clinic: row.clinics
+    }));
+    
+    console.log(`✅ Found ${formattedReviews.length} reviews (total: ${total})`);
+    return {
+      reviews: formattedReviews,
+      total
+    };
+  }
+
+  async getReviewById(id: string): Promise<(Review & { clinic: Clinic }) | undefined> {
+    console.log('🔍 Getting review by ID:', id);
+    
+    const result = await db
+      .select()
+      .from(reviews)
+      .leftJoin(clinics, eq(reviews.clinicId, clinics.id))
+      .where(eq(reviews.id, id))
+      .limit(1);
+    
+    if (result.length === 0) {
+      console.log('❌ Review not found');
+      return undefined;
+    }
+    
+    const review = result[0];
+    console.log('✅ Review found:', review.reviews.id);
+    
+    return {
+      ...review.reviews,
+      clinic: review.clinics
+    };
+  }
+
+  async updateReviewStatus(id: string, status: 'approved' | 'rejected' | 'pending'): Promise<Review> {
+    console.log('🔍 Updating review status:', id, 'to', status);
+    
+    const updateData: any = {
+      status,
+      updatedAt: new Date()
+    };
+    
+    if (status === 'approved') {
+      updateData.approvedAt = new Date();
+    } else if (status === 'rejected') {
+      updateData.rejectedAt = new Date();
+    }
+    
+    const [updatedReview] = await db
+      .update(reviews)
+      .set(updateData)
+      .where(eq(reviews.id, id))
+      .returning();
+    
+    console.log('✅ Review status updated:', updatedReview.id);
+    return updatedReview;
+  }
+
+  async deleteReview(id: string): Promise<void> {
+    console.log('🗑️ Deleting review:', id);
+    
+    await db
+      .delete(reviews)
+      .where(eq(reviews.id, id));
+    
+    console.log('✅ Review deleted:', id);
   }
 }
 

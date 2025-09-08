@@ -9,6 +9,7 @@ import { AnimatedNumber } from './AnimatedNumber';
 import { useTranslation } from '../lib/i18n';
 import { getClinicName, getCityName, getDistrictName } from '../lib/utils';
 import FancyProgressBar from './FancyProgressBar';
+import { useClinicRating } from '../hooks/useClinicRating';
 
 interface RecommendedClinicsProps {
   onClinicClick: (slug: string) => void;
@@ -22,6 +23,31 @@ const promotionalLabelStyles: Record<string, string> = {
   new: 'bg-orange-500 text-white',
   discount: 'bg-pink-500 text-white'
 };
+
+// Компонент для отображения рейтинга клиники
+function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
+  const { ratingData } = useClinicRating(clinicId);
+
+  if (!ratingData.hasRating) {
+    return null;
+  }
+
+  return (
+    <div className="mb-2 md:mb-3">
+      <div className="flex items-center gap-1">
+        <svg 
+          className="w-5 h-5 text-yellow-400 fill-current" 
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <span className="text-gray-800 font-bold text-sm">
+          {ratingData.averageRating.toFixed(2)}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedClinicsProps) {
   const { language, t } = useTranslation();
@@ -210,19 +236,8 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
                 )}
               </div>
 
-              {/* D-Score */}
-              <div className="mb-2 md:mb-3">
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-gray-600">{t('overallRating')}</span>
-                  <AnimatedNumber
-                    value={clinic.dScore}
-                    className="font-semibold"
-                    duration={1200}
-                    delay={300}
-                  />
-                </div>
-                <FancyProgressBar value={clinic.dScore} className="mt-1" />
-              </div>
+              {/* Star Rating Component */}
+              <ClinicRatingDisplay clinicId={clinic.id} />
 
               {/* Action Buttons */}
               {clinic.verified ? (

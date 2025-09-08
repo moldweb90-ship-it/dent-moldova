@@ -1,4 +1,4 @@
-import { Shield, Building2, MapPin, Calendar, BarChart3, Settings, Database, Package, X, CheckCircle, Bell } from 'lucide-react';
+import { Shield, Building2, MapPin, Calendar, BarChart3, Settings, Database, Package, X, CheckCircle, Bell, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,6 +20,7 @@ export function AdminSidebar({ activeTab, onTabChange, newBookingsCount = 0, pen
     { id: 'verification', label: 'Верификация', icon: CheckCircle },
     { id: 'new-clinics', label: 'Новые клиники', icon: Building2 },
     { id: 'packages', label: 'Пакеты услуг', icon: Package },
+    { id: 'reviews', label: 'Отзывы', icon: MessageSquare },
     { id: 'statistics', label: 'Статистика', icon: BarChart3 },
     { id: 'settings', label: 'Настройки', icon: Settings },
   ];
