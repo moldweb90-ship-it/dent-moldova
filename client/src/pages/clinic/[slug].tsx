@@ -482,14 +482,27 @@ export default function ClinicPage() {
               </Card>
 
               {/* Reviews */}
-              <Card>
-                <CardHeader className="pb-3 sm:pb-4">
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                    Отзывы пациентов
-                  </CardTitle>
+              <Card className="overflow-hidden">
+                <CardHeader className="p-0">
+                  {/* Крутой contrx7 заголовок */}
+                  <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 p-6 shadow-xl">
+                    {/* Декоративные элементы */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+                    
+                    <div className="relative flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <Star size={28} className="text-white fill-current drop-shadow-lg" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-white drop-shadow-lg leading-tight">
+                          Отзывы<br />пациентов
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   <ReviewsList clinicId={clinic.id} cardStyle={true} />
                 </CardContent>
               </Card>

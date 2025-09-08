@@ -72,47 +72,6 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
   // Получаем детальные рейтинги из отзывов
   const { data: realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRealRatings(clinic.id);
   
-  // Принудительная отладка для Life Dental Чеканы
-  if (clinic.id === '50700388-9022-46bf-ace0-8e2335b744bb') {
-    console.log('🔍 Life Dental Чеканы - ClinicCard render:', {
-      clinicId: clinic.id,
-      realRatings,
-      ratingsLoading,
-      ratingsError,
-      hasRating: realRatings?.hasRating,
-      isHovered,
-      shouldShowOverlay: isHovered
-    });
-  }
-  
-            // Отладка рейтингов
-            console.log('🔍 ClinicCard:', {
-              clinicId: clinic.id,
-              clinicName: clinic.nameRu,
-              realRatings,
-              ratingsLoading,
-              ratingsError,
-              hasRating: realRatings?.hasRating,
-              isHovered,
-              shouldShowOverlay: isHovered
-            });
-  
-  // Принудительная проверка для Life Dental Чеканы
-  if (clinic.id === '50700388-9022-46bf-ace0-8e2335b744bb') {
-    console.log('🔍 Life Dental Чеканы - принудительная проверка:', {
-      clinicId: clinic.id,
-      realRatings,
-      hasRating: realRatings?.hasRating,
-      ratingsLoading,
-      ratingsError,
-      qualityRating: realRatings?.qualityRating,
-      serviceRating: realRatings?.serviceRating,
-      comfortRating: realRatings?.comfortRating,
-      priceRating: realRatings?.priceRating,
-      isHovered,
-      shouldShowOverlay: isHovered
-    });
-  }
   
   // Отладка названий клиник (временно отключено)
   // console.log('🔍 ClinicCard names:', {

@@ -218,14 +218,28 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
 
 export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = false, cardStyle = false }) => {
   const { t } = useTranslation();
+  const [showAll, setShowAll] = useState(false);
 
   const { data: reviewsData, isLoading, error } = useQuery({
-    queryKey: ['clinic-reviews', clinicId, compact],
+    queryKey: ['clinic-reviews', clinicId, compact, showAll],
     queryFn: async () => {
-      const limit = compact ? 3 : 10; // В компактном режиме показываем только 3 отзыва
-      const response = await fetch(`/api/clinics/${clinicId}/reviews?limit=${limit}`);
+      const limit = showAll ? 100 : (compact ? 5 : 10); // Показываем больше отзывов при showAll
+      const response = await fetch(`/api/clinics/${clinicId}/reviews?status=approved&limit=${limit}`);
       if (!response.ok) {
         throw new Error('Failed to fetch reviews');
+      }
+      return response.json();
+    },
+    enabled: !!clinicId
+  });
+
+  // Получаем общее количество отзывов для заголовка
+  const { data: totalReviewsData } = useQuery({
+    queryKey: ['clinic-reviews-total', clinicId],
+    queryFn: async () => {
+      const response = await fetch(`/api/clinics/${clinicId}/reviews?status=approved&limit=1000`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch total reviews');
       }
       return response.json();
     },
@@ -313,21 +327,32 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
     
     return (
       <div className="space-y-6">
-        <div className={compact ? "bg-white rounded-lg border border-gray-100 p-4" : "bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-100 p-6"}>
-          <div className="flex items-center gap-3">
-            <div className={`${compact ? "w-8 h-8" : "w-12 h-12"} bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center`}>
-              <Star size={compact ? 16 : 20} className="text-white fill-current" />
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-4 shadow-xl">
+          {/* Декоративные элементы */}
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+          
+          <div className="relative flex items-center gap-3">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <Star size={20} className="text-white fill-current drop-shadow-lg" />
             </div>
-            <div>
-              <h3 className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900 mb-1`}>
-                Отзывы пациентов
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
+                Отзывы<br />пациентов
               </h3>
-              {!compact && (
-                <p className="text-sm text-red-600">
-                  Ошибка загрузки отзывов
-                </p>
-              )}
             </div>
+            
+            {/* Компактный счетчик отзывов */}
+            {totalReviewsData?.total && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-center shadow-lg flex-shrink-0">
+                <div className="text-xl font-bold text-white drop-shadow-lg">
+                  {totalReviewsData.total}
+                </div>
+                <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                  отзывов
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {compact && (
@@ -358,21 +383,32 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
     
     return (
       <div className="space-y-6">
-        <div className={compact ? "bg-white rounded-lg border border-gray-100 p-4" : "bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-gray-100 p-6"}>
-          <div className="flex items-center gap-3">
-            <div className={`${compact ? "w-8 h-8" : "w-12 h-12"} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center`}>
-              <Star size={compact ? 16 : 20} className="text-white fill-current" />
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-4 shadow-xl">
+          {/* Декоративные элементы */}
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+          
+          <div className="relative flex items-center gap-3">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <Star size={20} className="text-white fill-current drop-shadow-lg" />
             </div>
-            <div>
-              <h3 className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900 mb-1`}>
-                Отзывы пациентов
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
+                Отзывы<br />пациентов
               </h3>
-              {!compact && (
-                <p className="text-sm text-gray-600">
-                  Реальные отзывы от людей, которые получили здесь лечение
-                </p>
-              )}
             </div>
+            
+            {/* Компактный счетчик отзывов */}
+            {totalReviewsData?.total && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-center shadow-lg flex-shrink-0">
+                <div className="text-xl font-bold text-white drop-shadow-lg">
+                  {totalReviewsData.total}
+                </div>
+                <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                  отзывов
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -436,9 +472,12 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
         </div>
 
         {/* Кнопка "Показать больше" */}
-        {reviewsData?.total > reviews.length && (
+        {!showAll && totalReviewsData?.total > reviews.length && (
           <div className="text-center pt-2">
-            <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
+            <button 
+              onClick={() => setShowAll(true)}
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm"
+            >
               Показать больше отзывов
             </button>
           </div>
@@ -447,44 +486,35 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
     );
   }
 
-  // Обычный стиль для модалов
-  const headerContainerClass = compact 
-    ? "bg-white rounded-lg border border-gray-100 p-4" 
-    : "bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-gray-100 p-6";
-
   return (
     <div className="space-y-6">
       {/* Красивый заголовок */}
-      <div className={headerContainerClass}>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`${compact ? "w-8 h-8" : "w-12 h-12"} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0`}>
-              <Star size={compact ? 16 : 20} className="text-white fill-current" />
-            </div>
-            <div>
-              <h3 className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900 mb-1`}>
-                Отзывы пациентов
-              </h3>
-              {!compact && (
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Реальные отзывы от людей, которые получили здесь лечение
-                </p>
-              )}
-            </div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-4 shadow-xl">
+        {/* Декоративные элементы */}
+        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+        
+        <div className="relative flex items-center gap-3">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+            <Star size={20} className="text-white fill-current drop-shadow-lg" />
           </div>
-          <div className="text-right">
-            <div className={`${compact ? "px-2 py-1 text-xs" : "px-3 py-2 text-sm"} bg-white rounded-full border border-gray-200 font-medium text-gray-700 shadow-sm`}>
-              {reviews.length} отзывов
-            </div>
-            {!compact && reviews.length > 0 && (
-              <div className="mt-2 flex items-center justify-end gap-1">
-                <StarRating rating={reviews.reduce((acc, r) => acc + r.averageRating, 0) / reviews.length} size={14} />
-                <span className="text-xs text-gray-500 ml-1">
-                  средняя оценка
-                </span>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
+              Отзывы<br />пациентов
+            </h3>
+          </div>
+          
+          {/* Компактный счетчик отзывов */}
+          {totalReviewsData?.total && (
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-center shadow-lg flex-shrink-0">
+              <div className="text-xl font-bold text-white drop-shadow-lg">
+                {totalReviewsData.total}
               </div>
-            )}
-          </div>
+              <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                отзывов
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -496,9 +526,12 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
       </div>
 
       {/* Кнопка "Показать больше" */}
-      {reviewsData?.total > reviews.length && (
+      {!showAll && totalReviewsData?.total > reviews.length && (
         <div className="text-center">
-          <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+          <button 
+            onClick={() => setShowAll(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+          >
             Показать больше отзывов
           </button>
         </div>
@@ -508,3 +541,4 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
 };
 
 export default ReviewsList;
+
