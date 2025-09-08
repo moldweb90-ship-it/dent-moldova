@@ -5,7 +5,7 @@ import { ro } from '../languages/ro';
 type Language = 'ru' | 'ro';
 
 interface Translations {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 const translations: Record<Language, Translations> = {
@@ -32,6 +32,13 @@ function setGlobalLanguage(lang: Language) {
   listeners.forEach(listener => listener());
 }
 
+// Helper function to get nested object value
+function getNestedValue(obj: any, path: string): any {
+  return path.split('.').reduce((current, key) => {
+    return current && current[key] !== undefined ? current[key] : undefined;
+  }, obj);
+}
+
 export function useTranslation() {
   const [language, setLanguage] = useState<Language>(globalLanguage);
 
@@ -47,7 +54,12 @@ export function useTranslation() {
   }, []);
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    const value = getNestedValue(translations[language], key);
+    if (value === undefined) {
+      console.warn(`Translation key not found: ${key} for language: ${language}`);
+      return key;
+    }
+    return value;
   };
 
   const changeLanguage = (lang: Language) => {

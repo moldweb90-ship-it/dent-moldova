@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dent Moldova - Каталог стоматологических клиник</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'sans': ['Inter', 'system-ui', 'sans-serif']
+                }
+            }
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">Dent Moldova</h1>
+                </div>
+                
+                <!-- Search Bar -->
+                <!-- @COMPONENT: SearchBar -->
+                <div class="flex-1 max-w-lg mx-8">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               placeholder="Поиск клиники или услуги..." 
+                               data-implementation="Implement debounce 250ms search"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: SearchBar -->
+                
+                <!-- Language Toggle -->
+                <!-- @COMPONENT: LanguageToggle -->
+                <div class="flex items-center space-x-2">
+                    <button class="px-3 py-1 text-sm font-medium bg-blue-600 text-white rounded-md" data-implementation="Active language from cookie">RU</button>
+                    <button class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md" data-implementation="Switch to Romanian">RO</button>
+                </div>
+                <!-- @END_COMPONENT: LanguageToggle -->
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: Filters -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Фильтры</h2>
+                <button class="md:hidden text-gray-500" data-implementation="Toggle mobile filters drawer">
+                    <i data-lucide="filter" class="h-5 w-5"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                <!-- City Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Город</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-bind="filters.city">
+                        <option value="">Все города</option>
+                        <option value="chisinau" selected>Кишинёв</option>
+                        <option value="balti">Бельцы</option>
+                    </select>
+                </div>
+                
+                <!-- District Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Район</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-bind="filters.district" data-implementation="Multi-select for districts">
+                        <option value="">Все районы</option>
+                        <option value="centru">Центр</option>
+                        <option value="botanica">Ботаника</option>
+                        <option value="riscani">Рышкань</option>
+                    </select>
+                </div>
+                
+                <!-- Specialization Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Специализация</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-bind="filters.specialization" data-implementation="Multi-select for specializations">
+                        <option value="">Все услуги</option>
+                        <option value="implants">Импланты</option>
+                        <option value="veneers">Виниры</option>
+                        <option value="endo">Эндодонтия</option>
+                        <option value="hygiene">Гигиена</option>
+                        <option value="ortho">Ортодонтия</option>
+                        <option value="kids">Детская</option>
+                    </select>
+                </div>
+                
+                <!-- Verified Toggle -->
+                <div class="flex items-center">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-bind="filters.verified">
+                        <span class="ml-2 text-sm text-gray-700">Проверено</span>
+                    </label>
+                </div>
+                
+                <!-- Sort -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Сортировать</label>
+                    <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-bind="filters.sort">
+                        <option value="dscore">D-score</option>
+                        <option value="price">Цена</option>
+                        <option value="trust">Доверие</option>
+                        <option value="reviews">Отзывы</option>
+                    </select>
+                </div>
+                
+                <!-- Filter Actions -->
+                <div class="flex items-end space-x-2">
+                    <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500" data-event="click:applyFilters">
+                        Применить
+                    </button>
+                    <button class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500" data-event="click:resetFilters">
+                        Сброс
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Filters -->
+
+        <!-- Clinics Grid -->
+        <!-- @COMPONENT: ClinicsGrid -->
+        <!-- @MAP: clinics.map(clinic => ( -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <!-- @COMPONENT: ClinicCard -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer aspect-square flex flex-col" data-mock="true" data-event="click:navigateToClinic" data-bind="clinic.slug">
+                <!-- Header -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <!-- Professional dental office interior with modern equipment -->
+                        <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" alt="Life Dental Logo" class="w-12 h-12 rounded-lg object-cover mb-2" data-mock-image="true">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1" data-bind="clinic.name">Life Dental</h3>
+                        <p class="text-sm text-gray-600" data-bind="clinic.location">Кишинёв, Центр</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl" data-bind="clinic.dScore">82</div>
+                        <span class="text-xs text-gray-500 mt-1">D-score</span>
+                    </div>
+                </div>
+
+                <!-- Progress Bars -->
+                <!-- @COMPONENT: ScoreBars -->
+                <div class="space-y-3 mb-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Цена</span>
+                        <span class="text-sm font-medium text-gray-900" data-bind="clinic.priceIndex">38</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 62%" data-bind="clinic.priceScore"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доверие</span>
+                        <span class="text-sm font-medium text-gray-900" data-bind="clinic.trustIndex">88</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 88%" data-bind="clinic.trustScore"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Отзывы</span>
+                        <span class="text-sm font-medium text-gray-900" data-bind="clinic.reviewsIndex">74</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 74%" data-bind="clinic.reviewsScore"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доступность</span>
+                        <span class="text-sm font-medium text-gray-900" data-bind="clinic.accessIndex">80</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 80%" data-bind="clinic.accessScore"></div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ScoreBars -->
+
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-1 mb-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Импланты</span>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Виниры</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full" data-mock="true">Verified</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RU</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RO</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors" data-event="click:bookAppointment" data-implementation="Open booking modal">
+                        Записаться
+                    </button>
+                    <button class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-event="click:viewPrices" data-implementation="Open prices modal">
+                        Цены
+                    </button>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ClinicCard -->
+
+            <!-- Second clinic card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer aspect-square flex flex-col" data-mock="true">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <!-- Modern dental clinic reception area with clean white design -->
+                        <img src="https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" alt="Denta Pro Logo" class="w-12 h-12 rounded-lg object-cover mb-2" data-mock-image="true">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1" data-mock="true">Denta Pro</h3>
+                        <p class="text-sm text-gray-600" data-mock="true">Кишинёв, Ботаника</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xl" data-mock="true">67</div>
+                        <span class="text-xs text-gray-500 mt-1">D-score</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Цена</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">75</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 25%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доверие</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">65</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 65%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Отзывы</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">58</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 58%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доступность</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">72</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 72%" data-mock="true"></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1 mb-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Гигиена</span>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Эндодонтия</span>
+                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full" data-mock="true">Запись сегодня</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RU</span>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors" data-mock="true">
+                        Записаться
+                    </button>
+                    <button class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-mock="true">
+                        Цены
+                    </button>
+                </div>
+            </div>
+
+            <!-- Third clinic card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer aspect-square flex flex-col" data-mock="true">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <!-- Dental examination room with dentist chair and equipment -->
+                        <img src="https://pixabay.com/get/g7b9dd007ef77823e2c4a4d44788a169254148746d0e4760430777161eb3db0d46368ea8dcdbca24a26bb45b60d52109b862859e40d47673a0021a32447082650_1280.jpg" alt="SmileCare Logo" class="w-12 h-12 rounded-lg object-cover mb-2" data-mock-image="true">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1" data-mock="true">SmileCare</h3>
+                        <p class="text-sm text-gray-600" data-mock="true">Кишинёв, Рышкань</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl" data-mock="true">91</div>
+                        <span class="text-xs text-gray-500 mt-1">D-score</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Цена</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">35</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 65%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доверие</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">95</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 95%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Отзывы</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">89</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 89%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доступность</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">92</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 92%" data-mock="true"></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1 mb-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Импланты</span>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Ортодонтия</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full" data-mock="true">Verified</span>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">CNAM</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RU</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RO</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">EN</span>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors" data-mock="true">
+                        Записаться
+                    </button>
+                    <button class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-mock="true">
+                        Цены
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fourth clinic card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer aspect-square flex flex-col" data-mock="true">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <!-- Pediatric dental office with colorful child-friendly design -->
+                        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" alt="KidsSmile Logo" class="w-12 h-12 rounded-lg object-cover mb-2" data-mock-image="true">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1" data-mock="true">KidsSmile</h3>
+                        <p class="text-sm text-gray-600" data-mock="true">Бельцы, Центр</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl" data-mock="true">43</div>
+                        <span class="text-xs text-gray-500 mt-1">D-score</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Цена</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">85</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 15%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доверие</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">42</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 42%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Отзывы</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">38</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 38%" data-mock="true"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Доступность</span>
+                        <span class="text-sm font-medium text-gray-900" data-mock="true">55</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 55%" data-mock="true"></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1 mb-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Детская</span>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-mock="true">Гигиена</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full" data-mock="true">RO</span>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors" data-mock="true">
+                        Записаться
+                    </button>
+                    <button class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-mock="true">
+                        Цены
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_MAP )) -->
+        <!-- @END_COMPONENT: ClinicsGrid -->
+
+        <!-- Pagination -->
+        <!-- @COMPONENT: Pagination -->
+        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
+            <div class="flex flex-1 justify-between sm:hidden">
+                <button class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" data-implementation="Previous page navigation">
+                    Назад
+                </button>
+                <button class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" data-implementation="Next page navigation">
+                    Далее
+                </button>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Показано <span class="font-medium" data-bind="pagination.from">1</span> до <span class="font-medium" data-bind="pagination.to">4</span> из <span class="font-medium" data-bind="pagination.total">15</span> результатов
+                    </p>
+                </div>
+                <div>
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <button class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" data-implementation="Previous page">
+                            <i data-lucide="chevron-left" class="h-5 w-5"></i>
+                        </button>
+                        <button class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" data-bind="pagination.currentPage">1</button>
+                        <button class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" data-implementation="Page 2">2</button>
+                        <button class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" data-implementation="Page 3">3</button>
+                        <button class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" data-implementation="Next page">
+                            <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Pagination -->
+    </main>
+
+    <!-- Clinic Detail Modal/Page Preview -->
+    <!-- @COMPONENT: ClinicDetailModal -->
+    <div id="clinicDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" data-implementation="Show/hide modal logic">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <h2 class="text-2xl font-bold text-gray-900" data-bind="clinic.name" data-mock="true">Life Dental</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full" data-mock="true">Verified</span>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full" data-mock="true">CNAM</span>
+                            </div>
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg" data-bind="clinic.dScore" data-mock="true">82</div>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600" data-event="click:closeModal">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 mt-2" data-bind="clinic.address" data-mock="true">bd. Ștefan cel Mare 100, Кишинёв, Центр</p>
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Left Content -->
+                        <div class="lg:col-span-2 space-y-8">
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-4">
+                                <button class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors" data-implementation="Open booking system" data-mock="true">
+                                    Записаться
+                                </button>
+                                <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors" data-implementation="Call clinic" data-mock="true">
+                                    Позвонить
+                                </button>
+                                <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors" data-implementation="Open clinic website" data-mock="true">
+                                    Сайт
+                                </button>
+                            </div>
+
+                            <!-- Price Packages -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Пакеты услуг</h3>
+                                <div class="bg-gray-50 rounded-lg overflow-hidden">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Услуга</th>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Диапазон</th>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Медиана</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <tr data-mock="true">
+                                                <td class="px-4 py-3 text-sm text-gray-900">Имплант стандарт</td>
+                                                <td class="px-4 py-3 text-sm text-gray-700">9 800 - 14 500 лей</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">12 200 лей</td>
+                                            </tr>
+                                            <tr data-mock="true">
+                                                <td class="px-4 py-3 text-sm text-gray-900">Профгигиена</td>
+                                                <td class="px-4 py-3 text-sm text-gray-700">600 - 1 200 лей</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">900 лей</td>
+                                            </tr>
+                                            <tr data-mock="true">
+                                                <td class="px-4 py-3 text-sm text-gray-900">Лечение каналов моляр</td>
+                                                <td class="px-4 py-3 text-sm text-gray-700">2 200 - 3 600 лей</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">2 900 лей</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2" data-mock="true">Цены предоставлены клиникой. Обновлено 15.01.2024</p>
+                            </div>
+
+                            <!-- Score Explanation -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Расшифровка оценок</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <span class="font-medium text-gray-900">Цена</span>
+                                            <p class="text-sm text-gray-600">Доступность по стоимости, акции, рассрочка</p>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 62%" data-mock="true"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900" data-mock="true">38</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <span class="font-medium text-gray-900">Доверие</span>
+                                            <p class="text-sm text-gray-600">Лицензии, сертификаты, опыт врачей</p>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 88%" data-mock="true"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900" data-mock="true">88</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <span class="font-medium text-gray-900">Отзывы</span>
+                                            <p class="text-sm text-gray-600">Рейтинг Google, публичные отзывы</p>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 74%" data-mock="true"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900" data-mock="true">74</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <span class="font-medium text-gray-900">Доступность</span>
+                                            <p class="text-sm text-gray-600">Запись онлайн, время работы, расположение</p>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 80%" data-mock="true"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900" data-mock="true">80</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Sidebar -->
+                        <div class="space-y-6">
+                            <!-- Before/After Cases -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Случаи до/после</h3>
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- Dental before and after treatment comparison showing teeth whitening results -->
+                                        <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=150" alt="До лечения" class="rounded-lg object-cover w-full h-24" data-mock-image="true">
+                                        <!-- Bright white healthy teeth after dental treatment -->
+                                        <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=150" alt="После лечения" class="rounded-lg object-cover w-full h-24" data-mock-image="true">
+                                    </div>
+                                    <p class="text-sm text-gray-600" data-mock="true">Отбеливание зубов</p>
+                                </div>
+                                
+                                <div class="space-y-4 mt-4">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- Damaged tooth before dental implant procedure -->
+                                        <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=150" alt="До имплантации" class="rounded-lg object-cover w-full h-24" data-mock-image="true">
+                                        <!-- Perfect dental implant result with natural-looking tooth -->
+                                        <img src="https://pixabay.com/get/g1a4a3bf77366ac4513a22ebb32f135be65e1699c2e6c77d3dd9f39bdb8c9afcd51e565461dd2d5bb1beff4483ff203c0cd440970dd60fb3ab5a6c646d15576c0_1280.jpg" alt="После имплантации" class="rounded-lg object-cover w-full h-24" data-mock-image="true">
+                                    </div>
+                                    <p class="text-sm text-gray-600" data-mock="true">Имплантация зуба</p>
+                                </div>
+                            </div>
+
+                            <!-- Data Sources -->
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <h4 class="font-medium text-blue-900 mb-2">Источники данных</h4>
+                                <ul class="text-sm text-blue-800 space-y-1">
+                                    <li data-mock="true">• Цены - предоставлены клиникой</li>
+                                    <li data-mock="true">• Отзывы - публичные источники</li>
+                                    <li data-mock="true">• Обновлено: 15.01.2024</li>
+                                </ul>
+                            </div>
+
+                            <!-- Disclaimer -->
+                            <div class="bg-yellow-50 rounded-lg p-4">
+                                <p class="text-sm text-yellow-800" data-mock="true">
+                                    Информация носит справочный характер и не является медицинским советом. Обязательно консультируйтесь с врачом.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ClinicDetailModal -->
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm text-gray-600">© 2024 Dent Moldova. Все права защищены.</p>
+                </div>
+                <div class="flex space-x-6 text-sm text-gray-600">
+                    <a href="#" class="hover:text-gray-900 transition-colors" data-implementation="Privacy policy page">Политика приватности</a>
+                    <a href="#" class="hover:text-gray-900 transition-colors" data-implementation="Contact page">Контакты</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        (function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })();
+
+        // Mock interactions for demonstration
+        (function() {
+            // Clinic card click handlers
+            const clinicCards = document.querySelectorAll('[data-event="click:navigateToClinic"]');
+            const modal = document.getElementById('clinicDetailModal');
+            
+            clinicCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't open modal if clicking on buttons
+                    if (e.target.closest('button')) {
+                        return;
+                    }
+                    
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+                });
+            });
+
+            // Close modal handlers
+            const closeButtons = document.querySelectorAll('[data-event="click:closeModal"]');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (modal) {
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            });
+
+            // Close modal on backdrop click
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+
+            // Language toggle demonstration
+            const langButtons = document.querySelectorAll('[data-implementation*="language"]');
+            langButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all language buttons
+                    langButtons.forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('bg-blue-600', 'text-white');
+                    this.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                    
+                    // TODO: Implement actual language switching logic
+                    console.log('Language switched to:', this.textContent);
+                });
+            });
+
+            // Filter and search demonstrations
+            const searchInput = document.querySelector('input[type="text"]');
+            if (searchInput) {
+                let debounceTimer;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        // TODO: Implement search functionality with 250ms debounce
+                        console.log('Search query:', this.value);
+                    }, 250);
+                });
+            }
+
+            // Filter apply/reset buttons
+            const applyButton = document.querySelector('[data-event="click:applyFilters"]');
+            const resetButton = document.querySelector('[data-event="click:resetFilters"]');
+            
+            if (applyButton) {
+                applyButton.addEventListener('click', function() {
+                    // TODO: Implement filter application logic
+                    console.log('Filters applied');
+                });
+            }
+
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    // TODO: Implement filter reset logic
+                    console.log('Filters reset');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

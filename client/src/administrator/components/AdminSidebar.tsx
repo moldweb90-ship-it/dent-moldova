@@ -1,107 +1,101 @@
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Package, 
-  MapPin,
-  BarChart3,
-  Users,
-  Settings,
-  FileText,
-  Calendar
-} from 'lucide-react';
+import { Shield, Building2, MapPin, Calendar, BarChart3, Settings, Database, Package, X, CheckCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-type AdminPage = 'dashboard' | 'clinics' | 'packages' | 'cities' | 'bookings' | 'settings';
+import { Badge } from '@/components/ui/badge';
 
 interface AdminSidebarProps {
-  currentPage: AdminPage;
-  onPageChange: (page: AdminPage) => void;
-  isOpen: boolean;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  newBookingsCount?: number;
+  pendingVerificationCount?: number;
+  pendingNewClinicCount?: number;
+  onClose?: () => void;
 }
 
-export function AdminSidebar({ currentPage, onPageChange, isOpen }: AdminSidebarProps) {
+export function AdminSidebar({ activeTab, onTabChange, newBookingsCount = 0, pendingVerificationCount = 0, pendingNewClinicCount = 0, onClose }: AdminSidebarProps) {
   const menuItems = [
-    {
-      id: 'dashboard' as AdminPage,
-      label: 'Главная',
-      icon: LayoutDashboard,
-      description: 'Обзор и статистика'
-    },
-    {
-      id: 'clinics' as AdminPage,
-      label: 'Клиники',
-      icon: Building2,
-      description: 'Управление клиниками'
-    },
-    {
-      id: 'packages' as AdminPage,
-      label: 'Пакеты услуг',
-      icon: Package,
-      description: 'Цены и услуги'
-    },
-    {
-      id: 'cities' as AdminPage,
-      label: 'Города',
-      icon: MapPin,
-      description: 'Города и районы'
-    },
-    {
-      id: 'bookings' as AdminPage,
-      label: 'Заявки',
-      icon: Calendar,
-      description: 'Заявки на запись'
-    },
-    {
-      id: 'settings' as AdminPage,
-      label: 'Настройки',
-      icon: Settings,
-      description: 'SEO и конфигурация'
-    }
+    { id: 'dashboard', label: 'Панель управления', icon: Shield },
+    { id: 'clinics', label: 'Клиники', icon: Building2 },
+    { id: 'cities', label: 'Города', icon: MapPin },
+    { id: 'bookings', label: 'Заявки пациентов', icon: Calendar },
+    { id: 'verification', label: 'Верификация', icon: CheckCircle },
+    { id: 'new-clinics', label: 'Новые клиники', icon: Building2 },
+    { id: 'packages', label: 'Пакеты услуг', icon: Package },
+    { id: 'statistics', label: 'Статистика', icon: BarChart3 },
+    { id: 'settings', label: 'Настройки', icon: Settings },
   ];
 
   return (
-    <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 z-10 ${
-      isOpen ? 'w-64' : 'w-16'
-    }`}>
-      <nav className="p-4 space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentPage === item.id;
-          
-          return (
-            <Button
-              key={item.id}
-              onClick={() => onPageChange(item.id)}
-              variant={isActive ? 'secondary' : 'ghost'}
-              className={`w-full justify-start h-auto p-3 ${
-                isActive 
-                  ? 'bg-blue-100 text-blue-700 border-blue-200' 
-                  : 'text-gray-700 hover:bg-gray-100'
-              } ${!isOpen ? 'px-2' : ''}`}
+    <div className="w-64 bg-white border-r border-gray-200 h-screen shadow-lg">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Админ панель</h2>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 rounded-md hover:bg-gray-100"
             >
-              <Icon className={`h-5 w-5 flex-shrink-0 ${!isOpen ? 'mx-auto' : 'mr-3'}`} />
-              
-              {isOpen && (
-                <div className="text-left">
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-gray-500">{item.description}</div>
-                </div>
-              )}
-            </Button>
-          );
-        })}
-      </nav>
-      
-      {isOpen && (
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-gray-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600">
-              <div className="font-medium">Администратор</div>
-              <div className="text-xs">admin@dentmoldova.md</div>
-            </div>
-          </div>
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
-      )}
-    </aside>
+        <nav className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isBookingsTab = item.id === 'bookings';
+            const isVerificationTab = item.id === 'verification';
+            const isNewClinicsTab = item.id === 'new-clinics';
+            
+            return (
+              <Button
+                key={item.id}
+                variant={activeTab === item.id ? 'default' : 'ghost'}
+                className={`w-full justify-start relative ${activeTab === item.id ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => onTabChange(item.id)}
+              >
+                <Icon className="h-4 w-4 mr-3" />
+                <span className="flex-1 text-left">{item.label}</span>
+                
+                {/* Уведомление о новых заявках */}
+                {isBookingsTab && newBookingsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="ml-auto bg-red-500 text-white text-xs font-bold animate-pulse"
+                  >
+                    {newBookingsCount > 99 ? '99+' : newBookingsCount}
+                  </Badge>
+                )}
+                
+                {/* Уведомление о заявках верификации */}
+                {isVerificationTab && pendingVerificationCount > 0 && (
+                  <div className="ml-auto flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-orange-500 animate-bounce" />
+                    <Badge 
+                      variant="destructive" 
+                      className="bg-orange-500 text-white text-xs font-bold"
+                    >
+                      {pendingVerificationCount > 99 ? '99+' : pendingVerificationCount}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Уведомление о новых клиниках */}
+                {isNewClinicsTab && pendingNewClinicCount > 0 && (
+                  <div className="ml-auto flex items-center gap-2">
+                    <Badge 
+                      variant="success" 
+                      className="bg-green-500 text-white text-xs font-bold"
+                    >
+                      {pendingNewClinicCount > 99 ? '99+' : pendingNewClinicCount}
+                    </Badge>
+                  </div>
+                )}
+
+
+              </Button>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
   );
 }

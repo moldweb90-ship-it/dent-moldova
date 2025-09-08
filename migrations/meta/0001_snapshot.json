@@ -1,0 +1,553 @@
+{
+  "version": "5",
+  "dialect": "postgresql",
+  "id": "0001_remove_cnam",
+  "prevId": "0000_eminent_cerebro",
+  "tables": {
+    "clinics": {
+      "name": "clinics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ru": {
+          "name": "name_ru",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ro": {
+          "name": "name_ro",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city_id": {
+          "name": "city_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "district_id": {
+          "name": "district_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_ru": {
+          "name": "address_ru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_ro": {
+          "name": "address_ro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website": {
+          "name": "website",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "languages": {
+          "name": "languages",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
+        },
+        "specializations": {
+          "name": "specializations",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'"
+        },
+        "verified": {
+          "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "avail_today": {
+          "name": "avail_today",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "avail_tomorrow": {
+          "name": "avail_tomorrow",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "price_index": {
+          "name": "price_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trust_index": {
+          "name": "trust_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reviews_index": {
+          "name": "reviews_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_index": {
+          "name": "access_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "d_score": {
+          "name": "d_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "google_rating": {
+          "name": "google_rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "google_reviews_count": {
+          "name": "google_reviews_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommended": {
+          "name": "recommended",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "promotional_labels": {
+          "name": "promotional_labels",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
+        },
+        "currency": {
+          "name": "currency",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'MDL'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "seo_title_ru": {
+          "name": "seo_title_ru",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_title_ro": {
+          "name": "seo_title_ro",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_description_ru": {
+          "name": "seo_description_ru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_description_ro": {
+          "name": "seo_description_ro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_keywords_ru": {
+          "name": "seo_keywords_ru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_keywords_ro": {
+          "name": "seo_keywords_ro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_h1_ru": {
+          "name": "seo_h1_ru",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_h1_ro": {
+          "name": "seo_h1_ro",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "og_title_ru": {
+          "name": "og_title_ru",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "og_title_ro": {
+          "name": "og_title_ro",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "og_description_ru": {
+          "name": "og_description_ru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "og_description_ro": {
+          "name": "og_description_ro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "og_image": {
+          "name": "og_image",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_canonical": {
+          "name": "seo_canonical",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_robots": {
+          "name": "seo_robots",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_priority": {
+          "name": "seo_priority",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_schema_type": {
+          "name": "seo_schema_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seo_schema_data": {
+          "name": "seo_schema_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "doctor_experience": {
+          "name": "doctor_experience",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_licenses": {
+          "name": "has_licenses",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "has_certificates": {
+          "name": "has_certificates",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "online_booking": {
+          "name": "online_booking",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "weekend_work": {
+          "name": "weekend_work",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "evening_work": {
+          "name": "evening_work",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "urgent_care": {
+          "name": "urgent_care",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "convenient_location": {
+          "name": "convenient_location",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "installment_plan": {
+          "name": "installment_plan",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "has_promotions": {
+          "name": "has_promotions",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "published_pricing": {
+          "name": "published_pricing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "free_consultation": {
+          "name": "free_consultation",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "interest_free_installment": {
+          "name": "interest_free_installment",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "implant_warranty": {
+          "name": "implant_warranty",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "popular_services_promotions": {
+          "name": "popular_services_promotions",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "online_price_calculator": {
+          "name": "online_price_calculator",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "pediatric_dentistry": {
+          "name": "pediatric_dentistry",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "parking": {
+          "name": "parking",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "sos": {
+          "name": "sos",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "work_24h": {
+          "name": "work_24h",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "credit": {
+          "name": "credit",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "clinics_slug_idx": {
+          "name": "clinics_slug_idx",
+          "tableName": "clinics",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true,
+          "isPrimary": false,
+          "isNameCustom": false
+        },
+        "clinics_city_id_idx": {
+          "name": "clinics_city_id_idx",
+          "tableName": "clinics",
+          "columns": [
+            "city_id"
+          ],
+          "isUnique": false,
+          "isPrimary": false,
+          "isNameCustom": false
+        },
+        "clinics_verified_idx": {
+          "name": "clinics_verified_idx",
+          "tableName": "clinics",
+          "columns": [
+            "verified"
+          ],
+          "isUnique": false,
+          "isPrimary": false,
+          "isNameCustom": false
+        },
+        "clinics_d_score_idx": {
+          "name": "clinics_d_score_idx",
+          "tableName": "clinics",
+          "columns": [
+            "d_score"
+          ],
+          "isUnique": false,
+          "isPrimary": false,
+          "isNameCustom": false
+        },
+        "clinics_recommended_idx": {
+          "name": "clinics_recommended_idx",
+          "tableName": "clinics",
+          "columns": [
+            "recommended"
+          ],
+          "isUnique": false,
+          "isPrimary": false,
+          "isNameCustom": false
+        },
+        "clinics_created_at_idx": {
+          "name": "clinics_created_at_idx",
+          "tableName": "clinics",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false,
+          "isPrimary": false,
+          "isNameCustom": false
+        }
+      },
+      "foreignKeys": {
+        "clinics_city_id_cities_id_fk": {
+          "name": "clinics_city_id_cities_id_fk",
+          "tableName": "clinics",
+          "columns": [
+            "city_id"
+          ],
+          "referencedTableName": "cities",
+          "referencedTableSchema": "",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "clinics_district_id_districts_id_fk": {
+          "name": "clinics_district_id_districts_id_fk",
+          "tableName": "clinics",
+          "columns": [
+            "district_id"
+          ],
+          "referencedTableName": "districts",
+          "referencedTableSchema": "",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+

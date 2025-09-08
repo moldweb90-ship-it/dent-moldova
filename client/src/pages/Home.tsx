@@ -12,6 +12,9 @@ import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
 import { RecommendedClinics } from '../components/RecommendedClinics';
+import { DynamicSEO } from '../components/DynamicSEO';
+import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
+
 import { useTranslation } from '../lib/i18n';
 
 export default function Home() {
@@ -25,31 +28,65 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   const [filters, setFilters] = useState<FilterValues>({
     districts: [],
-    specializations: [],
-    languages: [],
-    verified: false,
-    urgentToday: false,
-    priceRange: [0, 100],
-    sort: 'dscore'
+    features: [],
+    promotionalLabels: [],
+    sort: 'dscore',
+    verified: undefined
   });
   
   const [page, setPage] = useState(1);
   const limit = 50;
+  const { language } = useTranslation();
+
+  // Убираем отслеживание скролла для анимированного меню
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const currentScrollY = window.scrollY;
+  //     const headerHeight = 64;
+  //     
+  //     if (currentScrollY > headerHeight) {
+  //       setIsHeaderVisible(true);
+  //     } else {
+  //       setIsHeaderVisible(false);
+  //     }
+  //     
+  //     setLastScrollY(currentScrollY);
+  //   };
+
+  //   window.addEventListener('scroll', handleScroll, { passive: true });
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, [lastScrollY]);
 
   // Fetch cities
-  const { data: cities = [] } = useQuery<any[]>({
-    queryKey: ['/api/cities'],
+  const { data: cities = [], isLoading: citiesLoading } = useQuery<any[]>({
+    queryKey: ['/api/cities', language],
+    queryFn: async () => {
+      const response = await fetch('/api/cities');
+      if (!response.ok) throw new Error('Failed to fetch cities');
+      const data = await response.json();
+      console.log('🔍 Cities loaded:', data);
+      return data;
+    },
   });
 
   // Fetch districts for selected city
-  const { data: districts = [] } = useQuery<any[]>({
-    queryKey: ['/api/cities', filters.city, 'districts'],
+  const { data: districts = [], isLoading: districtsLoading } = useQuery<any[]>({
+    queryKey: ['/api/cities', filters.city, 'districts', language],
     enabled: !!filters.city,
+    queryFn: async () => {
+      const response = await fetch(`/api/cities/${filters.city}/districts`);
+      if (!response.ok) throw new Error('Failed to fetch districts');
+      const data = await response.json();
+      console.log('🔍 Districts loaded for city', filters.city, ':', data);
+      return data;
+    },
   });
-
+  
   // Build query parameters
   const buildQueryParams = useCallback(() => {
     const params = new URLSearchParams();
@@ -59,40 +96,62 @@ export default function Home() {
     if (filters.districts.length > 0) {
       filters.districts.forEach(d => params.append('districts', d));
     }
-    if (filters.specializations.length > 0) {
-      filters.specializations.forEach(s => params.append('specializations', s));
+    if (filters.features.length > 0) {
+      filters.features.forEach(f => params.append('features', f));
     }
-    if (filters.languages.length > 0) {
-      filters.languages.forEach(l => params.append('languages', l));
+    if (filters.promotionalLabels.length > 0) {
+      filters.promotionalLabels.forEach(label => params.append('promotionalLabels', label));
     }
-    if (filters.verified) params.set('verified', 'true');
-    if (filters.urgentToday) params.set('urgentToday', 'true');
-    if (filters.priceRange[0] > 0) params.set('priceMin', filters.priceRange[0].toString());
-    if (filters.priceRange[1] < 100) params.set('priceMax', filters.priceRange[1].toString());
+    
+    if (filters.verified !== undefined) {
+      params.set('verified', filters.verified.toString());
+    }
+    
+    if (filters.openNow !== undefined) {
+      params.set('openNow', filters.openNow.toString());
+    }
+    
     params.set('sort', filters.sort);
     params.set('page', page.toString());
     params.set('limit', limit.toString());
+    params.set('language', language);
     
-    return params.toString();
-  }, [searchQuery, filters, page]);
+    const queryString = params.toString();
+    console.log('🔍 Frontend query params:', queryString);
+    console.log('🔍 Frontend filters:', filters);
+    console.log('🔍 Cities available:', cities.length);
+    console.log('🔍 Districts available:', districts.length);
+    
+    return queryString;
+  }, [searchQuery, filters, page, language, cities.length, districts.length]);
 
   // Fetch clinics
+  const queryKey = ['/api/clinics', buildQueryParams()];
+  console.log('🔍 Query key:', queryKey);
+  
   const { data: clinicsData, isLoading } = useQuery({
-    queryKey: ['/api/clinics', buildQueryParams()],
+    queryKey,
     queryFn: async () => {
       const response = await fetch(`/api/clinics?${buildQueryParams()}`);
       if (!response.ok) throw new Error('Failed to fetch clinics');
-      return response.json();
+      const data = await response.json();
+      console.log('🔍 Clinics data received:', data.clinics.length, 'clinics');
+      // console.log('🔍 First clinic sample:', data.clinics[0]);
+      return data;
     },
+          staleTime: 0, // Disable caching for debugging
   });
 
   // Fetch clinic detail
-  const { data: clinicDetail } = useQuery({
-    queryKey: ['/api/clinics', selectedClinic],
+  const { data: clinicDetail, error: clinicDetailError } = useQuery({
+    queryKey: ['/api/clinics', selectedClinic, language],
     enabled: !!selectedClinic,
     queryFn: async () => {
-      const response = await fetch(`/api/clinics/${selectedClinic}`);
-      if (!response.ok) throw new Error('Failed to fetch clinic');
+      const response = await fetch(`/api/clinics/${selectedClinic}?language=${language}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch clinic: ${response.status} ${errorText}`);
+      }
       return response.json();
     },
   });
@@ -103,6 +162,7 @@ export default function Home() {
   }, []);
 
   const handleFiltersChange = useCallback((newFilters: FilterValues) => {
+    console.log('🔍 handleFiltersChange:', newFilters);
     setFilters(newFilters);
     setPage(1);
   }, []);
@@ -114,12 +174,11 @@ export default function Home() {
   const handleResetFilters = useCallback(() => {
     setFilters({
       districts: [],
-      specializations: [],
-      languages: [],
-      verified: false,
-      urgentToday: false,
-      priceRange: [0, 100],
-      sort: 'dscore'
+      features: [],
+      promotionalLabels: [],
+      sort: 'dscore',
+      verified: undefined,
+      openNow: undefined
     });
     setSearchQuery('');
     setPage(1);
@@ -142,14 +201,28 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <DynamicSEO
+        title={language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник в Молдове" : "Dent Moldova - Catalogul clinicilor stomatologice din Moldova"}
+        description={language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны." : "Găsiți cele mai bune clinici stomatologice din Moldova. Programare online, recenzii, prețuri, adrese și telefoane."}
+        keywords={language === 'ru' ? "стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв" : "stomatologie, stomatolog, tratament dentar, clinică, Moldova, Chișinău"}
+        ogTitle={language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник" : "Dent Moldova - Catalogul clinicilor stomatologice"}
+        ogDescription={language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове" : "Găsiți cele mai bune clinici stomatologice din Moldova"}
+        canonical="http://localhost:5000"
+      />
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">{t('appTitle')}</h1>
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                {t('appTitle')}
+              </button>
             </div>
             
             <div className="flex items-center space-x-2 md:space-x-4">
@@ -206,25 +279,45 @@ export default function Home() {
         {/* Left Sidebar - Filters (Desktop) */}
         {filtersVisible && (
           <div className="hidden md:block w-80 flex-shrink-0">
-            <FiltersSidebar
-              cities={cities}
-              districts={districts}
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onApply={handleApplyFilters}
-              onReset={handleResetFilters}
-              onSearch={handleSearch}
-            />
+            <div className="sticky top-4">
+              <FiltersSidebar
+                cities={cities}
+                districts={districts}
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
+                onSearch={handleSearch}
+              />
+              
+              {/* Active Clinics Counter */}
+              <div className="p-4 border-t border-gray-200">
+                <ActiveClinicsCounter 
+                  onClick={() => {
+                    setFilters({ 
+                      districts: [],
+                      features: [],
+                      promotionalLabels: [],
+                      sort: 'dscore',
+                      verified: true 
+                    });
+                    setPage(1);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 px-4 md:px-8 py-4 md:py-8 ${!filtersVisible ? 'max-w-full' : ''}`}>
+        <main className={`flex-1 px-4 md:px-8 py-2 md:py-8 md:min-h-screen ${!filtersVisible ? 'max-w-full' : ''}`}>
         {/* Recommended Clinics Section */}
         <RecommendedClinics
           onClinicClick={handleClinicClick}
           onBookClick={handleBookClick}
         />
+        
+
         {isLoading ? (
           <div className="space-y-8">
             {/* Results Info Skeleton */}
@@ -261,6 +354,7 @@ export default function Home() {
             onPageChange={handlePageChange}
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
+            filtersVisible={filtersVisible}
           />
         ) : (
           <div className="text-center py-12">
@@ -287,6 +381,24 @@ export default function Home() {
         }}
         onBookClick={handleBookClick}
       />
+      
+      {clinicDetailError && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md">
+            <h3 className="text-lg font-semibold text-red-600 mb-2">Ошибка загрузки клиники</h3>
+            <p className="text-sm text-gray-600 mb-4">{clinicDetailError.message}</p>
+            <button 
+              onClick={() => {
+                setDetailOpen(false);
+                setSelectedClinic(null);
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
       
       <BookingModal
         clinic={bookingClinic}
@@ -317,14 +429,17 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <footer className="bg-white border-t border-gray-200 mt-8 md:mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+          
+          
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
               <p className="text-sm text-gray-600">© 2024 {t('appTitle')}. Все права защищены.</p>
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-6 text-sm text-gray-600">
+                <a href="/pricing" className="hover:text-gray-900 transition-colors">{t('pricing.title')}</a>
                 <a href="#" className="hover:text-gray-900 transition-colors">Политика приватности</a>
                 <a href="#" className="hover:text-gray-900 transition-colors">Контакты</a>
               </div>
@@ -343,6 +458,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

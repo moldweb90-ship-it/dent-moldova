@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,12 +20,15 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { ClinicForm } from './ClinicForm';
+import { getCityName, getDistrictName } from '@/lib/utils';
+import ClinicForm from './ClinicForm';
+import { AnimatedProgressBar } from '../../components/AnimatedProgressBar';
 
 interface Clinic {
   id: string;
   slug: string;
-  name: string;
+  nameRu: string;
+  nameRo: string;
   logoUrl?: string;
   city: { nameRu: string; nameRo: string };
   district?: { nameRu: string; nameRo: string };
@@ -33,27 +36,46 @@ interface Clinic {
   phone?: string;
   website?: string;
   verified: boolean;
-  cnam: boolean;
+
   availToday: boolean;
   dScore: number;
+  promotionalLabels?: string[];
   createdAt: string;
   updatedAt: string;
 }
 
 export function ClinicsManagement() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingClinic, setEditingClinic] = useState<Clinic | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: clinicsData, isLoading } = useQuery({
-    queryKey: ['/api/admin/clinics', { q: searchQuery }],
+    queryKey: ['/api/admin/clinics', { q: searchQuery, page: currentPage }],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/admin/clinics?q=${searchQuery}`);
+      const response = await apiRequest('GET', `/api/admin/clinics?q=${searchQuery}&page=${currentPage}&limit=30`);
       return response.json();
     }
   });
+
+  // Проверяем URL на наличие clinicId для автоматического открытия формы редактирования
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clinicId = urlParams.get('clinicId');
+    
+    if (clinicId && clinicsData?.clinics) {
+      const clinic = clinicsData.clinics.find((c: Clinic) => c.id === clinicId);
+      if (clinic) {
+        setEditingClinic(clinic);
+        // Очищаем URL параметр
+        const url = new URL(window.location.href);
+        url.searchParams.delete('clinicId');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [clinicsData?.clinics]);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiRequest('DELETE', `/api/admin/clinics/${id}`),
@@ -74,37 +96,56 @@ export function ClinicsManagement() {
   });
 
   const handleDelete = (clinic: Clinic) => {
-    if (window.confirm(`Вы уверены, что хотите удалить клинику "${clinic.name}"?`)) {
+    if (window.confirm(`Вы уверены, что хотите удалить клинику "${clinic.nameRu}"?`)) {
       deleteMutation.mutate(clinic.id);
     }
   };
 
   const clinics = clinicsData?.clinics || [];
+  const total = clinicsData?.total || 0;
+  const totalPages = Math.ceil(total / 30);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Сбрасываем на первую страницу при поиске
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Управление клиниками</h1>
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Управление клиниками</h1>
+          {!isLoading && (
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              Всего клиник: {total}
+            </p>
+          )}
+        </div>
         <Button 
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Добавить клинику
+          <span className="hidden xs:inline">Добавить клинику</span>
+          <span className="xs:hidden">Добавить</span>
         </Button>
       </div>
 
       {/* Search and Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex space-x-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex space-x-2 sm:space-x-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Поиск клиник..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10 text-sm sm:text-base"
               />
             </div>
           </div>
@@ -112,7 +153,7 @@ export function ClinicsManagement() {
       </Card>
 
       {/* Clinics List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {isLoading ? (
           [...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -126,14 +167,14 @@ export function ClinicsManagement() {
             </Card>
           ))
         ) : clinics.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Search className="h-12 w-12 mx-auto" />
+          <div className="col-span-full text-center py-8 sm:py-12">
+            <div className="text-gray-400 mb-3 sm:mb-4">
+              <Search className="h-8 w-8 sm:h-12 sm:w-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
               {searchQuery ? 'Клиники не найдены' : 'Нет клиник'}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600 px-4">
               {searchQuery 
                 ? 'Попробуйте изменить поисковый запрос'
                 : 'Добавьте первую клинику в систему'
@@ -142,114 +183,155 @@ export function ClinicsManagement() {
           </div>
         ) : (
           clinics.map((clinic: Clinic) => (
-            <Card key={clinic.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
+            <Card key={clinic.id} className="hover:shadow-lg transition-shadow flex flex-col">
+              <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
                 <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg font-bold text-gray-900 truncate">
-                      {clinic.name}
-                    </CardTitle>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {clinic.city.nameRu}
-                      {clinic.district && `, ${clinic.district.nameRu}`}
+                  <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0">
+                    {/* Clinic Logo */}
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={clinic.logoUrl || `https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100`}
+                        alt={clinic.nameRu}
+                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover border"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100';
+                        }}
+                      />
                     </div>
-                  </div>
-                  <div className="flex space-x-1">
-                    {clinic.verified && (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                        <Award className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
-                    {clinic.cnam && (
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        CNAM
-                      </Badge>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <CardTitle 
+                        className="text-sm sm:text-lg font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={() => setEditingClinic(clinic)}
+                      >
+                        {clinic.nameRu}
+                      </CardTitle>
+                      <div className="flex items-center text-xs sm:text-sm text-gray-600 mt-1">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span>
+                          {getCityName(clinic.city)}
+                          {clinic.district && `, ${getDistrictName(clinic.district)}`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent className="pt-0">
-                <div className="space-y-3">
+              <CardContent className="pt-0 px-3 sm:px-6 flex-1 flex flex-col">
+                <div className="space-y-2 sm:space-y-3 flex-1">
+                  {/* Status Badges */}
+                  <div className="flex flex-wrap gap-1">
+                    {clinic.verified && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                        <Award className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
+                        <span className="hidden xs:inline">Проверено</span>
+                        <span className="xs:hidden">✓</span>
+                      </Badge>
+                    )}
+
+                  </div>
+
                   {/* D-Score */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">D-Score</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Общий рейтинг</span>
                     <div className="flex items-center">
-                      <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
-                        <div 
-                          className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all"
-                          style={{ width: `${clinic.dScore}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-bold">{clinic.dScore}</span>
+                      <AnimatedProgressBar
+                        value={clinic.dScore}
+                        className="w-12 sm:w-20 bg-gray-200 rounded-full h-1.5 sm:h-2 mr-2"
+                        barClassName="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 sm:h-2 rounded-full"
+                        duration={1000}
+                        delay={200}
+                      />
+                      <span className="text-xs sm:text-sm font-bold">{clinic.dScore}</span>
                     </div>
                   </div>
 
                   {/* Contact Info */}
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                     {clinic.phone && (
                       <div className="flex items-center text-gray-600">
-                        <Phone className="h-3 w-3 mr-2" />
-                        {clinic.phone}
+                        <Phone className="h-3 w-3 mr-1 sm:mr-2" />
+                        <span className="truncate">{clinic.phone}</span>
                       </div>
                     )}
                     {clinic.website && (
                       <div className="flex items-center text-gray-600">
-                        <Globe className="h-3 w-3 mr-2" />
+                        <Globe className="h-3 w-3 mr-1 sm:mr-2" />
                         <span className="truncate">{clinic.website}</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Status */}
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center">
-                      {clinic.availToday ? (
-                        <span className="text-green-600 flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Доступно сегодня
-                        </span>
-                      ) : (
-                        <span className="text-gray-500 flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Недоступно
-                        </span>
-                      )}
+                  {/* Promotional Labels */}
+                  {clinic.promotionalLabels && clinic.promotionalLabels.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {clinic.promotionalLabels.map((label, index) => {
+                        const labelStyles: Record<string, string> = {
+                          'premium': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white',
+                          'discount': 'bg-gradient-to-r from-red-400 to-pink-500 text-white',
+                          'new': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white',
+                          'popular': 'bg-gradient-to-r from-purple-400 to-indigo-500 text-white',
+                          'high_rating': 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
+                        };
+                        
+                        const labelNames: Record<string, string> = {
+                          'premium': 'Премиум',
+                          'discount': 'Скидки',
+                          'new': 'Новая',
+                          'popular': 'Выбор пациентов',
+                          'high_rating': 'Высокий рейтинг'
+                        };
+                        
+                        return (
+                          <Badge 
+                            key={index} 
+                            className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-medium ${labelStyles[label] || 'bg-gray-500 text-white'}`}
+                          >
+                            {labelNames[label] || label}
+                          </Badge>
+                        );
+                      })}
                     </div>
+                  )}
+
+                  {/* Last Updated Date */}
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-500">
-                      {new Date(clinic.createdAt).toLocaleDateString('ru-RU')}
+                      <span className="hidden sm:inline">Обновлено: </span>
+                      <span className="sm:hidden">Обн: </span>
+                      {new Date(clinic.updatedAt).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
+                </div>
 
-                  {/* Actions */}
-                  <div className="flex space-x-2 pt-2 border-t border-gray-100">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => window.open(`/clinic/${clinic.slug}`, '_blank')}
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Просмотр
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingClinic(clinic)}
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => handleDelete(clinic)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+                {/* Actions - всегда внизу */}
+                <div className="flex space-x-1 sm:space-x-2 pt-2 border-t border-gray-100 mt-auto">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => window.open(`/clinic/${clinic.slug}`, '_blank')}
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    Просмотр
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => setEditingClinic(clinic)}
+                  >
+                    <Edit className="h-3 w-3" />
+                    <span className="hidden xs:inline ml-1">Изм</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                    onClick={() => handleDelete(clinic)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -257,9 +339,100 @@ export function ClinicsManagement() {
         )}
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-2 sm:px-4 py-3 sm:px-6 rounded-lg">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="text-xs"
+            >
+              Назад
+            </Button>
+            <div className="flex items-center text-xs text-gray-600">
+              {currentPage} / {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="text-xs"
+            >
+              Вперед
+            </Button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Показано <span className="font-medium">{((currentPage - 1) * 30) + 1}</span> -{' '}
+                <span className="font-medium">
+                  {Math.min(currentPage * 30, total)}
+                </span>{' '}
+                из <span className="font-medium">{total}</span> клиник
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                >
+                  <span className="sr-only">Предыдущая</span>
+                  ←
+                </Button>
+                
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                >
+                  <span className="sr-only">Следующая</span>
+                  →
+                </Button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Добавить новую клинику</DialogTitle>
           </DialogHeader>
@@ -275,7 +448,7 @@ export function ClinicsManagement() {
 
       {/* Edit Modal */}
       <Dialog open={!!editingClinic} onOpenChange={() => setEditingClinic(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Редактировать клинику</DialogTitle>
           </DialogHeader>

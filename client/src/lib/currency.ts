@@ -26,6 +26,22 @@ export const CURRENCY_NAMES: Record<Currency, string> = {
   USD: 'доллар',
 };
 
+export const CURRENCY_NAMES_RO: Record<Currency, string> = {
+  MDL: 'lei',
+  EUR: 'euro',
+  USD: 'dolar',
+};
+
+/**
+ * Get currency name based on language
+ */
+export function getCurrencyName(currency: Currency, language: 'ru' | 'ro'): string {
+  if (language === 'ro') {
+    return CURRENCY_NAMES_RO[currency];
+  }
+  return CURRENCY_NAMES[currency];
+}
+
 /**
  * Convert price from one currency to another
  */
@@ -48,13 +64,13 @@ export function convertPrice(
 /**
  * Format price with currency symbol
  */
-export function formatPrice(amount: number, currency: Currency): string {
-  const symbol = CURRENCY_SYMBOLS[currency];
-  
+export function formatPrice(amount: number, currency: Currency, language?: 'ru' | 'ro'): string {
   if (currency === 'MDL') {
+    const symbol = language === 'ro' ? 'lei' : 'лей';
     return `${amount} ${symbol}`;
   }
   
+  const symbol = CURRENCY_SYMBOLS[currency];
   return `${symbol}${amount}`;
 }
 

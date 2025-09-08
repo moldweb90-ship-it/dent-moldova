@@ -11,7 +11,8 @@ interface Service {
 interface Clinic {
   id: string;
   slug: string;
-  name: string;
+  nameRu: string;
+  nameRo: string;
   logoUrl?: string;
   city: { nameRu: string; nameRo: string };
   district?: { nameRu: string; nameRo: string } | null;
@@ -39,6 +40,7 @@ interface ClinicGridProps {
   onPageChange: (page: number) => void;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
+  filtersVisible?: boolean; // Новый пропс для состояния фильтров
 }
 
 export function ClinicGrid({ 
@@ -48,27 +50,40 @@ export function ClinicGrid({
   limit, 
   onPageChange, 
   onClinicClick, 
-  onBookClick
+  onBookClick,
+  filtersVisible = true // По умолчанию фильтры видимы
 }: ClinicGridProps) {
   const { t } = useTranslation();
   const totalPages = Math.ceil(total / limit);
   const startResult = (page - 1) * limit + 1;
   const endResult = Math.min(page * limit, total);
 
+  // Определяем количество колонок в зависимости от состояния фильтров
+  const gridCols = filtersVisible 
+    ? 'grid-cols-2 md:grid-cols-3' // 3 колонки когда фильтры включены
+    : 'grid-cols-2 md:grid-cols-4'; // 4 колонки когда фильтры скрыты
+
   return (
     <div className="space-y-8">
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {clinics.map(clinic => (
-          <ClinicCard
-            key={clinic.id}
-            clinic={clinic}
-            onClinicClick={onClinicClick}
-            onBookClick={onBookClick}
-            onPricesClick={(slug) => onClinicClick(slug)}
-          />
-        ))}
+      <div className={`grid ${gridCols} gap-4 md:gap-6`}>
+        {clinics.map(clinic => {
+          // console.log('🔍 ClinicGrid clinic:', {
+          //   id: clinic.id,
+          //   nameRu: clinic.nameRu,
+          //   nameRo: clinic.nameRo
+          // });
+          return (
+            <ClinicCard
+              key={clinic.id}
+              clinic={clinic}
+              onClinicClick={onClinicClick}
+              onBookClick={onBookClick}
+              onPricesClick={(slug) => onClinicClick(slug)}
+            />
+          );
+        })}
       </div>
 
       {/* Pagination */}

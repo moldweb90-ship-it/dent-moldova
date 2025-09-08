@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1755326016480,
+      "tag": "0000_eminent_cerebro",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755326745146,
+      "tag": "0010_add_contact_method",
+      "breakpoints": true
+    }
+  ]
+}

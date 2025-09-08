@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,13 +13,14 @@ import { Calendar, Clock, Phone, User, Mail } from 'lucide-react';
 
 const bookingSchema = z.object({
   firstName: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
-  lastName: z.string().min(2, 'Фамилия должна содержать минимум 2 символа'),
-  phone: z.string().min(10, 'Введите корректный номер телефона'),
+  phone: z.string().min(7, 'Введите корректный номер телефона (минимум 7 цифр)'),
   email: z.union([z.literal(''), z.string().email('Введите корректный email')]).optional(),
-  service: z.string().min(1, 'Выберите услугу'),
-  preferredDate: z.string().min(1, 'Выберите предпочтительную дату'),
-  preferredTime: z.string().min(1, 'Выберите предпочтительное время'),
+  contactMethod: z.string().default('phone'),
+  service: z.string().optional(),
+  preferredDate: z.string().optional(),
+  preferredTime: z.string().optional(),
   notes: z.string().optional(),
+  agreement: z.boolean().refine(val => val === true, 'Необходимо согласие'),
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -30,6 +31,15 @@ interface BookingFormProps {
     name: string;
     phone?: string;
     specializations?: string[];
+    workingHours?: Array<{
+      dayOfWeek: number;
+      isOpen: boolean;
+      openTime: string;
+      closeTime: string;
+      breakStartTime: string;
+      breakEndTime: string;
+      is24Hours: boolean;
+    }>;
   } | null;
   open: boolean;
   onClose: () => void;
@@ -38,18 +48,20 @@ interface BookingFormProps {
 export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clinicServices, setClinicServices] = useState<{id: string, name: string, price: number, currency: string}[]>([]);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       firstName: '',
-      lastName: '',
       phone: '',
       email: '',
+      contactMethod: 'phone',
       service: '',
       preferredDate: '',
       preferredTime: '',
       notes: '',
+      agreement: false,
     }
   });
 
@@ -57,144 +69,250 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
     setIsSubmitting(true);
     try {
       const bookingData = {
-        ...data,
-        clinicId: clinic?.id
+        clinicId: clinic?.id,
+        firstName: data.firstName.trim(),
+        phone: data.phone,
+        email: data.email?.trim() || undefined,
+        contactMethod: data.contactMethod,
+        service: data.service,
+        preferredDate: data.preferredDate,
+        preferredTime: data.preferredTime,
+        notes: data.notes?.trim() || undefined,
       };
       
       await apiRequest('POST', '/api/bookings', bookingData);
       
       toast({
-        title: 'Заявка отправлена!',
-        description: `Ваша заявка на запись в ${clinic?.name} успешно отправлена. Мы свяжемся с вами в ближайшее время.`,
+        title: "Запись успешно отправлена!",
+        description: `Мы свяжемся с вами в ближайшее время для подтверждения записи в ${clinic?.name}.`,
       });
       
       form.reset();
       onClose();
     } catch (error: any) {
       toast({
-        title: 'Ошибка',
-        description: error.message || 'Не удалось отправить заявку. Попробуйте еще раз.',
-        variant: 'destructive'
+        title: "Ошибка",
+        description: error.message || "Не удалось отправить заявку. Попробуйте еще раз.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Загружаем услуги клиники
+  useEffect(() => {
+    const loadClinicServices = async () => {
+      if (!clinic?.id) {
+        console.log('BookingForm: Нет ID клиники');
+        setClinicServices([]);
+        return;
+      }
+      
+      try {
+        console.log('BookingForm: Загружаем услуги для клиники:', clinic.id);
+        const response = await apiRequest('GET', `/api/clinics/${clinic.id}/services?language=ru`);
+        const services = await response.json();
+        console.log('BookingForm: Получены услуги:', services);
+        setClinicServices(services);
+      } catch (error) {
+        console.error('BookingForm: Ошибка загрузки услуг клиники:', error);
+        // Если не удалось загрузить, используем пустой массив
+        setClinicServices([]);
+      }
+    };
+
+    loadClinicServices();
+  }, [clinic?.id]);
+
   if (!clinic) return null;
 
-  const services = clinic.specializations || [
-    'Консультация стоматолога',
-    'Лечение кариеса',
-    'Профессиональная чистка',
-    'Отбеливание зубов',
-    'Имплантация',
-    'Ортодонтия',
-    'Удаление зубов'
-  ];
+  // Используем загруженные услуги или fallback
+  const services = clinicServices.length > 0 
+    ? clinicServices.map(service => service.name)
+    : (clinic.specializations || [
+        'Консультация стоматолога',
+        'Лечение кариеса',
+        'Профессиональная чистка',
+        'Отбеливание зубов',
+        'Имплантация',
+        'Ортодонтия',
+        'Удаление зубов'
+      ]);
 
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-  ];
+  // Функция для генерации временных слотов на основе рабочих часов клиники
+  const generateTimeSlots = (selectedDate: string) => {
+    if (!selectedDate || !clinic?.workingHours || clinic.workingHours.length === 0) {
+      // Возвращаем стандартные слоты если нет данных о рабочих часах
+      return [
+        '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+      ];
+    }
+
+    const date = new Date(selectedDate);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    // Находим рабочие часы для выбранного дня
+    const dayWorkingHours = clinic.workingHours.find(wh => wh.dayOfWeek === dayOfWeek);
+    
+    if (!dayWorkingHours || !dayWorkingHours.isOpen) {
+      return []; // Клиника не работает в этот день
+    }
+
+    if (dayWorkingHours.is24Hours) {
+      // Для 24-часовой работы генерируем слоты каждый час
+      const slots = [];
+      for (let hour = 0; hour < 24; hour++) {
+        slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      }
+      return slots;
+    }
+
+    if (!dayWorkingHours.openTime || !dayWorkingHours.closeTime) {
+      return []; // Нет данных о времени работы
+    }
+
+    const slots = [];
+    const openTime = dayWorkingHours.openTime; // "09:00"
+    const closeTime = dayWorkingHours.closeTime; // "18:00"
+    const breakStart = dayWorkingHours.breakStartTime; // "13:00"
+    const breakEnd = dayWorkingHours.breakEndTime; // "14:00"
+
+    // Парсим время
+    const openHour = parseInt(openTime.split(':')[0]);
+    const openMinute = parseInt(openTime.split(':')[1]);
+    const closeHour = parseInt(closeTime.split(':')[0]);
+    const closeMinute = parseInt(closeTime.split(':')[1]);
+
+    let currentHour = openHour;
+    let currentMinute = openMinute;
+
+    while (currentHour < closeHour || (currentHour === closeHour && currentMinute < closeMinute)) {
+      const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+      
+      // Проверяем, не попадает ли время в перерыв
+      if (breakStart && breakEnd) {
+        const breakStartHour = parseInt(breakStart.split(':')[0]);
+        const breakStartMinute = parseInt(breakStart.split(':')[1]);
+        const breakEndHour = parseInt(breakEnd.split(':')[0]);
+        const breakEndMinute = parseInt(breakEnd.split(':')[1]);
+        
+        const isInBreak = (
+          (currentHour > breakStartHour || (currentHour === breakStartHour && currentMinute >= breakStartMinute)) &&
+          (currentHour < breakEndHour || (currentHour === breakEndHour && currentMinute < breakEndMinute))
+        );
+        
+        if (!isInBreak) {
+          slots.push(timeString);
+        }
+      } else {
+        slots.push(timeString);
+      }
+
+      // Увеличиваем время на час (для BookingForm)
+      currentHour++;
+    }
+
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots(form.watch('preferredDate'));
+
+  // Сбрасываем выбранное время при изменении даты
+  useEffect(() => {
+    const currentTime = form.watch('preferredTime');
+    if (currentTime && timeSlots.length > 0 && !timeSlots.includes(currentTime)) {
+      form.setValue('preferredTime', '');
+    }
+  }, [form.watch('preferredDate'), timeSlots, form]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5" />
-            <span>Записаться на прием</span>
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto mx-auto">
+        <DialogHeader className="border-b border-gray-200 pb-4">
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900">
+            Запись в {clinic?.name || 'клинику'}
           </DialogTitle>
-          <p className="text-sm text-gray-600">{clinic.name}</p>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Personal Information */}
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          {/* Имя и Телефон в одной строке */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName" className="flex items-center space-x-1">
-                <User className="h-3 w-3" />
-                <span>Имя</span>
-              </Label>
+              <Label htmlFor="firstName">Имя *</Label>
               <Input
                 id="firstName"
                 {...form.register('firstName')}
                 placeholder="Ваше имя"
-                className="mt-1"
+                className={form.formState.errors.firstName ? 'border-red-500' : ''}
               />
               {form.formState.errors.firstName && (
-                <p className="text-sm text-red-600">{form.formState.errors.firstName.message}</p>
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.firstName.message}</p>
               )}
             </div>
-            
+
             <div>
-              <Label htmlFor="lastName">Фамилия</Label>
+              <Label htmlFor="phone">Телефон *</Label>
               <Input
-                id="lastName"
-                {...form.register('lastName')}
-                placeholder="Ваша фамилия"
-                className="mt-1"
+                id="phone"
+                {...form.register('phone')}
+                placeholder="+373 XX XXX XXX"
+                className={form.formState.errors.phone ? 'border-red-500' : ''}
               />
-              {form.formState.errors.lastName && (
-                <p className="text-sm text-red-600">{form.formState.errors.lastName.message}</p>
+              {form.formState.errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.phone.message}</p>
               )}
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div>
-            <Label htmlFor="phone" className="flex items-center space-x-1">
-              <Phone className="h-3 w-3" />
-              <span>Телефон</span>
-            </Label>
-            <Input
-              id="phone"
-              {...form.register('phone')}
-              placeholder="+373 XX XXX XXX"
-              className="mt-1"
-            />
-            {form.formState.errors.phone && (
-              <p className="text-sm text-red-600">{form.formState.errors.phone.message}</p>
-            )}
+          {/* Email и Способ связи в одной строке */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email">Email (необязательно)</Label>
+              <Input
+                id="email"
+                type="email"
+                {...form.register('email')}
+                placeholder="your@email.com"
+                className={form.formState.errors.email ? 'border-red-500' : ''}
+              />
+              {form.formState.errors.email && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
+              <select
+                id="contactMethod"
+                {...form.register('contactMethod')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              >
+                <option value="phone">Телефон</option>
+                <option value="email">Email</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="telegram">Telegram</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="email" className="flex items-center space-x-1">
-              <Mail className="h-3 w-3" />
-              <span>Email (необязательно)</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              {...form.register('email')}
-              placeholder="your@email.com"
-              className="mt-1"
-            />
-            {form.formState.errors.email && (
-              <p className="text-sm text-red-600">{form.formState.errors.email.message}</p>
-            )}
-          </div>
-
-          {/* Service Selection */}
+          {/* Услуга */}
           <div>
             <Label htmlFor="service">Услуга</Label>
             <select
               id="service"
               {...form.register('service')}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             >
               <option value="">Выберите услугу</option>
               {services.map((service) => (
                 <option key={service} value={service}>{service}</option>
               ))}
             </select>
-            {form.formState.errors.service && (
-              <p className="text-sm text-red-600">{form.formState.errors.service.message}</p>
-            )}
           </div>
 
-          {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Дата и Время */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="preferredDate">Предпочтительная дата</Label>
               <Input
@@ -202,72 +320,66 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
                 type="date"
                 {...form.register('preferredDate')}
                 min={new Date().toISOString().split('T')[0]}
-                className="mt-1"
               />
-              {form.formState.errors.preferredDate && (
-                <p className="text-sm text-red-600">{form.formState.errors.preferredDate.message}</p>
-              )}
             </div>
             
             <div>
-              <Label htmlFor="preferredTime" className="flex items-center space-x-1">
-                <Clock className="h-3 w-3" />
-                <span>Время</span>
-              </Label>
+              <Label htmlFor="preferredTime">Время</Label>
               <select
                 id="preferredTime"
                 {...form.register('preferredTime')}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
               >
                 <option value="">Выберите время</option>
-                {timeSlots.map((time) => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
+                {timeSlots.length > 0 ? (
+                  timeSlots.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    {form.watch('preferredDate') ? 'Клиника не работает в этот день' : 'Выберите дату'}
+                  </option>
+                )}
               </select>
-              {form.formState.errors.preferredTime && (
-                <p className="text-sm text-red-600">{form.formState.errors.preferredTime.message}</p>
-              )}
             </div>
           </div>
 
-          {/* Additional Notes */}
+          {/* Комментарий */}
           <div>
-            <Label htmlFor="notes">Дополнительные пожелания</Label>
+            <Label htmlFor="notes">Комментарий</Label>
             <Textarea
               id="notes"
               {...form.register('notes')}
-              placeholder="Расскажите о ваших пожеланиях или особенностях..."
-              className="mt-1 resize-none"
+              placeholder="Дополнительная информация..."
               rows={3}
             />
           </div>
 
-          {/* Contact Info Display */}
-          {clinic.phone && (
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Для срочной записи:</strong> {clinic.phone}
-              </p>
-            </div>
-          )}
+          {/* Согласие на обработку данных */}
+          <div className="flex items-start space-x-2">
+            <input
+              type="checkbox"
+              id="agreement"
+              {...form.register('agreement')}
+              className={`mt-1 h-4 w-4 rounded border-gray-300 focus:border-blue-500 ${form.formState.errors.agreement ? 'border-red-500' : ''}`}
+            />
+            <label htmlFor="agreement" className="text-sm text-gray-700 leading-tight">
+              Я согласен на обработку персональных данных и получение информационных сообщений *
+            </label>
+          </div>
+          {form.formState.errors.agreement && <p className="text-red-500 text-sm">{form.formState.errors.agreement.message}</p>}
 
-          {/* Action Buttons */}
-          <div className="flex space-x-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              disabled={isSubmitting}
-            >
-              Отменить
+          {/* Кнопки */}
+          <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Отмена
             </Button>
-            <Button
-              type="submit"
+            <Button 
+              type="submit" 
               disabled={isSubmitting}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isSubmitting ? 'Отправка...' : 'Записаться'}
+              {isSubmitting ? 'Отправляем...' : 'Запись'}
             </Button>
           </div>
         </form>

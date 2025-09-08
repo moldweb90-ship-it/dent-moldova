@@ -1,0 +1,21 @@
+-- Добавляем новые поля для рейтингов
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "doctor_experience" integer DEFAULT 0;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_licenses" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_certificates" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "online_booking" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "weekend_work" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "evening_work" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "urgent_care" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "convenient_location" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "installment_plan" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_promotions" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "doctor_experience" integer DEFAULT 0;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_licenses" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_certificates" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "online_booking" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "weekend_work" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "evening_work" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "urgent_care" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "convenient_location" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "installment_plan" boolean DEFAULT false;
+ALTER TABLE "clinics" ADD COLUMN IF NOT EXISTS "has_promotions" boolean DEFAULT false;

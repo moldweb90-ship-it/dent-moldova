@@ -1,5 +1,7 @@
 import { X } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
+import { getCurrencyName } from '../lib/currency';
+import { getClinicName } from '../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,7 +51,7 @@ export function PricingModal({ clinic, open, onClose, onBookClick }: PricingModa
     ? clinic.packages 
     : clinic.packages.filter(pkg => pkg.code.includes(selectedCategory));
 
-  const currencySymbol = currency === 'MDL' ? 'лей' : '€';
+  const currencySymbol = currency === 'MDL' ? getCurrencyName('MDL', language) : '€';
   const exchangeRate = currency === 'MDL' ? 1 : 0.05;
 
   return (
@@ -57,7 +59,7 @@ export function PricingModal({ clinic, open, onClose, onBookClick }: PricingModa
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-gray-200 pb-4">
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            Цены - {clinic.name}
+            Цены - {getClinicName(clinic)}
           </DialogTitle>
         </DialogHeader>
 
@@ -137,9 +139,9 @@ export function PricingModal({ clinic, open, onClose, onBookClick }: PricingModa
           <div className="flex justify-center">
             <Button 
               onClick={handleBookClick}
-              className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
             >
-              {t('book')}
+              {t('wantAppointment')}
             </Button>
           </div>
 

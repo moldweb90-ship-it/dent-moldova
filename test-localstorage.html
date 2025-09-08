@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test localStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        function testLocalStorage() {
+            const output = document.getElementById('output');
+            
+            const packagesData = localStorage.getItem('packages-management-packages');
+            const subscriptionsData = localStorage.getItem('packages-management-subscriptions');
+            const paymentsData = localStorage.getItem('packages-management-payments');
+            
+            let html = '<h2>Raw Data:</h2>';
+            html += '<h3>Packages:</h3><pre>' + JSON.stringify(packagesData, null, 2) + '</pre>';
+            html += '<h3>Subscriptions:</h3><pre>' + JSON.stringify(subscriptionsData, null, 2) + '</pre>';
+            html += '<h3>Payments:</h3><pre>' + JSON.stringify(paymentsData, null, 2) + '</pre>';
+            
+            if (packagesData) {
+                const packages = JSON.parse(packagesData);
+                html += '<h2>Parsed Packages:</h2><pre>' + JSON.stringify(packages, null, 2) + '</pre>';
+            }
+            
+            if (subscriptionsData) {
+                const subscriptions = JSON.parse(subscriptionsData);
+                html += '<h2>Parsed Subscriptions:</h2><pre>' + JSON.stringify(subscriptions, null, 2) + '</pre>';
+            }
+            
+            if (paymentsData) {
+                const payments = JSON.parse(paymentsData);
+                html += '<h2>Parsed Payments:</h2><pre>' + JSON.stringify(payments, null, 2) + '</pre>';
+            }
+            
+            output.innerHTML = html;
+        }
+        
+        testLocalStorage();
+    </script>
+</body>
+</html>
+
+

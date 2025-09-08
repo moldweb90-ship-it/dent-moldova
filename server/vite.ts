@@ -44,6 +44,13 @@ export async function setupVite(app: Express, server: Server) {
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
+    // Отключаем кеширование для HTML страниц
+    if (url.includes('/clinic/')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+
     try {
       const clientTemplate = path.resolve(
         import.meta.dirname,
@@ -58,6 +65,69 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
+
+      // Применяем SEO данные если они есть
+      const clinicSEO = (req as any).clinicSEO;
+      if (clinicSEO) {
+        console.log('🔧 Applying SEO data for clinic:', clinicSEO.title);
+        
+        // Обновляем title
+        template = template.replace(
+          /<title>.*?<\/title>/,
+          `<title>${clinicSEO.title}</title>`
+        );
+        
+        // Обновляем meta description
+        template = template.replace(
+          /<meta name="description" content="[^"]*"/,
+          `<meta name="description" content="${clinicSEO.description}"`
+        );
+        
+        // Обновляем meta keywords
+        if (clinicSEO.keywords) {
+          template = template.replace(
+            /<meta name="keywords" content="[^"]*"/,
+            `<meta name="keywords" content="${clinicSEO.keywords}"`
+          );
+        }
+        
+        // Обновляем robots
+        template = template.replace(
+          /<meta name="robots" content="[^"]*"/,
+          `<meta name="robots" content="${clinicSEO.robots}"`
+        );
+        
+        // Обновляем Open Graph теги
+        if (clinicSEO.ogTitle) {
+          template = template.replace(
+            /<meta property="og:title" content="[^"]*"/,
+            `<meta property="og:title" content="${clinicSEO.ogTitle}"`
+          );
+        }
+        
+        if (clinicSEO.ogDescription) {
+          template = template.replace(
+            /<meta property="og:description" content="[^"]*"/,
+            `<meta property="og:description" content="${clinicSEO.ogDescription}"`
+          );
+        }
+        
+        if (clinicSEO.ogImage) {
+          template = template.replace(
+            /<meta property="og:image" content=".*?" \/>/,
+            `<meta property="og:image" content="${clinicSEO.ogImage}" />`
+          );
+        }
+        
+        // Обновляем canonical URL
+        if (clinicSEO.canonical) {
+          template = template.replace(
+            /<link rel="canonical" href="[^"]*"/,
+            `<link rel="canonical" href="${clinicSEO.canonical}"`
+          );
+        }
+      }
+
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
@@ -68,7 +138,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(import.meta.dirname, "..", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
