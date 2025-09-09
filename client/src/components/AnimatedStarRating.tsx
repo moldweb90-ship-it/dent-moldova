@@ -16,6 +16,9 @@ export function AnimatedStarRating({
 }: AnimatedStarRatingProps) {
   const [displayedRating, setDisplayedRating] = useState(0);
   
+  // Защита от undefined/null значений
+  const safeRating = rating || 0;
+  
   const sizeClasses = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
@@ -24,11 +27,11 @@ export function AnimatedStarRating({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDisplayedRating(rating);
+      setDisplayedRating(safeRating);
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [rating, delay]);
+  }, [safeRating, delay]);
 
   const renderStars = () => {
     const stars = [];

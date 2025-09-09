@@ -113,7 +113,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-gray-200">
         <DialogHeader className="border-b border-gray-200 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -122,7 +122,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
             </DialogTitle>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 hidden"
             >
               <X className="w-5 h-5" />
             </button>
@@ -262,7 +262,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1"
+              className="flex-1 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               disabled={isSubmitting}
             >
               {t('cancel')}
@@ -271,7 +271,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid || isSubmitting}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               {isSubmitting ? (
                 <div className="flex items-center space-x-2">

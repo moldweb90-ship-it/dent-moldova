@@ -10,7 +10,8 @@ import { BookingModal } from '@/components/BookingModal';
 import { PhoneModal } from '@/components/PhoneModal';
 import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { DataSourcesInfo } from '@/components/DataSourcesInfo';
-import { ReviewsList } from '@/components/ReviewsList';
+import { ReviewsSection } from '@/components/ReviewsSection';
+import { ReviewModal } from '@/components/ReviewModal';
 import { WorkingHoursDisplay } from '@/components/WorkingHoursDisplay';
 import { Tooltip } from '@/components/Tooltip';
 import { SosButton } from '@/components/SosButton';
@@ -35,6 +36,7 @@ export default function ClinicPage() {
   const slug = params?.slug;
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   // Принудительно обновляем данные при изменении языка
@@ -299,6 +301,13 @@ export default function ClinicPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                <Button
+                  onClick={() => setShowReviewModal(true)}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  {t('leaveReview')}
+                </Button>
                 <LanguageToggle />
                 {ratingData.hasRating && (
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -436,7 +445,7 @@ export default function ClinicPage() {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+            <div className="space-y-3 sm:space-y-4 lg:space-y-6 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)]">
               {/* SOS Button */}
               {clinic.sosEnabled && (
                 <SosButton 
@@ -481,34 +490,15 @@ export default function ClinicPage() {
                 </CardContent>
               </Card>
 
-              {/* Reviews */}
-              <Card className="overflow-hidden">
-                <CardHeader className="p-0">
-                  {/* Крутой contrx7 заголовок */}
-                  <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 p-6 shadow-xl">
-                    {/* Декоративные элементы */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
-                    
-                    <div className="relative flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                        <Star size={28} className="text-white fill-current drop-shadow-lg" />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-white drop-shadow-lg leading-tight">
-                          Отзывы<br />пациентов
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <ReviewsList clinicId={clinic.id} cardStyle={true} />
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <ReviewsSection 
+          clinicId={clinic.id} 
+          clinicName={language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
+        />
 
         {/* Booking Form Modal - using unified styled modal */}
         {showBookingForm && (
@@ -530,6 +520,21 @@ export default function ClinicPage() {
           onClose={() => setShowPhoneModal(false)}
           clinic={clinic}
         />
+
+        {/* Review Modal */}
+        {showReviewModal && (
+          <ReviewModal
+            open={showReviewModal}
+            onClose={() => setShowReviewModal(false)}
+            clinicId={clinic.id}
+            clinicName={language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
+            onSubmit={() => {
+              // Invalidate reviews queries to refresh the reviews section
+              queryClient.invalidateQueries({ queryKey: ['clinicReviews', clinic.id] });
+              queryClient.invalidateQueries({ queryKey: ['totalClinicReviews', clinic.id] });
+            }}
+          />
+        )}
       </>
     );
   }

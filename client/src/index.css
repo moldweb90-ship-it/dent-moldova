@@ -116,6 +116,20 @@
     font-family: var(--font-sans);
   }
   
+  /* Глобальные стили для убирания обводки с кнопок */
+button:focus,
+button:focus-visible,
+[role="button"]:focus,
+[role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Улучшенные тени для модального окна отзыва */
+[data-radix-dialog-content] {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+
   /* Глобальные стили для Tooltip */
   [data-radix-tooltip-content] {
     z-index: 2147483647 !important;

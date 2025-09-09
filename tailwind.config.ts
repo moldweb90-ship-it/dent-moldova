@@ -99,5 +99,37 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    function({ addUtilities }: any) {
+      const newUtilities = {
+        '.scrollbar-thin': {
+          'scrollbar-width': 'thin',
+          'scrollbar-color': 'rgb(156 163 175) rgb(243 244 246)',
+        },
+        '.scrollbar-thumb-gray-300': {
+          'scrollbar-color': 'rgb(209 213 219) rgb(243 244 246)',
+        },
+        '.scrollbar-track-gray-100': {
+          'scrollbar-color': 'rgb(156 163 175) rgb(243 244 246)',
+        },
+        '.scrollbar-thin::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '.scrollbar-thin::-webkit-scrollbar-track': {
+          background: 'rgb(243 244 246)',
+          borderRadius: '3px',
+        },
+        '.scrollbar-thin::-webkit-scrollbar-thumb': {
+          background: 'rgb(209 213 219)',
+          borderRadius: '3px',
+        },
+        '.scrollbar-thin::-webkit-scrollbar-thumb:hover': {
+          background: 'rgb(156 163 175)',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 } satisfies Config;

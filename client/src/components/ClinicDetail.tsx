@@ -260,14 +260,14 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
                 <div className="sm:hidden flex space-x-2">
                   <Button
                     onClick={() => setShowReviewModal(true)}
-                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full"
+                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   >
                     <Star className="h-3 w-3" />
                   </Button>
                   
                   <Button
                     onClick={handleViewFullPage}
-                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full"
+                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   >
                     <ExternalLink className="h-3 w-3" />
                   </Button>
@@ -278,7 +278,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
             <div className="hidden sm:flex justify-end space-x-3">
               <Button
                 onClick={() => setShowReviewModal(true)}
-                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 <Star className="h-4 w-4" />
                 <span className="font-medium">{t('leaveReview')}</span>
@@ -286,7 +286,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
               
               <Button
                 onClick={handleViewFullPage}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span className="font-medium">{t('details')}</span>
@@ -457,23 +457,22 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
               )}
             </div>
 
-            {/* Right Sidebar */}
-            <div className="space-y-4 sm:space-y-6">
-              
-              
-              {/* SOS Button */}
-              {clinic.sosEnabled && (
-                <SosButton 
-                  phone={clinic.phone} 
-                  clinicName={language === 'ru' ? clinic.nameRu : clinic.nameRo} 
-                />
-              )}
+            {/* Right Sidebar - Sticky Container */}
+            <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:min-h-[600px]">
+              <div className="space-y-4 sm:space-y-6 h-full">
+                {/* SOS Button */}
+                {clinic.sosEnabled && (
+                  <SosButton 
+                    phone={clinic.phone} 
+                    clinicName={language === 'ru' ? clinic.nameRu : clinic.nameRo} 
+                  />
+                )}
 
-
-
-
-              {/* Reviews */}
-              <ReviewsList clinicId={clinic.id} compact={true} />
+                {/* Reviews - Independent Scroll Container */}
+                <div className="lg:sticky lg:top-0 lg:bg-white lg:z-10 lg:pb-4 lg:flex-1 lg:flex lg:flex-col">
+                  <ReviewsList clinicId={clinic.id} compact={true} />
+                </div>
+              </div>
             </div>
           </div>
         </div>

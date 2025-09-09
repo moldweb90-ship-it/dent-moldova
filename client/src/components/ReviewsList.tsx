@@ -121,7 +121,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
             {shouldTruncate && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium"
+                className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 {isExpanded ? 'Свернуть' : 'Читать далее'}
               </button>
@@ -204,7 +204,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
             {shouldTruncate && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 {isExpanded ? 'Свернуть' : 'Читать далее'}
               </button>
@@ -476,7 +476,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
           <div className="text-center pt-2">
             <button 
               onClick={() => setShowAll(true)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm"
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Показать больше отзывов
             </button>
@@ -487,9 +487,9 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full flex flex-col">
       {/* Красивый заголовок */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-4 shadow-xl">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-4 shadow-xl flex-shrink-0">
         {/* Декоративные элементы */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
@@ -518,24 +518,24 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
         </div>
       </div>
 
-      {/* Список отзывов */}
-      <div className={compact ? "space-y-3" : "space-y-4"}>
+      {/* Список отзывов с независимым скроллом */}
+      <div className={`${compact ? "space-y-3" : "space-y-4"} lg:max-h-[calc(100vh-250px)] lg:overflow-y-auto lg:pr-2 lg:scrollbar-thin lg:scrollbar-thumb-gray-300 lg:scrollbar-track-gray-100 flex-1`}>
         {reviews.map((review) => (
           <ReviewCard key={review.id} review={review} compact={compact} />
         ))}
+        
+        {/* Кнопка "Показать больше" */}
+        {!showAll && totalReviewsData?.total > reviews.length && (
+          <div className="text-center pt-4 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100">
+            <button 
+              onClick={() => setShowAll(true)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            >
+              Показать больше отзывов
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Кнопка "Показать больше" */}
-      {!showAll && totalReviewsData?.total > reviews.length && (
-        <div className="text-center">
-          <button 
-            onClick={() => setShowAll(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Показать больше отзывов
-          </button>
-        </div>
-      )}
     </div>
   );
 };
