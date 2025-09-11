@@ -416,7 +416,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
                 <div>
                   <div className="flex justify-between items-center mb-0.5 md:mb-1">
-                    <span className="text-xs">Качество</span>
+                    <span className="text-xs">{t('quality')}</span>
                     <span className="text-xs font-medium ml-1">
                       {realRatings?.qualityRating?.toFixed(1) || '0.0'}
                     </span>
@@ -430,7 +430,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 
                 <div>
                   <div className="flex justify-between items-center mb-0.5 md:mb-1">
-                    <span className="text-xs">Сервис</span>
+                    <span className="text-xs">{t('service')}</span>
                     <span className="text-xs font-medium ml-1">
                       {realRatings?.serviceRating?.toFixed(1) || '0.0'}
                     </span>
@@ -446,7 +446,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
               <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
                 <div>
                   <div className="flex justify-between items-center mb-0.5 md:mb-1">
-                    <span className="text-xs">Цены</span>
+                    <span className="text-xs">{t('prices')}</span>
                     <span className="text-xs font-medium ml-1">
                       {realRatings?.priceRating?.toFixed(1) || '0.0'}
                     </span>
@@ -460,7 +460,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                 
                 <div>
                   <div className="flex justify-between items-center mb-0.5 md:mb-1">
-                    <span className="text-xs">Комфорт</span>
+                    <span className="text-xs">{t('comfort')}</span>
                     <span className="text-xs font-medium ml-1">
                       {realRatings?.comfortRating?.toFixed(1) || '0.0'}
                     </span>

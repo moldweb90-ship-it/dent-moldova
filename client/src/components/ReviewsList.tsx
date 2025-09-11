@@ -68,12 +68,13 @@ const StarRating: React.FC<{ rating: number; size?: number }> = ({ rating, size 
 };
 
 const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, compact = false }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
+    const locale = language === 'ru' ? 'ru-RU' : 'ro-RO';
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -123,7 +124,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
-                {isExpanded ? 'Свернуть' : 'Читать далее'}
+                {isExpanded ? t('readLess') : t('readMore')}
               </button>
             )}
           </div>
@@ -172,19 +173,19 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
       <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="grid grid-cols-2 gap-6">
           <div className="text-center">
-            <div className="text-sm font-medium text-gray-900 mb-2">Качество</div>
+            <div className="text-sm font-medium text-gray-900 mb-2">{t('quality')}</div>
             <StarRating rating={review.qualityRating} size={16} />
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-gray-900 mb-2">Сервис</div>
+            <div className="text-sm font-medium text-gray-900 mb-2">{t('service')}</div>
             <StarRating rating={review.serviceRating} size={16} />
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-gray-900 mb-2">Комфорт</div>
+            <div className="text-sm font-medium text-gray-900 mb-2">{t('comfort')}</div>
             <StarRating rating={review.comfortRating} size={16} />
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-gray-900 mb-2">Цены</div>
+            <div className="text-sm font-medium text-gray-900 mb-2">{t('prices')}</div>
             <StarRating rating={review.priceRating} size={16} />
           </div>
         </div>
@@ -206,7 +207,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
-                {isExpanded ? 'Свернуть' : 'Читать далее'}
+                {isExpanded ? t('readLess') : t('readMore')}
               </button>
             )}
           </div>
@@ -478,7 +479,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
               onClick={() => setShowAll(true)}
               className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Показать больше отзывов
+              {t('showMoreReviews')}
             </button>
           </div>
         )}
@@ -531,7 +532,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
               onClick={() => setShowAll(true)}
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Показать больше отзывов
+              {t('showMoreReviews')}
             </button>
           </div>
         )}

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { ReviewCard } from './ReviewCard';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { useTranslation } from '../lib/i18n';
 
 interface Review {
   id: string;
@@ -24,6 +25,7 @@ interface ReviewsSectionProps {
 }
 
 export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 12;
 
@@ -67,7 +69,7 @@ export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка отзывов...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -77,7 +79,7 @@ export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
     return (
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center">
-          <p className="text-red-600 font-medium">Ошибка загрузки отзывов</p>
+          <p className="text-red-600 font-medium">{t('reviewsLoadError')}</p>
         </div>
       </div>
     );
@@ -96,7 +98,7 @@ export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
               </div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-bold text-white drop-shadow-sm">
-                  Отзывы пациентов
+                  {t('reviewsTitle')}
                 </h2>
                 {totalReviews > 0 && (
                   <span className="text-white/90 text-sm bg-white/10 px-2 py-1 rounded-full">
@@ -181,7 +183,7 @@ export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
 
           {/* Информация о текущей странице */}
           <div className="text-center mt-6 text-sm text-gray-600">
-            Показано {((currentPage - 1) * reviewsPerPage) + 1}-{Math.min(currentPage * reviewsPerPage, totalReviews)} из {totalReviews} отзывов
+            {t('showingResults')} {((currentPage - 1) * reviewsPerPage) + 1}-{Math.min(currentPage * reviewsPerPage, totalReviews)} {t('of')} {totalReviews} {t('reviewsCount')}
           </div>
         </>
       ) : (
@@ -190,10 +192,10 @@ export function ReviewsSection({ clinicId, clinicName }: ReviewsSectionProps) {
             <Star className="w-12 h-12 text-gray-400" />
           </div>
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">
-            Пока нет отзывов
+            {t('noReviews')}
           </h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Станьте первым, кто оставит отзыв о клинике и поможет другим пациентам принять решение
+            {t('beFirstReview')}
           </p>
         </div>
       )}

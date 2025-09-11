@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Filter, X, Search, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, CreditCard, Calendar, Baby, Car, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
+import { Filter, X, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, CreditCard, Calendar, Baby, Car, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
+import { AnimatedSearchInput } from './AnimatedSearchInput';
 import { useTranslation } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -111,18 +112,10 @@ export function FiltersSidebar({
       <div className="p-6 space-y-6">
         {/* Search */}
           <div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:border-blue-500 bg-white text-sm"
-              />
-            </div>
+            <AnimatedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </div>
 
         {/* City Filter */}

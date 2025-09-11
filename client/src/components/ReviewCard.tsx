@@ -23,12 +23,13 @@ interface ReviewCardProps {
 }
 
 export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
+    const locale = language === 'ru' ? 'ru-RU' : 'ro-RO';
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -78,7 +79,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false 
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
-                {isExpanded ? 'Свернуть' : 'Читать далее'}
+                {isExpanded ? t('readLess') : t('readMore')}
               </button>
             )}
           </div>
@@ -126,19 +127,19 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false 
       {/* Детальные рейтинги */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Качество</span>
+          <span className="text-sm text-gray-600">{t('quality')}</span>
           <AnimatedStarRating rating={review.qualityRating} size="sm" />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Сервис</span>
+          <span className="text-sm text-gray-600">{t('service')}</span>
           <AnimatedStarRating rating={review.serviceRating} size="sm" />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Комфорт</span>
+          <span className="text-sm text-gray-600">{t('comfort')}</span>
           <AnimatedStarRating rating={review.comfortRating} size="sm" />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Цена</span>
+          <span className="text-sm text-gray-600">{t('prices')}</span>
           <AnimatedStarRating rating={review.priceRating} size="sm" />
         </div>
       </div>
@@ -157,7 +158,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false 
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              {isExpanded ? 'Свернуть' : 'Читать далее'}
+              {isExpanded ? t('readLess') : t('readMore')}
             </button>
           )}
         </div>

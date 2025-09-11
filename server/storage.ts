@@ -555,7 +555,17 @@ export class DatabaseStorage implements IStorage {
       // Second priority: selected sort criteria (only for verified clinics)
       switch (sort) {
         case 'price':
-          return a.priceIndex - b.priceIndex;
+          // Sort by minimum price from services
+          const aMinPrice = a.services && a.services.length > 0 
+            ? Math.min(...a.services.map(s => s.price))
+            : Infinity;
+          const bMinPrice = b.services && b.services.length > 0 
+            ? Math.min(...b.services.map(s => s.price))
+            : Infinity;
+          
+          console.log(`🔍 Price comparison: ${a.nameRu} (min: ${aMinPrice}) vs ${b.nameRu} (min: ${bMinPrice})`);
+          
+          return aMinPrice - bMinPrice;
         case 'popularity':
           // Sort by number of bookings (more bookings = more popular)
           const aBookings = a.bookingsCount || 0;
