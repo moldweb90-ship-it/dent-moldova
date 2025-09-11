@@ -3,7 +3,7 @@ import { useTranslation } from '../lib/i18n';
 import { getClinicName } from '../lib/utils';
 import { Calendar, Clock, User, Phone, Mail, MessageCircle, Stethoscope, MessageSquare, AlertTriangle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -293,7 +293,8 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl">
+      <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001]">
         <DialogHeader className="pb-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-6 p-6 rounded-t-lg text-white relative overflow-hidden">
           {/* Background pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>

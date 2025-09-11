@@ -331,8 +331,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }
                   const icon = getPromotionalIconForLabel(label);
                   
                   return (
-                    <div key={index} className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 ${style} ${label === 'popular' ? 'animate-pulse' : ''}`}>
-                      {icon} {text}
+                    <div key={index} className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 flex items-center gap-1 ${style} ${label === 'popular' ? 'animate-pulse' : ''}`}>
+                      {icon}
+                      <span>{text}</span>
                     </div>
                   );
                 })
