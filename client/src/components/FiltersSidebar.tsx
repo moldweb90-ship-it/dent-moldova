@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Filter, X, Search, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, CreditCard, Calendar, Baby, Car, AlertTriangle, DollarSign } from 'lucide-react';
+import { Filter, X, Search, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, CreditCard, Calendar, Baby, Car, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +25,7 @@ export interface FilterValues {
   districts: string[];
   features: string[];
   promotionalLabels: string[];
-  sort: 'dscore' | 'price' | 'trust' | 'reviews';
+  sort: 'dscore' | 'price' | 'popularity' | 'reviews';
   verified?: boolean;
   openNow?: boolean;
 }
@@ -338,10 +338,10 @@ export function FiltersSidebar({
                   {t('sortByPrice')}
                 </div>
               </SelectItem>
-              <SelectItem value="trust">
+              <SelectItem value="popularity">
                 <div className="flex items-center">
-                  <Shield className="h-4 w-4 mr-2 text-blue-500" />
-                  {t('sortByTrust')}
+                  <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
+                  {t('sortByPopularity')}
                 </div>
               </SelectItem>
               <SelectItem value="reviews">

@@ -1502,7 +1502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         urgentToday: z.string().optional().transform(val => val === 'true'),
         priceMin: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         priceMax: z.string().optional().transform(val => val ? parseInt(val) : undefined),
-        sort: z.enum(['dscore', 'price', 'trust']).optional(),
+        sort: z.enum(['dscore', 'price', 'popularity', 'reviews']).optional(),
         page: z.string().optional().transform(val => val ? parseInt(val) : 1),
         limit: z.string().optional().transform(val => val ? parseInt(val) : 12),
         language: z.string().optional().default('ru'),

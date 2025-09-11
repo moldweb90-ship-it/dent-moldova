@@ -134,7 +134,7 @@ export interface ClinicFilters {
   urgentToday?: boolean;
   priceMin?: number;
   priceMax?: number;
-  sort?: 'dscore' | 'price' | 'trust' | 'reviews';
+  sort?: 'dscore' | 'price' | 'popularity' | 'reviews';
   page?: number;
   limit?: number;
   language?: string;
@@ -446,37 +446,9 @@ export class DatabaseStorage implements IStorage {
     }
     
     const allResults = await unsortedQuery;
-    
-    // Sort in JavaScript to ensure verified clinics are always first
-    console.log('🔍 Sorting in JavaScript to prioritize verified clinics...');
-    const sortedResults = allResults.sort((a, b) => {
-      // First priority: verified status - unverified clinics go to the end
-      if (a.clinic.verified && !b.clinic.verified) return -1;
-      if (!a.clinic.verified && b.clinic.verified) return 1;
-      
-      // If both are unverified, keep original order
-      if (!a.clinic.verified && !b.clinic.verified) return 0;
-      
-      // Second priority: selected sort criteria (only for verified clinics)
-      switch (sort) {
-        case 'price':
-          return a.clinic.priceIndex - b.clinic.priceIndex;
-        case 'trust':
-          return b.clinic.trustIndex - a.clinic.trustIndex;
-        case 'reviews':
-          return b.clinic.reviewsIndex - a.clinic.reviewsIndex;
-        case 'dscore':
-        default:
-          return b.clinic.dScore - a.clinic.dScore;
-      }
-    });
-    
-    // Apply pagination after sorting
-    const offset = (page - 1) * limit;
-    const results = sortedResults.slice(offset, offset + limit);
 
     // Get services for each clinic
-    const clinicIds = results.map((r: any) => r.clinic.id);
+    const clinicIds = allResults.map((r: any) => r.clinic.id);
     console.log('🔍 getClinics: clinicIds:', clinicIds);
     console.log('🔍 getClinics: filters.language:', filters.language);
     
@@ -500,19 +472,153 @@ export class DatabaseStorage implements IStorage {
       return acc;
     }, {} as Record<string, number>));
 
+    // Get reviews data for rating-based sorting (always load for potential use)
+    console.log('🔍 Loading reviews data for sorting...');
+    
+    // Get all approved reviews for clinics in results
+    const allReviews = await db
+      .select({
+        clinicId: reviews.clinicId,
+        averageRating: reviews.averageRating,
+      })
+      .from(reviews)
+      .where(and(
+        eq(reviews.status, 'approved'),
+        inArray(reviews.clinicId, clinicIds)
+      ));
+    
+    // Calculate average rating and count for each clinic
+    const clinicReviewsData = allReviews.reduce((acc, review) => {
+      if (!acc[review.clinicId]) {
+        acc[review.clinicId] = { averageRating: 0, reviewCount: 0 };
+      }
+      acc[review.clinicId].averageRating += parseFloat(review.averageRating.toString());
+      acc[review.clinicId].reviewCount += 1;
+      return acc;
+    }, {} as Record<string, { averageRating: number; reviewCount: number }>);
+    
+    // Calculate final averages
+    Object.keys(clinicReviewsData).forEach(clinicId => {
+      const data = clinicReviewsData[clinicId];
+      data.averageRating = data.reviewCount > 0 ? data.averageRating / data.reviewCount : 0;
+    });
+    
+    console.log('🔍 Reviews data loaded:', Object.keys(clinicReviewsData).length, 'clinics with reviews');
+
+    // Get bookings data for popularity-based sorting
+    console.log('🔍 Loading bookings data for sorting...');
+    
+    const allBookings = await db
+      .select({
+        clinicId: bookings.clinicId,
+      })
+      .from(bookings)
+      .where(inArray(bookings.clinicId, clinicIds));
+    
+    // Calculate booking count for each clinic
+    const clinicBookingsData = allBookings.reduce((acc, booking) => {
+      acc[booking.clinicId] = (acc[booking.clinicId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    console.log('🔍 Bookings data loaded:', Object.keys(clinicBookingsData).length, 'clinics with bookings');
+
     // Combine results
-    let clinicsWithServices = results.map((result: any) => {
+    let clinicsWithServices = allResults.map((result: any) => {
       const servicesForClinic = clinicServices.filter(service => service.clinicId === result.clinic.id);
       const workingHoursForClinic = clinicWorkingHours.filter(wh => wh.clinicId === result.clinic.id);
-      console.log(`🔍 Clinic ${result.clinic.nameRu}: ${servicesForClinic.length} services, ${workingHoursForClinic.length} working hours`);
+      const reviewsData = clinicReviewsData[result.clinic.id] || { averageRating: 0, reviewCount: 0 };
+      const bookingsCount = clinicBookingsData[result.clinic.id] || 0;
+      
+      console.log(`🔍 Clinic ${result.clinic.nameRu}: ${servicesForClinic.length} services, ${workingHoursForClinic.length} working hours, ${reviewsData.reviewCount} reviews (avg: ${reviewsData.averageRating.toFixed(2)}), ${bookingsCount} bookings`);
       return {
         ...result.clinic,
         city: result.city!,
         district: result.district,
         services: servicesForClinic,
-        workingHours: workingHoursForClinic
+        workingHours: workingHoursForClinic,
+        reviewsData: reviewsData,
+        bookingsCount: bookingsCount
       };
     });
+
+    // Sort in JavaScript to ensure verified clinics are always first
+    console.log('🔍 Sorting in JavaScript to prioritize verified clinics...');
+    clinicsWithServices = clinicsWithServices.sort((a, b) => {
+      // First priority: verified status - unverified clinics go to the end
+      if (a.verified && !b.verified) return -1;
+      if (!a.verified && b.verified) return 1;
+      
+      // If both are unverified, keep original order
+      if (!a.verified && !b.verified) return 0;
+      
+      // Second priority: selected sort criteria (only for verified clinics)
+      switch (sort) {
+        case 'price':
+          return a.priceIndex - b.priceIndex;
+        case 'popularity':
+          // Sort by number of bookings (more bookings = more popular)
+          const aBookings = a.bookingsCount || 0;
+          const bBookings = b.bookingsCount || 0;
+          
+          console.log(`🔍 Comparing ${a.nameRu} (${aBookings} bookings) vs ${b.nameRu} (${bBookings} bookings)`);
+          
+          const bookingsResult = bBookings - aBookings;
+          console.log(`🔍 Bookings comparison: ${bookingsResult > 0 ? b.nameRu : a.nameRu} wins by bookings`);
+          return bookingsResult;
+        case 'reviews':
+          // Sort by review count only (more reviews is better)
+          const aReviews = a.reviewsData || { averageRating: 0, reviewCount: 0 };
+          const bReviews = b.reviewsData || { averageRating: 0, reviewCount: 0 };
+          
+          console.log(`🔍 Comparing ${a.nameRu} (${aReviews.reviewCount} reviews) vs ${b.nameRu} (${bReviews.reviewCount} reviews)`);
+          
+          // Sort by review count only (more reviews is better)
+          const countResult = bReviews.reviewCount - aReviews.reviewCount;
+          console.log(`🔍 Review count comparison: ${countResult > 0 ? b.nameRu : a.nameRu} wins by count`);
+          return countResult;
+        case 'dscore':
+        default:
+          // For dscore (sortByRating), use real reviews data if available
+          const aRatingData = a.reviewsData || { averageRating: 0, reviewCount: 0 };
+          const bRatingData = b.reviewsData || { averageRating: 0, reviewCount: 0 };
+          
+          // If both clinics have reviews, sort by reviews
+          if (aRatingData.reviewCount > 0 && bRatingData.reviewCount > 0) {
+            console.log(`🔍 dscore: Comparing ${a.nameRu} (${aRatingData.averageRating.toFixed(2)}, ${aRatingData.reviewCount}) vs ${b.nameRu} (${bRatingData.averageRating.toFixed(2)}, ${bRatingData.reviewCount})`);
+            
+            // First compare by average rating (higher is better)
+            if (Math.abs(aRatingData.averageRating - bRatingData.averageRating) > 0.01) {
+              const result = bRatingData.averageRating - aRatingData.averageRating;
+              console.log(`🔍 dscore: Rating difference: ${result > 0 ? b.nameRu : a.nameRu} wins by rating`);
+              return result;
+            }
+            
+            // If ratings are similar, compare by review count (more reviews is better)
+            const countResult = bRatingData.reviewCount - aRatingData.reviewCount;
+            console.log(`🔍 dscore: Rating similar, comparing count: ${countResult > 0 ? b.nameRu : a.nameRu} wins by count`);
+            return countResult;
+          }
+          
+          // If only one clinic has reviews, prioritize it
+          if (aRatingData.reviewCount > 0 && bRatingData.reviewCount === 0) {
+            console.log(`🔍 dscore: ${a.nameRu} has reviews, ${b.nameRu} doesn't - ${a.nameRu} wins`);
+            return -1;
+          }
+          if (bRatingData.reviewCount > 0 && aRatingData.reviewCount === 0) {
+            console.log(`🔍 dscore: ${b.nameRu} has reviews, ${a.nameRu} doesn't - ${b.nameRu} wins`);
+            return 1;
+          }
+          
+          // If neither has reviews, fall back to dScore
+          console.log(`🔍 dscore: Neither has reviews, using dScore: ${a.nameRu}(${a.dScore}) vs ${b.nameRu}(${b.dScore})`);
+          return b.dScore - a.dScore;
+      }
+    });
+
+    // Apply pagination after sorting
+    const offset = (page - 1) * limit;
+    clinicsWithServices = clinicsWithServices.slice(offset, offset + limit);
 
     // Filter by open now if requested
     if (filters.openNow) {
@@ -574,12 +680,13 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Get total count after all filtering
-    const total = clinicsWithServices.length;
+    const total = allResults.length;
 
     // Отладка - проверим порядок клиник и их верификацию
     console.log('🔍 Clinics order after sorting:');
     clinicsWithServices.forEach((clinic, index) => {
-      console.log(`${index + 1}. ${clinic.nameRu} - verified: ${clinic.verified}, dScore: ${clinic.dScore}`);
+      const reviewsInfo = clinic.reviewsData ? `, reviews: ${clinic.reviewsData.reviewCount} (avg: ${clinic.reviewsData.averageRating.toFixed(2)})` : '';
+      console.log(`${index + 1}. ${clinic.nameRu} - verified: ${clinic.verified}, dScore: ${clinic.dScore}${reviewsInfo}`);
     });
 
     return { clinics: clinicsWithServices, total };

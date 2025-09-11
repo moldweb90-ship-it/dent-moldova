@@ -28,7 +28,7 @@ export interface FilterValues {
   verified: boolean;
   urgentToday: boolean;
   priceRange: [number, number];
-  sort: 'dscore' | 'price' | 'trust' | 'reviews';
+  sort: 'dscore' | 'price' | 'popularity' | 'reviews';
 }
 
 interface FiltersProps {
@@ -179,7 +179,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
           <SelectContent>
             <SelectItem value="dscore">{t('sort.dscore')}</SelectItem>
             <SelectItem value="price">{t('sort.price')}</SelectItem>
-            <SelectItem value="trust">{t('sort.trust')}</SelectItem>
+            <SelectItem value="popularity">{t('sort.popularity')}</SelectItem>
             <SelectItem value="reviews">{t('sort.reviews')}</SelectItem>
           </SelectContent>
         </Select>
