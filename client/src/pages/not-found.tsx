@@ -1,7 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function NotFound() {
+  useSEO(); // Применяем глобальные SEO настройки на странице 404
+  
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md mx-4">

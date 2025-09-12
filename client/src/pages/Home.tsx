@@ -16,9 +16,11 @@ import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
 
 import { useTranslation } from '../lib/i18n';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
   const { t } = useTranslation();
+  useSEO(); // Применяем глобальные SEO настройки только на главной странице
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);

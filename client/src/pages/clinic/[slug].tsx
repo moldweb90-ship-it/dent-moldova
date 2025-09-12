@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -84,14 +84,20 @@ export default function ClinicPage() {
   // Получаем реальный рейтинг на основе отзывов
   const { ratingData } = useClinicRating(clinic?.id || '');
 
-  // SEO данные для мета-тегов
-  const seoTitle = clinic ? (language === 'ru' 
-    ? (clinic?.seoTitleRu || clinic?.seoTitle || clinic?.nameRu || clinic?.nameRo || 'Название клиники')
-    : (clinic?.seoTitleRo || clinic?.seoTitle || clinic?.nameRo || clinic?.nameRu || 'Numele clinicii')) : '';
+  // SEO данные для мета-тегов - используем useMemo для стабильности
+  const seoTitle = useMemo(() => {
+    if (!clinic) return '';
+    return language === 'ru' 
+      ? (clinic?.seoTitleRu || clinic?.seoTitle || clinic?.nameRu || clinic?.nameRo || 'Название клиники')
+      : (clinic?.seoTitleRo || clinic?.seoTitle || clinic?.nameRo || clinic?.nameRu || 'Numele clinicii');
+  }, [clinic, language]);
 
-  const seoDescription = clinic ? (language === 'ru'
-    ? (clinic?.seoDescriptionRu || clinic?.seoDescription || `${clinic?.nameRu || clinic?.nameRo} - современная клиника в ${clinic?.city.nameRu}. Запись онлайн, консультация бесплатно.`)
-    : (clinic?.seoDescriptionRo || clinic?.seoDescription || `${clinic?.nameRo || clinic?.nameRu} - clinică modernă în ${clinic?.city.nameRo}. Programare online, consultație gratuită.`)) : '';
+  const seoDescription = useMemo(() => {
+    if (!clinic) return '';
+    return language === 'ru'
+      ? (clinic?.seoDescriptionRu || clinic?.seoDescription || `${clinic?.nameRu || clinic?.nameRo} - современная клиника в ${clinic?.city.nameRu}. Запись онлайн, консультация бесплатно.`)
+      : (clinic?.seoDescriptionRo || clinic?.seoDescription || `${clinic?.nameRo || clinic?.nameRu} - clinică modernă în ${clinic?.city.nameRo}. Programare online, consultație gratuită.`);
+  }, [clinic, language]);
 
   // Обновляем мета-теги при изменении языка или данных клиники
   useEffect(() => {
@@ -168,7 +174,7 @@ export default function ClinicPage() {
       }
       metaOgType.setAttribute('content', 'website');
     }
-  }, [language, clinic, seoTitle, seoDescription]);
+  }, [clinic, seoTitle, seoDescription]);
 
   if (isLoading) {
     return (

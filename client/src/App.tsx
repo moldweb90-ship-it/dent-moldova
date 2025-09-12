@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useSEO } from "@/hooks/useSEO";
 import { PhoneModal } from "@/components/PhoneModal";
 import { useState } from "react";
 import Home from "@/pages/Home";
@@ -57,9 +56,6 @@ declare global {
 }
 
 function Router() {
-  // Initialize SEO settings globally
-  useSEO();
-  
   return (
     <Switch>
       <Route path="/" component={Home} />
