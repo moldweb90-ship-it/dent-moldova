@@ -66,6 +66,15 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
 
+      // Определяем язык из URL и устанавливаем lang атрибут
+      const isRomanian = url.startsWith('/clinic/ro/') || url === '/ro';
+      const lang = isRomanian ? 'ro' : 'ru';
+      template = template.replace(
+        /<html lang="[^"]*"/,
+        `<html lang="${lang}"`
+      );
+      console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', url);
+
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
       if (clinicSEO) {
@@ -149,7 +158,24 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  app.use("*", async (req, res) => {
+    try {
+      const indexPath = path.resolve(distPath, "index.html");
+      let template = await fs.promises.readFile(indexPath, "utf-8");
+      
+      // Определяем язык из URL и устанавливаем lang атрибут
+      const isRomanian = req.originalUrl.startsWith('/clinic/ro/') || req.originalUrl === '/ro';
+      const lang = isRomanian ? 'ro' : 'ru';
+      template = template.replace(
+        /<html lang="[^"]*"/,
+        `<html lang="${lang}"`
+      );
+      console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', req.originalUrl);
+      
+      res.status(200).set({ "Content-Type": "text/html" }).end(template);
+    } catch (error) {
+      console.error('Error serving static file:', error);
+      res.sendFile(path.resolve(distPath, "index.html"));
+    }
   });
 }

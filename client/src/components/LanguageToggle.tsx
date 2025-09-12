@@ -41,6 +41,8 @@ export function LanguageToggle() {
           console.log('🔄 LanguageToggle: Переключаем с румынского на русский:', newPath);
           setLocation(newPath);
           setCurrentPath(newPath); // Обновляем currentPath
+          // Обновляем lang атрибут
+          document.documentElement.lang = newLanguage;
         }
       } else {
         // Сейчас русский, переключаем на румынский
@@ -50,6 +52,8 @@ export function LanguageToggle() {
           console.log('🔄 LanguageToggle: Переключаем с русского на румынский:', newPath);
           setLocation(newPath);
           setCurrentPath(newPath); // Обновляем currentPath
+          // Обновляем lang атрибут
+          document.documentElement.lang = newLanguage;
         }
       }
     } else if (path === '/' || path === '/ro') {
@@ -59,11 +63,15 @@ export function LanguageToggle() {
         console.log('🔄 LanguageToggle: Переключаем с румынской главной на русскую: /');
         setLocation('/');
         setCurrentPath('/'); // Обновляем currentPath
+        // Обновляем lang атрибут
+        document.documentElement.lang = newLanguage;
       } else if (path === '/' && newLanguage === 'ro') {
         // Сейчас русская главная, переключаем на румынскую
         console.log('🔄 LanguageToggle: Переключаем с русской главной на румынскую: /ro');
         setLocation('/ro');
         setCurrentPath('/ro'); // Обновляем currentPath
+        // Обновляем lang атрибут
+        document.documentElement.lang = newLanguage;
       }
     } else {
       // Для других страниц пока оставляем как есть

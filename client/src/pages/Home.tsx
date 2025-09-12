@@ -20,7 +20,6 @@ import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
   const { t, changeLanguage } = useTranslation();
-  useSEO(); // Применяем глобальные SEO настройки только на главной странице
   const [, setLocation] = useLocation();
   
   // Определяем язык из URL
@@ -28,9 +27,13 @@ export default function Home() {
   const isRomanian = !!paramsRo;
   const language = isRomanian ? 'ro' : 'ru';
   
+  useSEO(language); // Применяем глобальные SEO настройки только на главной странице
+  
   // Переключаем язык в i18n системе при изменении URL
   useEffect(() => {
     changeLanguage(language);
+    // Обновляем lang атрибут HTML
+    document.documentElement.lang = language;
   }, [language, changeLanguage]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);

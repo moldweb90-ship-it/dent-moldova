@@ -734,12 +734,24 @@ export class DatabaseStorage implements IStorage {
     
     // Создаем объект с SEO данными в зависимости от языка
     const seoData = {
-      seoTitle: language === 'ro' ? clinicData.seoTitleRo : clinicData.seoTitleRu,
-      seoDescription: language === 'ro' ? clinicData.seoDescriptionRo : clinicData.seoDescriptionRu,
-      seoKeywords: language === 'ro' ? clinicData.seoKeywordsRo : clinicData.seoKeywordsRu,
-      seoH1: language === 'ro' ? clinicData.seoH1Ro : clinicData.seoH1Ru,
-      ogTitle: language === 'ro' ? clinicData.ogTitleRo : clinicData.ogTitleRu,
-      ogDescription: language === 'ro' ? clinicData.ogDescriptionRo : clinicData.ogDescriptionRu,
+      seoTitle: language === 'ro' 
+        ? (clinicData.seoTitleRo || clinicData.seoTitleRu || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică`)
+        : (clinicData.seoTitleRu || clinicData.seoTitleRo || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника`),
+      seoDescription: language === 'ro' 
+        ? (clinicData.seoDescriptionRo || clinicData.seoDescriptionRu || `${clinicData.nameRo || clinicData.nameRu} - clinică modernă în ${result.city?.nameRo || 'Chișinău'}. Programare online, consultație gratuită.`)
+        : (clinicData.seoDescriptionRu || clinicData.seoDescriptionRo || `${clinicData.nameRu || clinicData.nameRo} - современная клиника в ${result.city?.nameRu || 'Кишинёв'}. Запись онлайн, консультация бесплатно.`),
+      seoKeywords: language === 'ro' 
+        ? (clinicData.seoKeywordsRo || clinicData.seoKeywordsRu || 'stomatologie, tratament dentar, dentist')
+        : (clinicData.seoKeywordsRu || clinicData.seoKeywordsRo || 'стоматология, лечение зубов, стоматолог'),
+      seoH1: language === 'ro' 
+        ? (clinicData.seoH1Ro || clinicData.seoH1Ru || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică`)
+        : (clinicData.seoH1Ru || clinicData.seoH1Ro || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника`),
+      ogTitle: language === 'ro' 
+        ? (clinicData.ogTitleRo || clinicData.ogTitleRu || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică`)
+        : (clinicData.ogTitleRu || clinicData.ogTitleRo || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника`),
+      ogDescription: language === 'ro' 
+        ? (clinicData.ogDescriptionRo || clinicData.ogDescriptionRu || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică în ${result.city?.nameRo || 'Chișinău'}`)
+        : (clinicData.ogDescriptionRu || clinicData.ogDescriptionRo || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника в ${result.city?.nameRu || 'Кишинёв'}`),
     };
 
     console.log('🔍 getClinicBySlug: SEO data for language', language, ':', seoData);

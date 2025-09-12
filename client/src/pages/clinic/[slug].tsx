@@ -43,6 +43,8 @@ export default function ClinicPage() {
   // Синхронизируем язык в i18n системе с URL
   useEffect(() => {
     changeLanguage(language);
+    // Обновляем lang атрибут HTML
+    document.documentElement.lang = language;
   }, [language, changeLanguage]);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
@@ -183,8 +185,54 @@ export default function ClinicPage() {
         document.head.appendChild(metaOgType);
       }
       metaOgType.setAttribute('content', 'website');
+      
+      // HTML lang attribute
+      document.documentElement.lang = language === 'ru' ? 'ru' : 'ro';
+      
+      // Hreflang tags for multilingual SEO
+      const currentUrl = window.location.origin;
+      const currentPath = window.location.pathname;
+      
+      // Remove existing hreflang tags
+      const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
+      existingHreflang.forEach(tag => tag.remove());
+      
+      // Add hreflang for current language
+      let hreflangCurrent = document.createElement('link');
+      hreflangCurrent.setAttribute('rel', 'alternate');
+      hreflangCurrent.setAttribute('hreflang', language === 'ru' ? 'ru' : 'ro');
+      hreflangCurrent.setAttribute('href', `${currentUrl}${currentPath}`);
+      document.head.appendChild(hreflangCurrent);
+      
+      // Add hreflang for alternate language
+      let hreflangAlt = document.createElement('link');
+      hreflangAlt.setAttribute('rel', 'alternate');
+      hreflangAlt.setAttribute('hreflang', language === 'ru' ? 'ro' : 'ru');
+      
+      if (currentPath.startsWith('/clinic/ro/')) {
+        // Current is Romanian, alternate is Russian
+        const altPath = currentPath.replace('/clinic/ro/', '/clinic/');
+        hreflangAlt.setAttribute('href', `${currentUrl}${altPath}`);
+      } else if (currentPath.startsWith('/clinic/')) {
+        // Current is Russian, alternate is Romanian
+        const altPath = currentPath.replace('/clinic/', '/clinic/ro/');
+        hreflangAlt.setAttribute('href', `${currentUrl}${altPath}`);
+      }
+      document.head.appendChild(hreflangAlt);
+      
+      // Add x-default hreflang (usually points to the main language - Russian)
+      let hreflangDefault = document.createElement('link');
+      hreflangDefault.setAttribute('rel', 'alternate');
+      hreflangDefault.setAttribute('hreflang', 'x-default');
+      if (currentPath.startsWith('/clinic/ro/')) {
+        const defaultPath = currentPath.replace('/clinic/ro/', '/clinic/');
+        hreflangDefault.setAttribute('href', `${currentUrl}${defaultPath}`);
+      } else {
+        hreflangDefault.setAttribute('href', `${currentUrl}${currentPath}`);
+      }
+      document.head.appendChild(hreflangDefault);
     }
-  }, [clinic, seoTitle, seoDescription]);
+  }, [clinic, seoTitle, seoDescription, language]);
 
   if (isLoading) {
     return (
