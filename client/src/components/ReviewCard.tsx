@@ -57,7 +57,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false 
           </div>
           <div className="flex-1 min-w-0">
             <h5 className="font-semibold text-gray-900 text-sm truncate">
-              {review.authorName || 'Анонимный пользователь'}
+              {review.authorName || t('anonymousUser')}
             </h5>
             <div className="flex items-center gap-2">
               <AnimatedStarRating rating={review.averageRating} size="sm" />
@@ -114,7 +114,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, compact = false 
           <div className="flex items-center gap-3 mb-2">
             <AnimatedStarRating rating={review.averageRating} size="md" />
             <span className="text-sm font-medium text-gray-600">
-              {(review.averageRating || 0).toFixed(1)} из 5
+              {(review.averageRating || 0).toFixed(1)} {t('outOfFive')}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">

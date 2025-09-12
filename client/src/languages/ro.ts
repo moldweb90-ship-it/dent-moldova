@@ -291,7 +291,12 @@ export const ro = {
   noReviews: "Încă nu există recenzii",
   beFirstReview: "Fii primul care lasă o recenzie despre clinică",
   reviewsLoadError: "Eroare la încărcarea recenziilor",
+  tryRefreshPage: "Încercați să reîmprospătați pagina",
   showMoreReviews: "Arată mai multe recenzii",
+  outOfFive: "din 5",
+  anonymousUser: "Utilizator anonim",
+  readMore: "Citește mai mult",
+  readLess: "Rezumat",
   
   details: "Detalii",
   detailsShort: "Detalii",

@@ -102,7 +102,7 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
           </div>
           <div className="flex-1 min-w-0">
             <h5 className="font-semibold text-gray-900 text-sm truncate">
-              {review.authorName || 'Анонимный пользователь'}
+              {review.authorName || t('anonymousUser')}
             </h5>
             <div className="flex items-center gap-2">
               <StarRating rating={review.averageRating} size={14} />
@@ -154,12 +154,12 @@ const ReviewCard: React.FC<{ review: Review; compact?: boolean }> = ({ review, c
         </div>
         <div className="flex-1">
           <h4 className="font-bold text-gray-900 text-lg mb-1">
-            {review.authorName || 'Анонимный пользователь'}
+            {review.authorName || t('anonymousUser')}
           </h4>
           <div className="flex items-center gap-3 mb-2">
             <StarRating rating={review.averageRating} size={20} />
             <span className="text-sm font-medium text-gray-600">
-              {review.averageRating.toFixed(1)} из 5
+              {review.averageRating.toFixed(1)} {t('outOfFive')}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -320,8 +320,8 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <Star size={24} className="text-red-500" />
           </div>
-          <p className="text-red-600 font-medium">Ошибка загрузки отзывов</p>
-          <p className="text-gray-500 text-sm mt-1">Попробуйте обновить страницу</p>
+          <p className="text-red-600 font-medium">{t('reviewsLoadError')}</p>
+          <p className="text-gray-500 text-sm mt-1">{t('tryRefreshPage')}</p>
         </div>
       );
     }
@@ -339,7 +339,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
-                Отзывы<br />пациентов
+{t('reviewsTitle')}
               </h3>
             </div>
             
@@ -350,14 +350,14 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
                   {totalReviewsData.total}
                 </div>
                 <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
-                  отзывов
+                  {t('reviewsCount')}
                 </div>
               </div>
             )}
           </div>
         </div>
         {compact && (
-          <p className="text-center text-red-500 text-sm">Ошибка загрузки отзывов</p>
+          <p className="text-center text-red-500 text-sm">{t('reviewsLoadError')}</p>
         )}
       </div>
     );
@@ -373,10 +373,10 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
             <Star size={28} className="text-blue-400" />
           </div>
           <h4 className="text-base font-semibold text-gray-700 mb-2">
-            Пока нет отзывов
+            {t('noReviews')}
           </h4>
           <p className="text-sm text-gray-500 max-w-xs mx-auto">
-            Станьте первым, кто оставит отзыв о клинике
+            {t('beFirstReview')}
           </p>
         </div>
       );
@@ -395,7 +395,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
-                Отзывы<br />пациентов
+{t('reviewsTitle')}
               </h3>
             </div>
             
@@ -406,7 +406,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
                   {totalReviewsData.total}
                 </div>
                 <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
-                  отзывов
+                  {t('reviewsCount')}
                 </div>
               </div>
             )}
@@ -420,11 +420,11 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
             </div>
           </div>
           <h4 className={`${compact ? "text-sm" : "text-base"} font-semibold text-gray-700 mb-2`}>
-            Пока нет отзывов
+            {t('noReviews')}
           </h4>
           {!compact && (
             <p className="text-sm text-gray-500">
-              Станьте первым, кто оставит отзыв о клинике
+              {t('beFirstReview')}
             </p>
           )}
         </div>
@@ -453,7 +453,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
           <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-600">
-                {reviews.length} отзывов
+                {reviews.length} {t('reviewsCount')}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -501,7 +501,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-bold text-white drop-shadow-lg leading-tight">
-              Отзывы<br />пациентов
+              {t('reviewsTitle')}
             </h3>
           </div>
           
@@ -512,7 +512,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ clinicId, compact = fa
                 {totalReviewsData.total}
               </div>
               <div className="text-white/80 text-xs font-medium uppercase tracking-wide">
-                отзывов
+                {t('reviewsCount')}
               </div>
             </div>
           )}

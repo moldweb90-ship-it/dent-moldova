@@ -291,7 +291,12 @@ export const ru = {
   noReviews: "Пока нет отзывов",
   beFirstReview: "Станьте первым, кто оставит отзыв о клинике",
   reviewsLoadError: "Ошибка загрузки отзывов",
+  tryRefreshPage: "Попробуйте обновить страницу",
   showMoreReviews: "Показать больше отзывов",
+  outOfFive: "из 5",
+  anonymousUser: "Анонимный пользователь",
+  readMore: "Читать далее",
+  readLess: "Свернуть",
   
   details: "Подробнее",
   detailsShort: "Подробно",
