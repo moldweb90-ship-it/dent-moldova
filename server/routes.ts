@@ -1025,6 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
     try {
       const settings = await storage.getAllSiteSettings();
+      console.log('🔧 Returning settings:', settings);
       res.json(settings);
     } catch (error) {
       console.error("Error getting settings:", error);
@@ -1034,21 +1035,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     try {
-      const { siteTitle, metaDescription, robotsTxt } = req.body;
+      console.log('🔧 Received SEO settings request:', req.body);
+      const {
+        // Russian SEO settings
+        siteTitleRu, metaDescriptionRu, keywordsRu, ogTitleRu, ogDescriptionRu, ogImageRu, canonicalRu, h1Ru,
+        // Romanian SEO settings
+        siteTitleRo, metaDescriptionRo, keywordsRo, ogTitleRo, ogDescriptionRo, ogImageRo, canonicalRo, h1Ro,
+        // Common settings
+        robotsTxt, robots, schemaType, schemaData
+      } = req.body;
       
       // Save each setting individually
       const promises = [];
-      if (siteTitle !== undefined) {
-        promises.push(storage.setSiteSetting('siteTitle', siteTitle));
-      }
-      if (metaDescription !== undefined) {
-        promises.push(storage.setSiteSetting('metaDescription', metaDescription));
-      }
-      if (robotsTxt !== undefined) {
-        promises.push(storage.setSiteSetting('robotsTxt', robotsTxt));
-      }
+      
+      // Russian settings
+      if (siteTitleRu !== undefined) promises.push(storage.setSiteSetting('siteTitleRu', siteTitleRu));
+      if (metaDescriptionRu !== undefined) promises.push(storage.setSiteSetting('metaDescriptionRu', metaDescriptionRu));
+      if (keywordsRu !== undefined) promises.push(storage.setSiteSetting('keywordsRu', keywordsRu));
+      if (ogTitleRu !== undefined) promises.push(storage.setSiteSetting('ogTitleRu', ogTitleRu));
+      if (ogDescriptionRu !== undefined) promises.push(storage.setSiteSetting('ogDescriptionRu', ogDescriptionRu));
+      if (ogImageRu !== undefined) promises.push(storage.setSiteSetting('ogImageRu', ogImageRu));
+      if (canonicalRu !== undefined) promises.push(storage.setSiteSetting('canonicalRu', canonicalRu));
+      if (h1Ru !== undefined) promises.push(storage.setSiteSetting('h1Ru', h1Ru));
+      
+      // Romanian settings
+      if (siteTitleRo !== undefined) promises.push(storage.setSiteSetting('siteTitleRo', siteTitleRo));
+      if (metaDescriptionRo !== undefined) promises.push(storage.setSiteSetting('metaDescriptionRo', metaDescriptionRo));
+      if (keywordsRo !== undefined) promises.push(storage.setSiteSetting('keywordsRo', keywordsRo));
+      if (ogTitleRo !== undefined) promises.push(storage.setSiteSetting('ogTitleRo', ogTitleRo));
+      if (ogDescriptionRo !== undefined) promises.push(storage.setSiteSetting('ogDescriptionRo', ogDescriptionRo));
+      if (ogImageRo !== undefined) promises.push(storage.setSiteSetting('ogImageRo', ogImageRo));
+      if (canonicalRo !== undefined) promises.push(storage.setSiteSetting('canonicalRo', canonicalRo));
+      if (h1Ro !== undefined) promises.push(storage.setSiteSetting('h1Ro', h1Ro));
+      
+      // Common settings
+      if (robotsTxt !== undefined) promises.push(storage.setSiteSetting('robotsTxt', robotsTxt));
+      if (robots !== undefined) promises.push(storage.setSiteSetting('robots', robots));
+      if (schemaType !== undefined) promises.push(storage.setSiteSetting('schemaType', schemaType));
+      if (schemaData !== undefined) promises.push(storage.setSiteSetting('schemaData', schemaData));
       
       await Promise.all(promises);
+      console.log('✅ All SEO settings saved successfully');
+      console.log('🔧 Saved settings count:', promises.length);
       
       // Create robots.txt file in public directory
       if (robotsTxt !== undefined) {
@@ -1057,6 +1085,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fs.mkdirSync(publicDir, { recursive: true });
         }
         fs.writeFileSync(path.join(publicDir, 'robots.txt'), robotsTxt);
+        console.log('✅ robots.txt file created');
       }
       
       res.json({ message: 'Settings saved successfully' });
@@ -1088,14 +1117,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, {});
       
       res.json({
-        siteTitle: settingsMap.siteTitle || 'Dent Moldova - Каталог стоматологических клиник',
-        metaDescription: settingsMap.metaDescription || 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'
+        // Russian SEO settings
+        siteTitleRu: settingsMap.siteTitleRu || 'Dent Moldova - Каталог стоматологических клиник',
+        metaDescriptionRu: settingsMap.metaDescriptionRu || 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.',
+        keywordsRu: settingsMap.keywordsRu || 'стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв',
+        ogTitleRu: settingsMap.ogTitleRu || 'Dent Moldova - Каталог стоматологических клиник',
+        ogDescriptionRu: settingsMap.ogDescriptionRu || 'Найдите лучшие стоматологические клиники в Молдове',
+        ogImageRu: settingsMap.ogImageRu || '',
+        canonicalRu: settingsMap.canonicalRu || 'https://dentmoldova.md',
+        h1Ru: settingsMap.h1Ru || 'Каталог стоматологических клиник в Молдове',
+        
+        // Romanian SEO settings
+        siteTitleRo: settingsMap.siteTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice',
+        metaDescriptionRo: settingsMap.metaDescriptionRo || 'Găsiți cea mai bună clinică stomatologică din Moldova. Catalogul clinicilor verificate cu prețuri, recenzii și evaluări.',
+        keywordsRo: settingsMap.keywordsRo || 'stomatologie, dentist, tratament dentar, clinică, Moldova, Chișinău',
+        ogTitleRo: settingsMap.ogTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice',
+        ogDescriptionRo: settingsMap.ogDescriptionRo || 'Găsiți cele mai bune clinici stomatologice din Moldova',
+        ogImageRo: settingsMap.ogImageRo || '',
+        canonicalRo: settingsMap.canonicalRo || 'https://dentmoldova.md/ro',
+        h1Ro: settingsMap.h1Ro || 'Catalogul clinicilor stomatologice din Moldova',
+        
+        // Common settings
+        robots: settingsMap.robots || 'index,follow',
+        schemaType: settingsMap.schemaType || 'Organization',
+        schemaData: settingsMap.schemaData || '',
       });
     } catch (error) {
       console.error("Error getting SEO settings:", error);
       res.json({
-        siteTitle: 'Dent Moldova - Каталог стоматологических клиник',
-        metaDescription: 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'
+        // Russian defaults
+        siteTitleRu: 'Dent Moldova - Каталог стоматологических клиник',
+        metaDescriptionRu: 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.',
+        keywordsRu: 'стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв',
+        ogTitleRu: 'Dent Moldova - Каталог стоматологических клиник',
+        ogDescriptionRu: 'Найдите лучшие стоматологические клиники в Молдове',
+        ogImageRu: '',
+        canonicalRu: 'https://dentmoldova.md',
+        h1Ru: 'Каталог стоматологических клиник в Молдове',
+        
+        // Romanian defaults
+        siteTitleRo: 'Dent Moldova - Catalogul clinicilor stomatologice',
+        metaDescriptionRo: 'Găsiți cea mai bună clinică stomatologică din Moldova. Catalogul clinicilor verificate cu prețuri, recenzii și evaluări.',
+        keywordsRo: 'stomatologie, dentist, tratament dentar, clinică, Moldova, Chișinău',
+        ogTitleRo: 'Dent Moldova - Catalogul clinicilor stomatologice',
+        ogDescriptionRo: 'Găsiți cele mai bune clinici stomatologice din Moldova',
+        ogImageRo: '',
+        canonicalRo: 'https://dentmoldova.md/ro',
+        h1Ro: 'Catalogul clinicilor stomatologice din Moldova',
+        
+        // Common defaults
+        robots: 'index,follow',
+        schemaType: 'Organization',
+        schemaData: '',
       });
     }
   });

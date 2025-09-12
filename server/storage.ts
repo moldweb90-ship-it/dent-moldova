@@ -1054,6 +1054,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setSiteSetting(key: string, value: string): Promise<SiteSetting> {
+    console.log(`🔧 Setting site setting: ${key} = ${value}`);
     const [setting] = await db
       .insert(siteSettings)
       .values({ key, value })
@@ -1065,6 +1066,7 @@ export class DatabaseStorage implements IStorage {
         },
       })
       .returning();
+    console.log(`✅ Site setting saved: ${key} = ${value}`);
     return setting;
   }
 

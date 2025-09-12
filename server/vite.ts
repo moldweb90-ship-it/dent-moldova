@@ -77,62 +77,65 @@ export async function setupVite(app: Express, server: Server) {
 
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
-      if (clinicSEO) {
-        console.log('🔧 Applying SEO data for clinic:', clinicSEO.title);
+      const homepageSEO = (req as any).homepageSEO;
+      const seoData = clinicSEO || homepageSEO;
+      
+      if (seoData) {
+        console.log('🔧 Applying SEO data:', seoData.title);
         
         // Обновляем title
         template = template.replace(
           /<title>.*?<\/title>/,
-          `<title>${clinicSEO.title}</title>`
+          `<title>${seoData.title}</title>`
         );
         
         // Обновляем meta description
         template = template.replace(
           /<meta name="description" content="[^"]*"/,
-          `<meta name="description" content="${clinicSEO.description}"`
+          `<meta name="description" content="${seoData.description}"`
         );
         
         // Обновляем meta keywords
-        if (clinicSEO.keywords) {
+        if (seoData.keywords) {
           template = template.replace(
             /<meta name="keywords" content="[^"]*"/,
-            `<meta name="keywords" content="${clinicSEO.keywords}"`
+            `<meta name="keywords" content="${seoData.keywords}"`
           );
         }
         
         // Обновляем robots
         template = template.replace(
           /<meta name="robots" content="[^"]*"/,
-          `<meta name="robots" content="${clinicSEO.robots}"`
+          `<meta name="robots" content="${seoData.robots}"`
         );
         
         // Обновляем Open Graph теги
-        if (clinicSEO.ogTitle) {
+        if (seoData.ogTitle) {
           template = template.replace(
             /<meta property="og:title" content="[^"]*"/,
-            `<meta property="og:title" content="${clinicSEO.ogTitle}"`
+            `<meta property="og:title" content="${seoData.ogTitle}"`
           );
         }
         
-        if (clinicSEO.ogDescription) {
+        if (seoData.ogDescription) {
           template = template.replace(
             /<meta property="og:description" content="[^"]*"/,
-            `<meta property="og:description" content="${clinicSEO.ogDescription}"`
+            `<meta property="og:description" content="${seoData.ogDescription}"`
           );
         }
         
-        if (clinicSEO.ogImage) {
+        if (seoData.ogImage) {
           template = template.replace(
             /<meta property="og:image" content=".*?" \/>/,
-            `<meta property="og:image" content="${clinicSEO.ogImage}" />`
+            `<meta property="og:image" content="${seoData.ogImage}" />`
           );
         }
         
         // Обновляем canonical URL
-        if (clinicSEO.canonical) {
+        if (seoData.canonical) {
           template = template.replace(
             /<link rel="canonical" href="[^"]*"/,
-            `<link rel="canonical" href="${clinicSEO.canonical}"`
+            `<link rel="canonical" href="${seoData.canonical}"`
           );
         }
       }
@@ -171,6 +174,71 @@ export function serveStatic(app: Express) {
         `<html lang="${lang}"`
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', req.originalUrl);
+
+      // Применяем SEO данные если они есть
+      const clinicSEO = (req as any).clinicSEO;
+      const homepageSEO = (req as any).homepageSEO;
+      const seoData = clinicSEO || homepageSEO;
+      
+      if (seoData) {
+        console.log('🔧 Applying SEO data:', seoData.title);
+        
+        // Обновляем title
+        template = template.replace(
+          /<title>.*?<\/title>/,
+          `<title>${seoData.title}</title>`
+        );
+        
+        // Обновляем meta description
+        template = template.replace(
+          /<meta name="description" content="[^"]*"/,
+          `<meta name="description" content="${seoData.description}"`
+        );
+        
+        // Обновляем meta keywords
+        if (seoData.keywords) {
+          template = template.replace(
+            /<meta name="keywords" content="[^"]*"/,
+            `<meta name="keywords" content="${seoData.keywords}"`
+          );
+        }
+        
+        // Обновляем robots
+        template = template.replace(
+          /<meta name="robots" content="[^"]*"/,
+          `<meta name="robots" content="${seoData.robots}"`
+        );
+        
+        // Обновляем Open Graph теги
+        if (seoData.ogTitle) {
+          template = template.replace(
+            /<meta property="og:title" content="[^"]*"/,
+            `<meta property="og:title" content="${seoData.ogTitle}"`
+          );
+        }
+        
+        if (seoData.ogDescription) {
+          template = template.replace(
+            /<meta property="og:description" content="[^"]*"/,
+            `<meta property="og:description" content="${seoData.ogDescription}"`
+          );
+        }
+        
+        if (seoData.ogImage) {
+          template = template.replace(
+            /<meta property="og:image" content=".*?" \/>/,
+            `<meta property="og:image" content="${seoData.ogImage}" />`
+          );
+        }
+        
+        // Обновляем canonical URL
+        if (seoData.canonical) {
+          template = template.replace(
+            /<link rel="canonical" href="[^"]*"/,
+            `<link rel="canonical" href="${seoData.canonical}"`
+          );
+        }
+      }
       
       res.status(200).set({ "Content-Type": "text/html" }).end(template);
     } catch (error) {

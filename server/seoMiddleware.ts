@@ -36,5 +36,55 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
     }
   }
   
+  // Проверяем, является ли это главной страницей
+  const isHomepage = req.path === '/' || req.path === '/ro';
+  if (isHomepage) {
+    const isRomanian = req.path === '/ro';
+    const language = isRomanian ? 'ro' : 'ru';
+    
+    try {
+      // Получаем SEO настройки сайта
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      
+      // Добавляем SEO данные для главной страницы
+      (req as any).homepageSEO = {
+        title: isRomanian 
+          ? (settingsMap.siteTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice')
+          : (settingsMap.siteTitleRu || 'Dent Moldova - Каталог стоматологических клиник'),
+        description: isRomanian
+          ? (settingsMap.metaDescriptionRo || 'Găsiți cea mai bună clinică stomatologică din Moldova. Catalogul clinicilor verificate cu prețuri, recenzii și evaluări.')
+          : (settingsMap.metaDescriptionRu || 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'),
+        keywords: isRomanian
+          ? (settingsMap.keywordsRo || 'stomatologie, dentist, tratament dentar, clinică, Moldova, Chișinău')
+          : (settingsMap.keywordsRu || 'стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв'),
+        h1: isRomanian
+          ? (settingsMap.h1Ro || 'Catalogul clinicilor stomatologice din Moldova')
+          : (settingsMap.h1Ru || 'Каталог стоматологических клиник в Молдове'),
+        ogTitle: isRomanian
+          ? (settingsMap.ogTitleRo || settingsMap.siteTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice')
+          : (settingsMap.ogTitleRu || settingsMap.siteTitleRu || 'Dent Moldova - Каталог стоматологических клиник'),
+        ogDescription: isRomanian
+          ? (settingsMap.ogDescriptionRo || settingsMap.metaDescriptionRo || 'Găsiți cele mai bune clinici stomatologice din Moldova')
+          : (settingsMap.ogDescriptionRu || settingsMap.metaDescriptionRu || 'Найдите лучшие стоматологические клиники в Молдове'),
+        ogImage: isRomanian
+          ? (settingsMap.ogImageRo || '')
+          : (settingsMap.ogImageRu || ''),
+        canonical: isRomanian
+          ? (settingsMap.canonicalRo || 'https://dentmoldova.md/ro')
+          : (settingsMap.canonicalRu || 'https://dentmoldova.md'),
+        robots: settingsMap.robots || 'index,follow',
+        schemaType: settingsMap.schemaType || 'Organization',
+        schemaData: settingsMap.schemaData || '',
+        language: language
+      };
+    } catch (error) {
+      console.error('Error fetching homepage SEO data:', error);
+    }
+  }
+  
   next();
 }
