@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { Filter, X, Plus, Building2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,9 +19,19 @@ import { useTranslation } from '../lib/i18n';
 import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, changeLanguage } = useTranslation();
   useSEO(); // Применяем глобальные SEO настройки только на главной странице
   const [, setLocation] = useLocation();
+  
+  // Определяем язык из URL
+  const [, paramsRo] = useRoute('/ro');
+  const isRomanian = !!paramsRo;
+  const language = isRomanian ? 'ro' : 'ru';
+  
+  // Переключаем язык в i18n системе при изменении URL
+  useEffect(() => {
+    changeLanguage(language);
+  }, [language, changeLanguage]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -43,7 +53,6 @@ export default function Home() {
   
   const [page, setPage] = useState(1);
   const limit = 50;
-  const { language } = useTranslation();
 
   // Убираем отслеживание скролла для анимированного меню
   // useEffect(() => {
@@ -128,7 +137,7 @@ export default function Home() {
   }, [searchQuery, filters, page, language, cities.length, districts.length]);
 
   // Fetch clinics
-  const queryKey = ['/api/clinics', buildQueryParams()];
+  const queryKey = ['/api/clinics', buildQueryParams(), language];
   console.log('🔍 Query key:', queryKey);
   
   const { data: clinicsData, isLoading } = useQuery({
@@ -317,6 +326,7 @@ export default function Home() {
         <RecommendedClinics
           onClinicClick={handleClinicClick}
           onBookClick={handleBookClick}
+          language={language}
         />
         
 
@@ -357,6 +367,7 @@ export default function Home() {
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
             filtersVisible={filtersVisible}
+            language={language}
           />
         ) : (
           <div className="text-center py-12">
@@ -382,6 +393,7 @@ export default function Home() {
           setSelectedClinic(null);
         }}
         onBookClick={handleBookClick}
+        language={language}
       />
       
       {clinicDetailError && (

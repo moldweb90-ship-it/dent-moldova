@@ -41,6 +41,7 @@ interface ClinicGridProps {
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
   filtersVisible?: boolean; // Новый пропс для состояния фильтров
+  language?: string; // Добавляем язык для передачи в ссылки
 }
 
 export function ClinicGrid({ 
@@ -51,7 +52,8 @@ export function ClinicGrid({
   onPageChange, 
   onClinicClick, 
   onBookClick,
-  filtersVisible = true // По умолчанию фильтры видимы
+  filtersVisible = true, // По умолчанию фильтры видимы
+  language = 'ru' // По умолчанию русский язык
 }: ClinicGridProps) {
   const { t } = useTranslation();
   const totalPages = Math.ceil(total / limit);
@@ -81,6 +83,7 @@ export function ClinicGrid({
               onClinicClick={onClinicClick}
               onBookClick={onBookClick}
               onPricesClick={(slug) => onClinicClick(slug)}
+              language={language}
             />
           );
         })}

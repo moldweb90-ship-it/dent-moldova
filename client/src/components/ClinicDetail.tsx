@@ -62,10 +62,12 @@ interface ClinicDetailProps {
   open: boolean;
   onClose: () => void;
   onBookClick: (clinic: Clinic) => void;
+  language?: string; // Добавляем язык как пропс
 }
 
-export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetailProps) {
-  const { t, language } = useTranslation();
+export function ClinicDetail({ clinic, open, onClose, onBookClick, language: propLanguage }: ClinicDetailProps) {
+  const { t, language: i18nLanguage } = useTranslation();
+  const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showPhoneOptions, setShowPhoneOptions] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -154,7 +156,9 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick }: ClinicDetai
   };
 
   const handleViewFullPage = () => {
-    window.open(`/clinic/${clinic.slug}`, '_blank');
+    if (!clinic) return;
+    const clinicPath = language === 'ro' ? `/clinic/ro/${clinic.slug}` : `/clinic/${clinic.slug}`;
+    window.open(clinicPath, '_blank');
   };
 
   const handleVerificationSubmit = async (e: React.FormEvent) => {

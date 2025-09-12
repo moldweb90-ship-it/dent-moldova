@@ -58,7 +58,9 @@ declare global {
 function Router() {
   return (
     <Switch>
+      <Route path="/ro" component={Home} />
       <Route path="/" component={Home} />
+      <Route path="/clinic/ro/:slug" component={ClinicPage} />
       <Route path="/clinic/:slug" component={ClinicPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/pricing" component={PricingPage} />

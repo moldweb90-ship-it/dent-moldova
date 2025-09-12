@@ -57,10 +57,12 @@ interface ClinicCardProps {
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
   onPricesClick: (slug: string) => void;
+  language?: string; // Добавляем язык как пропс
 }
 
-export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick }: ClinicCardProps) {
-  const { t, language } = useTranslation();
+export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, language: propLanguage }: ClinicCardProps) {
+  const { t, language: i18nLanguage } = useTranslation();
+  const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [isHovered, setIsHovered] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });

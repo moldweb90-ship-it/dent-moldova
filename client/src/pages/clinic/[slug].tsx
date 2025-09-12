@@ -30,21 +30,31 @@ interface Service {
 }
 
 export default function ClinicPage() {
-  const [, params] = useRoute<{ slug: string }>('/clinic/:slug');
-  const { t, language } = useTranslation();
+  const [, paramsRu] = useRoute<{ slug: string }>('/clinic/:slug');
+  const [, paramsRo] = useRoute<{ slug: string }>('/clinic/ro/:slug');
+  const { t, changeLanguage } = useTranslation();
   const queryClient = useQueryClient();
-  const slug = params?.slug;
+  
+  // Определяем язык и slug из URL
+  const isRomanian = !!paramsRo;
+  const language = isRomanian ? 'ro' : 'ru';
+  const slug = isRomanian ? paramsRo?.slug : paramsRu?.slug;
+  
+  // Синхронизируем язык в i18n системе с URL
+  useEffect(() => {
+    changeLanguage(language);
+  }, [language, changeLanguage]);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-  // Принудительно обновляем данные при изменении языка
+  // Принудительно обновляем данные при изменении языка или slug
   useEffect(() => {
     if (slug) {
-      console.log('🔄 Clinic page: Обновляем данные при изменении языка на:', language);
-      queryClient.invalidateQueries({ queryKey: ['clinic', slug] });
-      queryClient.removeQueries({ queryKey: ['clinic', slug] });
+      console.log('🔄 Clinic page: Обновляем данные для языка:', language, 'slug:', slug);
+      queryClient.invalidateQueries({ queryKey: ['clinic', slug, language] });
+      queryClient.removeQueries({ queryKey: ['clinic', slug, language] });
     }
   }, [language, slug, queryClient]);
 

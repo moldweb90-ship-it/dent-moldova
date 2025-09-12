@@ -14,6 +14,7 @@ import { useClinicRating } from '../hooks/useClinicRating';
 interface RecommendedClinicsProps {
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: any) => void;
+  language?: string; // Добавляем язык как пропс
 }
 
 const promotionalLabelStyles: Record<string, string> = {
@@ -49,8 +50,9 @@ function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
   );
 }
 
-export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedClinicsProps) {
-  const { language, t } = useTranslation();
+export function RecommendedClinics({ onClinicClick, onBookClick, language: propLanguage }: RecommendedClinicsProps) {
+  const { language: i18nLanguage, t } = useTranslation();
+  const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState<any | null>(null);
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
