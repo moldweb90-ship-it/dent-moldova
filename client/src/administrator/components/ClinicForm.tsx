@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Loader2, Plus, Trash2, Upload, X, Star, User, Calendar, DollarSign, Wrench, Flame, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Trash2, Upload, X, Star, User, Calendar, DollarSign, Wrench, Flame, AlertTriangle, Shield, Award } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n';
@@ -30,120 +30,7 @@ interface Service {
   currency: string;
 }
 
-interface ClinicRatingData {
-  // Google рейтинг
-  googleRating?: number;
-  googleReviewsCount?: number;
-  
-  // Опыт врачей
-  doctorExperience: number;
-  hasLicenses: boolean;
-  hasCertificates: boolean;
-  
-  // Доступность записи
-  onlineBooking: boolean;
-  weekendWork: boolean;
-  eveningWork: boolean;
-  urgentCare: boolean;
-  convenientLocation: boolean;
-  
-  // Ценовая политика (старые поля для обратной совместимости)
-  installmentPlan: boolean;
-  hasPromotions: boolean;
-  
-  // Ценовая политика (новые поля)
-  publishedPricing: boolean;
-  freeConsultation: boolean;
-  interestFreeInstallment: boolean;
-  implantWarranty: boolean;
-  popularServicesPromotions: boolean;
-  onlinePriceCalculator: boolean;
-}
 
-interface CalculatedRatings {
-  reviewsIndex: number;    // Google рейтинг
-  trustIndex: number;      // Опыт врачей
-  accessIndex: number;     // Удобство записи
-  priceIndex: number;      // Ценовая политика
-  dScore: number;          // Общий рейтинг
-}
-
-// Функция расчета рейтингов на клиенте
-function calculateRatings(data: ClinicRatingData): CalculatedRatings {
-  // 1. Google Рейтинг (Reviews Index) - Точная система
-  let reviewsIndex = 70; // Базовый рейтинг 70
-  
-  if (data.googleRating && data.googleRating > 0) {
-    // Рейтинг от 4.0 до 5.0: 20 баллов (2 балла на каждую десятую)
-    let ratingBonus = 0;
-    if (data.googleRating >= 4.0) {
-      const ratingDiff = Math.min(data.googleRating - 4.0, 1.0); // максимум до 5.0
-      ratingBonus = Math.round(ratingDiff * 20); // 20 баллов за 1.0 разницу
-    }
-    
-    // Количество отзывов: 10 баллов максимум (2 балла за каждые 100 отзывов)
-    let reviewsBonus = 0;
-    if (data.googleReviewsCount) {
-      reviewsBonus = Math.min(Math.floor(data.googleReviewsCount / 100) * 2, 10);
-    }
-    
-    reviewsIndex = Math.min(100, 70 + ratingBonus + reviewsBonus);
-  }
-
-  // 2. Опыт врачей (Trust Index) - Точная система
-  let trustIndex = 70; // Базовый рейтинг 70
-  
-  // Лицензии и сертификаты: 10 баллов
-  if (data.hasLicenses) trustIndex += 5;
-  if (data.hasCertificates) trustIndex += 5;
-  
-  // Опыт врачей: 20 баллов (1 балл за каждый год)
-  const experienceBonus = Math.min(data.doctorExperience || 0, 20);
-  trustIndex += experienceBonus;
-  
-  trustIndex = Math.min(trustIndex, 100);
-
-  // 3. Удобство записи (Access Index) - Точная система
-  let accessIndex = 70; // Базовый рейтинг 70
-  
-  // 5 опций по 6 баллов каждая (30 баллов максимум)
-  if (data.onlineBooking) accessIndex += 6;
-  if (data.weekendWork) accessIndex += 6;
-  if (data.eveningWork) accessIndex += 6;
-  if (data.urgentCare) accessIndex += 6;
-  if (data.convenientLocation) accessIndex += 6;
-  
-  accessIndex = Math.min(accessIndex, 100);
-
-  // 4. Ценовая политика (Price Index) - Новая система
-  let priceIndex = 50; // Базовый рейтинг 50
-  
-  // Новые характеристики ценовой политики (50 баллов максимум)
-  if (data.publishedPricing) priceIndex += 15; // Опубликован прайс на сайте/в приложении
-  if (data.freeConsultation) priceIndex += 5;  // Бесплатная консультация
-  if (data.interestFreeInstallment) priceIndex += 5; // Рассрочка без %
-  if (data.implantWarranty) priceIndex += 10; // Гарантия на импланты/работы
-  if (data.popularServicesPromotions) priceIndex += 10; // Акции на популярные услуги
-  if (data.onlinePriceCalculator) priceIndex += 5; // Онлайн-калькулятор стоимости
-  
-  priceIndex = Math.min(priceIndex, 100);
-
-  // 5. Общий рейтинг (взвешенная сумма)
-  const dScore = Math.round(
-    trustIndex * 0.3 +      // Доверие: 30%
-    reviewsIndex * 0.25 +   // Отзывы: 25%
-    priceIndex * 0.25 +     // Цена: 25%
-    accessIndex * 0.2       // Удобство: 20%
-  );
-
-  return {
-    reviewsIndex,
-    trustIndex,
-    accessIndex,
-    priceIndex,
-    dScore
-  };
-}
 
 export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormProps) {
   const { language } = useTranslation();
@@ -259,7 +146,6 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
       credit: clinic?.credit || false,
       // Status
       verified: clinic?.verified || false,
-      cnam: clinic?.cnam || false,
       availToday: clinic?.availToday || false,
       recommended: clinic?.recommended || false,
       // Promotional Labels
@@ -288,49 +174,6 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
     }
   });
 
-  // Подписываемся на изменения формы для обновления рейтингов в реальном времени
-  const watchedValues = form.watch([
-    'googleRating', 'googleReviewsCount', 'doctorExperience', 
-    'hasLicenses', 'hasCertificates', 'onlineBooking', 
-    'weekendWork', 'eveningWork', 'urgentCare', 'convenientLocation', 
-    'installmentPlan', 'hasPromotions',
-    'publishedPricing', 'freeConsultation', 'interestFreeInstallment', 
-    'implantWarranty', 'popularServicesPromotions', 'onlinePriceCalculator'
-  ]);
-
-  // Получаем текущие рейтинги для отображения (используем watchedValues для реактивности)
-  const currentRatings = React.useMemo(() => {
-    const [googleRating, googleReviewsCount, doctorExperience, hasLicenses, hasCertificates, 
-           onlineBooking, weekendWork, eveningWork, urgentCare, convenientLocation, installmentPlan, hasPromotions,
-           publishedPricing, freeConsultation, interestFreeInstallment, implantWarranty, popularServicesPromotions, onlinePriceCalculator] = watchedValues;
-    
-    return calculateRatings({
-      googleRating: googleRating ? parseFloat(googleRating) : undefined,
-      googleReviewsCount: googleReviewsCount ? parseInt(googleReviewsCount) : undefined,
-      doctorExperience: doctorExperience || 0,
-      hasLicenses: hasLicenses || false,
-      hasCertificates: hasCertificates || false,
-      onlineBooking: onlineBooking || false,
-      weekendWork: weekendWork || false,
-      eveningWork: eveningWork || false,
-      urgentCare: urgentCare || false,
-      convenientLocation: convenientLocation || false,
-      installmentPlan: installmentPlan || false,
-      hasPromotions: hasPromotions || false,
-      publishedPricing: publishedPricing || false,
-      freeConsultation: freeConsultation || false,
-      interestFreeInstallment: interestFreeInstallment || false,
-      implantWarranty: implantWarranty || false,
-      popularServicesPromotions: popularServicesPromotions || false,
-      onlinePriceCalculator: onlinePriceCalculator || false
-    });
-  }, [watchedValues]);
-
-  // Пересчитываем рейтинги при изменении значений
-  useEffect(() => {
-    // Форсируем перерендер компонента при изменении значений
-    form.trigger();
-  }, [watchedValues, form]);
 
   const createClinicMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -350,12 +193,12 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
         }
       });
 
-      // Add calculated ratings
-      formData.append('priceIndex', currentRatings.priceIndex.toString());
-      formData.append('trustIndex', currentRatings.trustIndex.toString());
-      formData.append('reviewsIndex', currentRatings.reviewsIndex.toString());
-      formData.append('accessIndex', currentRatings.accessIndex.toString());
-      formData.append('dScore', currentRatings.dScore.toString());
+      // Add default ratings (since we removed the calculation)
+      formData.append('priceIndex', '70');
+      formData.append('trustIndex', '70');
+      formData.append('reviewsIndex', '70');
+      formData.append('accessIndex', '70');
+      formData.append('dScore', '70');
 
       // Add services
       const servicesRuJson = JSON.stringify(servicesRu);
@@ -417,12 +260,12 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
         }
       });
 
-      // Add calculated ratings
-      formData.append('priceIndex', currentRatings.priceIndex.toString());
-      formData.append('trustIndex', currentRatings.trustIndex.toString());
-      formData.append('reviewsIndex', currentRatings.reviewsIndex.toString());
-      formData.append('accessIndex', currentRatings.accessIndex.toString());
-      formData.append('dScore', currentRatings.dScore.toString());
+      // Add default ratings (since we removed the calculation)
+      formData.append('priceIndex', '70');
+      formData.append('trustIndex', '70');
+      formData.append('reviewsIndex', '70');
+      formData.append('accessIndex', '70');
+      formData.append('dScore', '70');
 
       // Add services
       const servicesRuJson = JSON.stringify(servicesRu);
@@ -1169,278 +1012,118 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
         <TabsContent value="settings" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Status and Verification */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Статусы и верификация</h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="verified"
-                    checked={form.watch('verified')}
-                    onCheckedChange={(checked) => form.setValue('verified', checked as boolean)}
-                  />
-                  <Label htmlFor="verified">Верифицирована</Label>
-              </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="cnam"
-                    checked={form.watch('cnam')}
-                    onCheckedChange={(checked) => form.setValue('cnam', checked as boolean)}
-                  />
-                  <Label htmlFor="cnam">CNAM</Label>
-              </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="availToday"
-                    checked={form.watch('availToday')}
-                    onCheckedChange={(checked) => form.setValue('availToday', checked as boolean)}
-                  />
-                  <Label htmlFor="availToday">Доступно сегодня</Label>
-              </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="recommended"
-                    checked={form.watch('recommended')}
-                    onCheckedChange={(checked) => form.setValue('recommended', checked as boolean)}
-                  />
-                  <Label htmlFor="recommended" className="flex items-center gap-2">
-                    <Flame className="h-4 w-4 text-orange-500" />
-                    Рекомендуем (приоритетное размещение)
-                  </Label>
-                </div>
-
-                <div className="pt-4 border-t">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-500" />
+                  Статусы и верификация
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="sosEnabled"
-                      checked={form.watch('sosEnabled')}
-                      onCheckedChange={(checked) => form.setValue('sosEnabled', checked as boolean)}
+                      id="verified"
+                      checked={form.watch('verified')}
+                      onCheckedChange={(checked) => form.setValue('verified', checked as boolean)}
                     />
-                    <Label htmlFor="sosEnabled" className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                      SOS Кнопка
+                    <Label htmlFor="verified">Верифицирована</Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="availToday"
+                      checked={form.watch('availToday')}
+                      onCheckedChange={(checked) => form.setValue('availToday', checked as boolean)}
+                    />
+                    <Label htmlFor="availToday">Доступно сегодня</Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="recommended"
+                      checked={form.watch('recommended')}
+                      onCheckedChange={(checked) => form.setValue('recommended', checked as boolean)}
+                    />
+                    <Label htmlFor="recommended" className="flex items-center gap-2">
+                      <Flame className="h-4 w-4 text-orange-500" />
+                      Рекомендуем (приоритетное размещение)
                     </Label>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2 ml-6">
-                    Показывает анимированную SOS кнопку на странице клиники для экстренной связи. 
-                    Кнопка позволяет пользователям быстро позвонить или скопировать номер телефона.
-                  </p>
-                </div>
 
-              </div>
-            </div>
-
-            {/* Google Rating */}
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-500" />
-                    Google Рейтинг
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Укажите рейтинг из Google Maps (если есть)
-                  </p>
-
-              <div>
-                    <Label htmlFor="googleRating">Рейтинг (0-5)</Label>
-                <Input
-                      id="googleRating"
-                  type="number"
-                      step="0.1"
-                  min="0"
-                      max="5"
-                      {...form.register('googleRating')}
-                      placeholder="4.8"
-                />
-                    <p className="text-xs text-gray-500 mt-1">Например: 4.2 из 5 звезд</p>
-              </div>
-
-              <div>
-                    <Label htmlFor="googleReviewsCount">Количество отзывов в Google</Label>
-                <Input
-                      id="googleReviewsCount"
-                  type="number"
-                      {...form.register('googleReviewsCount')}
-                      placeholder="528"
-                />
-                  </div>
-                </CardContent>
-              </Card>
-              </div>
-            </div>
-
-          {/* Doctor Experience */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-500" />
-                Опыт врачей
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Информация о квалификации и опыте врачей
-              </p>
-              
-              <div>
-                <Label htmlFor="doctorExperience">Средний опыт врачей (лет)</Label>
-                <Input
-                  id="doctorExperience"
-                  type="number"
-                  {...form.register('doctorExperience', { valueAsNumber: true })}
-                  placeholder="14"
-                />
-                <p className="text-xs text-gray-500 mt-1">Средний стаж работы врачей в клинике</p>
-                </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="hasLicenses"
-                    checked={form.watch('hasLicenses')}
-                    onCheckedChange={(checked) => form.setValue('hasLicenses', checked as boolean)}
-                  />
-                  <Label htmlFor="hasLicenses">Есть лицензии и разрешения</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="hasCertificates"
-                    checked={form.watch('hasCertificates')}
-                    onCheckedChange={(checked) => form.setValue('hasCertificates', checked as boolean)}
-                  />
-                  <Label htmlFor="hasCertificates">Есть сертификаты и дипломы</Label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Automatically Calculated Ratings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                📊 Автоматически рассчитанные рейтинги
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Эти значения рассчитываются автоматически на основе заполненных данных выше
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Google Рейтинг: {currentRatings.reviewsIndex}</span>
-                    <span className="text-gray-500">Рейтинг из Google Maps</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${currentRatings.reviewsIndex}%` }}></div>
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sosEnabled"
+                        checked={form.watch('sosEnabled')}
+                        onCheckedChange={(checked) => form.setValue('sosEnabled', checked as boolean)}
+                      />
+                      <Label htmlFor="sosEnabled" className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        SOS Кнопка
+                      </Label>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2 ml-6">
+                      Показывает анимированную SOS кнопку на странице клиники для экстренной связи. 
+                      Кнопка позволяет пользователям быстро позвонить или скопировать номер телефона.
+                    </p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Опыт врачей: {currentRatings.trustIndex}</span>
-                    <span className="text-gray-500">Квалификация врачей</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${currentRatings.trustIndex}%` }}></div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Удобство записи: {currentRatings.accessIndex}</span>
-                    <span className="text-gray-500">Удобство записи</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: `${currentRatings.accessIndex}%` }}></div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Ценовая политика: {currentRatings.priceIndex}</span>
-                    <span className="text-gray-500">Цены и скидки</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${currentRatings.priceIndex}%` }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-semibold">
-                    <span>Общий рейтинг: {currentRatings.dScore}</span>
-                    <span className="text-gray-500">Комплексная оценка</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full" style={{ width: `${currentRatings.dScore}%` }}></div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-                     {/* Promotional Labels */}
-           <Card>
-             <CardHeader>
-               <CardTitle className="text-base">Рекламные лейблы</CardTitle>
-             </CardHeader>
-             <CardContent>
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Promotional Labels */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Award className="h-5 w-5 text-purple-500" />
+                  Рекламные лейблы
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-3">
                   {promotionalLabels.map((label) => (
                     <div key={label.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={label.id}
                         checked={form.watch('promotionalLabels').includes(label.id)}
                         onCheckedChange={(checked) => {
-                         const currentLabels = form.watch('promotionalLabels');
+                          const currentLabels = form.watch('promotionalLabels');
                           if (checked) {
-                           form.setValue('promotionalLabels', [...currentLabels, label.id]);
+                            form.setValue('promotionalLabels', [...currentLabels, label.id]);
                           } else {
-                           form.setValue('promotionalLabels', currentLabels.filter((id: string) => id !== label.id));
+                            form.setValue('promotionalLabels', currentLabels.filter((id: string) => id !== label.id));
                           }
                         }}
                       />
-                     <Label 
-                       htmlFor={label.id} 
-                       className={`text-sm px-2 py-1 rounded text-white ${label.color} cursor-pointer`}
-                     >
-                       {label.label}
-                     </Label>
+                      <Label 
+                        htmlFor={label.id} 
+                        className={`text-sm px-2 py-1 rounded text-white ${label.color} cursor-pointer`}
+                      >
+                        {label.label}
+                      </Label>
                     </div>
                   ))}
                 </div>
-               <p className="text-xs text-gray-500 mt-3">
-                 Выберите один или несколько лейблов. Можно снять все галочки.
-               </p>
-             </CardContent>
-           </Card>
+                <p className="text-xs text-gray-500 mt-3">
+                  Выберите один или несколько лейблов. Можно снять все галочки.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Clinic Characteristics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Характеристики клиники</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Booking Convenience */}
-              <div>
-                <h4 className="font-medium flex items-center gap-2 mb-3">
-                  <Calendar className="h-4 w-4" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Booking Convenience */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-green-500" />
                   Удобство записи
-                </h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  Удобство записи и работы клиники
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="onlineBooking"
@@ -1448,7 +1131,7 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                       onCheckedChange={(checked) => form.setValue('onlineBooking', checked as boolean)}
                     />
                     <Label htmlFor="onlineBooking">Онлайн запись на сайте</Label>
-              </div>
+                  </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -1457,7 +1140,7 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                       onCheckedChange={(checked) => form.setValue('weekendWork', checked as boolean)}
                     />
                     <Label htmlFor="weekendWork">Работает в выходные</Label>
-            </div>
+                  </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -1466,7 +1149,7 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                       onCheckedChange={(checked) => form.setValue('eveningWork', checked as boolean)}
                     />
                     <Label htmlFor="eveningWork">Работает вечером (после 18:00)</Label>
-          </div>
+                  </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -1486,18 +1169,19 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                     <Label htmlFor="convenientLocation">Удобное расположение (центр, парковка)</Label>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Pricing Policy */}
-              <div>
-                <h4 className="font-medium flex items-center gap-2 mb-3">
-                  <DollarSign className="h-4 w-4" />
+            {/* Pricing Policy */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-emerald-500" />
                   Ценовая политика
-                </h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  Информация о ценах и способах оплаты
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="publishedPricing"
@@ -1552,64 +1236,63 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                     <Label htmlFor="onlinePriceCalculator">Онлайн-калькулятор стоимости</Label>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Additional Features */}
-              <div>
-                <h4 className="font-medium flex items-center gap-2 mb-3">
-                  <Wrench className="h-4 w-4" />
-                  Дополнительно
-                </h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  Дополнительные характеристики клиники для фильтрации
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pediatricDentistry"
-                      checked={form.watch('pediatricDentistry')}
-                      onCheckedChange={(checked) => form.setValue('pediatricDentistry', checked as boolean)}
-                    />
-                    <Label htmlFor="pediatricDentistry">Детская стоматология</Label>
-                  </div>
+          {/* Additional Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-orange-500" />
+                Дополнительные характеристики
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="pediatricDentistry"
+                    checked={form.watch('pediatricDentistry')}
+                    onCheckedChange={(checked) => form.setValue('pediatricDentistry', checked as boolean)}
+                  />
+                  <Label htmlFor="pediatricDentistry">Детская стоматология</Label>
+                </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="parking"
-                      checked={form.watch('parking')}
-                      onCheckedChange={(checked) => form.setValue('parking', checked as boolean)}
-                    />
-                    <Label htmlFor="parking">Парковка</Label>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="parking"
+                    checked={form.watch('parking')}
+                    onCheckedChange={(checked) => form.setValue('parking', checked as boolean)}
+                  />
+                  <Label htmlFor="parking">Парковка</Label>
+                </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sos"
-                      checked={form.watch('sos')}
-                      onCheckedChange={(checked) => form.setValue('sos', checked as boolean)}
-                    />
-                    <Label htmlFor="sos">SOS</Label>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="sos"
+                    checked={form.watch('sos')}
+                    onCheckedChange={(checked) => form.setValue('sos', checked as boolean)}
+                  />
+                  <Label htmlFor="sos">SOS</Label>
+                </div>
 
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="work24h"
+                    checked={form.watch('work24h')}
+                    onCheckedChange={(checked) => form.setValue('work24h', checked as boolean)}
+                  />
+                  <Label htmlFor="work24h">24/7</Label>
+                </div>
 
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="work24h"
-                      checked={form.watch('work24h')}
-                      onCheckedChange={(checked) => form.setValue('work24h', checked as boolean)}
-                    />
-                    <Label htmlFor="work24h">24/7</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="credit"
-                      checked={form.watch('credit')}
-                      onCheckedChange={(checked) => form.setValue('credit', checked as boolean)}
-                    />
-                    <Label htmlFor="credit">Рассрочка/кредит</Label>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="credit"
+                    checked={form.watch('credit')}
+                    onCheckedChange={(checked) => form.setValue('credit', checked as boolean)}
+                  />
+                  <Label htmlFor="credit">Рассрочка/кредит</Label>
                 </div>
               </div>
             </CardContent>

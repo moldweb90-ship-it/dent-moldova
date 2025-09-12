@@ -33,15 +33,15 @@ function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
   }
 
   return (
-    <div className="mb-2 md:mb-3">
+    <div className="bg-black bg-opacity-60 backdrop-blur-sm rounded-full px-2 py-1">
       <div className="flex items-center gap-1">
         <svg 
-          className="w-5 h-5 text-yellow-400 fill-current" 
+          className="w-4 h-4 text-yellow-400 fill-current" 
           viewBox="0 0 24 24"
         >
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
-        <span className="text-gray-800 font-bold text-sm">
+        <span className="text-white font-bold text-sm drop-shadow-lg">
           {ratingData.averageRating.toFixed(2)}
         </span>
       </div>
@@ -182,6 +182,11 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
               </Badge>
             </div>
 
+            {/* Star Rating - top right corner */}
+            <div className="absolute top-3 right-3 z-10">
+              <ClinicRatingDisplay clinicId={clinic.id} />
+            </div>
+
 
             {/* Clinic Image */}
             <div className="h-32 md:h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden relative">
@@ -236,8 +241,6 @@ export function RecommendedClinics({ onClinicClick, onBookClick }: RecommendedCl
                 )}
               </div>
 
-              {/* Star Rating Component */}
-              <ClinicRatingDisplay clinicId={clinic.id} />
 
               {/* Action Buttons */}
               {clinic.verified ? (
