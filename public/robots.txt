@@ -1,5 +1,52 @@
 User-agent: *
+Allow: /
 Disallow: /admin
 Disallow: /api
+Disallow: /administrator
+Disallow: /_next
+Disallow: /static
+Disallow: /images/private
+Disallow: /uploads/temp
+Disallow: /search?*
+Disallow: /clinic/*/edit
+Disallow: /clinic/*/delete
+Disallow: /booking/*
+Disallow: /reviews/*/edit
+Disallow: /reviews/*/delete
 
+# Разрешаем основные страницы
+Allow: /$
+Allow: /ro/$
+Allow: /pricing
+Allow: /ro/pricing
+Allow: /clinic/
+Allow: /ro/clinic/
+
+# Указываем sitemap
 Sitemap: https://dentmoldova.md/sitemap.xml
+
+# Дополнительные директивы для поисковых систем
+Crawl-delay: 1
+
+# Специальные правила для разных ботов
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+# Блокируем агрессивных ботов
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

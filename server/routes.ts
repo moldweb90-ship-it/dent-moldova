@@ -17,6 +17,113 @@ import { calculateRatings } from './utils/ratingCalculator';
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'dancerboy';
 
+// Robots.txt generation function
+async function generateRobotsTxt(baseUrl: string) {
+  try {
+    // Получаем robots.txt из настроек
+    const settings = await storage.getAllSiteSettings();
+    const settingsMap = settings.reduce((acc: any, setting: any) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {});
+    
+    const robotsContent = settingsMap.robotsTxt || `User-agent: *
+Disallow: /admin
+Disallow: /api
+
+Sitemap: ${baseUrl}/sitemap.xml`;
+    
+    return robotsContent;
+  } catch (error) {
+    console.error('Error generating robots.txt:', error);
+    return `User-agent: *
+Disallow: /admin
+Disallow: /api
+
+Sitemap: ${baseUrl}/sitemap.xml`;
+  }
+}
+
+// Sitemap generation function
+async function generateSitemap(baseUrl: string) {
+  const urls = [];
+  
+  // 1. Main pages
+  urls.push({
+    loc: `${baseUrl}/`,
+    lastmod: new Date().toISOString(),
+    changefreq: 'daily',
+    priority: '1.0'
+  });
+  
+  urls.push({
+    loc: `${baseUrl}/ro/`,
+    lastmod: new Date().toISOString(),
+    changefreq: 'daily',
+    priority: '1.0'
+  });
+  
+  urls.push({
+    loc: `${baseUrl}/pricing`,
+    lastmod: new Date().toISOString(),
+    changefreq: 'weekly',
+    priority: '0.8'
+  });
+  
+  urls.push({
+    loc: `${baseUrl}/ro/pricing`,
+    lastmod: new Date().toISOString(),
+    changefreq: 'weekly',
+    priority: '0.8'
+  });
+  
+  // 2. Active clinic pages
+  const activeClinics = await db.query.clinics.findMany({
+    where: eq(clinics.verified, true),
+    columns: {
+      slug: true,
+      updatedAt: true
+    }
+  });
+  
+  for (const clinic of activeClinics) {
+    // Russian version
+    urls.push({
+      loc: `${baseUrl}/clinic/${clinic.slug}`,
+      lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
+      changefreq: 'weekly',
+      priority: '0.8'
+    });
+    
+    // Romanian version
+    urls.push({
+      loc: `${baseUrl}/ro/clinic/${clinic.slug}`,
+      lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
+      changefreq: 'weekly',
+      priority: '0.8'
+    });
+  }
+  
+  // Generate XML
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(url => `  <url>
+    <loc>${url.loc}</loc>
+    <lastmod>${url.lastmod}</lastmod>
+    <changefreq>${url.changefreq}</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+  
+  return {
+    xml,
+    totalPages: urls.length,
+    clinicPages: activeClinics.length * 2, // Russian + Romanian
+    mainPages: 4,
+    lastUpdated: new Date().toISOString()
+  };
+}
+
 // Session middleware
 declare module 'express-session' {
   interface SessionData {
@@ -2309,6 +2416,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching clinic reviews:', error);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Crawler endpoints
+  app.post('/api/admin/crawler/start', requireAdminAuth, async (req, res) => {
+    try {
+      // Get base URL from request headers or use localhost as fallback
+      const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+      const host = req.headers.host || 'localhost:5000';
+      const baseUrl = `${protocol}://${host}`;
+      
+      console.log('🕷️ Starting crawler with base URL:', baseUrl);
+      
+      const sitemapData = await generateSitemap(baseUrl);
+      
+      // Save sitemap to file
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      fs.writeFileSync(sitemapPath, sitemapData.xml);
+      
+      console.log('✅ Sitemap generated and saved:', sitemapPath);
+      console.log(`📊 Total pages: ${sitemapData.totalPages}, Clinic pages: ${sitemapData.clinicPages}, Main pages: ${sitemapData.mainPages}`);
+      
+      res.json({
+        success: true,
+        message: 'Crawler completed successfully',
+        ...sitemapData
+      });
+    } catch (error) {
+      console.error('❌ Crawler error:', error);
+      res.status(500).json({ 
+        message: 'Crawler failed', 
+        error: error.message 
+      });
+    }
+  });
+
+  // Sitemap endpoint
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      
+      if (fs.existsSync(sitemapPath)) {
+        const sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemapContent);
+      } else {
+        // Generate sitemap on the fly if file doesn't exist
+        const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+        const host = req.headers.host || 'localhost:5000';
+        const baseUrl = `${protocol}://${host}`;
+        
+        const sitemapData = await generateSitemap(baseUrl);
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemapData.xml);
+      }
+    } catch (error) {
+      console.error('❌ Sitemap error:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate sitemap', 
+        error: error.message 
+      });
+    }
+  });
+
+  // Robots.txt endpoint
+  app.get('/robots.txt', async (req, res) => {
+    try {
+      const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
+      
+      if (fs.existsSync(robotsPath)) {
+        const robotsContent = fs.readFileSync(robotsPath, 'utf8');
+        res.set('Content-Type', 'text/plain');
+        res.send(robotsContent);
+      } else {
+        // Generate robots.txt on the fly if file doesn't exist
+        const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+        const host = req.headers.host || 'localhost:5000';
+        const baseUrl = `${protocol}://${host}`;
+        
+        const robotsContent = await generateRobotsTxt(baseUrl);
+        res.set('Content-Type', 'text/plain');
+        res.send(robotsContent);
+      }
+    } catch (error) {
+      console.error('❌ Robots.txt error:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate robots.txt', 
+        error: error.message 
+      });
     }
   });
 

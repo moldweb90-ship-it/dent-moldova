@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Globe, FileText, Search, Settings as SettingsIcon, Upload, Image, Monitor, Building2, Briefcase, Clock, DollarSign, MapPin, Link, User, Globe2, Eye, Hash, Tag } from 'lucide-react';
+import { Globe, FileText, Search, Settings as SettingsIcon, Upload, Image, Monitor, Building2, Briefcase, Clock, DollarSign, MapPin, Link, User, Globe2, Eye, Hash, Tag, Bot, Shield } from 'lucide-react';
 
 const generalSettingsSchema = z.object({
   favicon: z.string().optional(),
@@ -48,14 +48,18 @@ const seoSettingsSchema = z.object({
   h1Ro: z.string().optional(),
   
   // Common settings
-  robotsTxt: z.string().optional(),
   robots: z.string().default('index,follow'),
   schemaType: z.string().default('Organization'),
   schemaData: z.string().optional(),
 });
 
+const robotsSettingsSchema = z.object({
+  robotsTxt: z.string().optional(),
+});
+
 type GeneralSettingsData = z.infer<typeof generalSettingsSchema>;
 type SEOSettingsData = z.infer<typeof seoSettingsSchema>;
+type RobotsSettingsData = z.infer<typeof robotsSettingsSchema>;
 
 export function Settings() {
   console.log('🔧 Settings component is rendering...');
@@ -63,6 +67,16 @@ export function Settings() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+  const [crawling, setCrawling] = useState(false);
+  const [crawlResults, setCrawlResults] = useState<any>(() => {
+    // Загружаем результаты из localStorage при инициализации
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('crawler-results');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
 
   const generalForm = useForm<GeneralSettingsData>({
     resolver: zodResolver(generalSettingsSchema),
@@ -105,11 +119,17 @@ export function Settings() {
       h1Ro: '',
       
       // Common defaults
-      robotsTxt: 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml',
       robots: 'index,follow',
       schemaType: 'Organization',
       schemaData: '',
     }
+  });
+
+  const robotsForm = useForm<RobotsSettingsData>({
+    resolver: zodResolver(robotsSettingsSchema),
+    defaultValues: {
+      robotsTxt: 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml',
+    },
   });
 
   useEffect(() => {
@@ -167,10 +187,14 @@ export function Settings() {
         h1Ro: settingsMap.h1Ro || 'Catalogul clinicilor stomatologice din Moldova',
         
         // Common settings
-        robotsTxt: settingsMap.robotsTxt || 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml',
         robots: settingsMap.robots || 'index,follow',
         schemaType: settingsMap.schemaType || 'Organization',
         schemaData: settingsMap.schemaData || '',
+      });
+
+      // Load robots settings
+      robotsForm.reset({
+        robotsTxt: settingsMap.robotsTxt || 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml',
       });
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -218,6 +242,60 @@ export function Settings() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onRobotsSubmit = async (data: RobotsSettingsData) => {
+    setLoading(true);
+    try {
+      const result = await apiRequest('POST', '/api/admin/settings', data);
+      toast({
+        title: 'Robots.txt обновлен',
+        description: 'Файл robots.txt успешно сохранен и доступен по адресу /robots.txt',
+      });
+      // Перезагружаем настройки для обновления формы
+      loadSettings();
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить robots.txt.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onCrawlStart = async () => {
+    setCrawling(true);
+    setCrawlResults(null);
+    try {
+      const response = await apiRequest('POST', '/api/admin/crawler/start');
+      const result = await response.json();
+      console.log('Crawler result:', result); // Debug log
+      setCrawlResults(result);
+      // Сохраняем результаты в localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crawler-results', JSON.stringify(result));
+      }
+      toast({
+        title: 'Краулинг завершен',
+        description: `Найдено ${result.totalPages || 0} страниц. Sitemap обновлен.`,
+      });
+    } catch (error: any) {
+      console.error('Error during crawling:', error);
+      // Очищаем результаты при ошибке
+      setCrawlResults(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('crawler-results');
+      }
+      toast({
+        title: 'Ошибка краулинга',
+        description: error.message || 'Не удалось выполнить краулинг страниц.',
+        variant: 'destructive',
+      });
+    } finally {
+      setCrawling(false);
     }
   };
 
@@ -280,12 +358,98 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2">
-        <Globe className="h-6 w-6 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Настройки</h1>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div className="flex items-center space-x-2">
+          <Globe className="h-6 w-6 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Настройки</h1>
+        </div>
+        
+        {/* Кнопка сохранения наверху - только для активной вкладки */}
+        {activeTab === 'general' && (
+          <Button
+            onClick={generalForm.handleSubmit(onGeneralSubmit)}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 text-sm sm:text-base"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span className="hidden sm:inline">Сохранение...</span>
+                <span className="sm:hidden">Сохранение...</span>
+              </>
+            ) : (
+              <>
+                <span className="hidden sm:inline">Сохранить общие настройки</span>
+                <span className="sm:hidden">Общие</span>
+              </>
+            )}
+          </Button>
+        )}
+        {activeTab === 'seo' && (
+          <Button
+            onClick={seoForm.handleSubmit(onSEOSubmit)}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 text-sm sm:text-base"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span className="hidden sm:inline">Сохранение...</span>
+                <span className="sm:hidden">Сохранение...</span>
+              </>
+            ) : (
+              <>
+                <span className="hidden sm:inline">Сохранить SEO настройки</span>
+                <span className="sm:hidden">SEO</span>
+              </>
+            )}
+          </Button>
+        )}
+        {activeTab === 'robots' && (
+          <Button
+            onClick={robotsForm.handleSubmit(onRobotsSubmit)}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 text-sm sm:text-base"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span className="hidden sm:inline">Сохранение...</span>
+                <span className="sm:hidden">Сохранение...</span>
+              </>
+            ) : (
+              <>
+                <Shield className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Сохранить Robots.txt</span>
+                <span className="sm:hidden">Robots</span>
+              </>
+            )}
+          </Button>
+        )}
+        {activeTab === 'crawler' && (
+          <Button
+            onClick={onCrawlStart}
+            disabled={crawling}
+            className="bg-purple-600 hover:bg-purple-700 px-4 sm:px-6 py-2 text-sm sm:text-base"
+          >
+            {crawling ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span className="hidden sm:inline">Краулинг...</span>
+                <span className="sm:hidden">Краулинг...</span>
+              </>
+            ) : (
+              <>
+                <Bot className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Запустить краулер</span>
+                <span className="sm:hidden">Краулер</span>
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue="general" className="space-y-4">
+      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="general" className="flex items-center space-x-2">
             <SettingsIcon className="h-4 w-4" />
@@ -294,6 +458,14 @@ export function Settings() {
           <TabsTrigger value="seo" className="flex items-center space-x-2">
             <Search className="h-4 w-4" />
             <span>SEO</span>
+          </TabsTrigger>
+          <TabsTrigger value="crawler" className="flex items-center space-x-2">
+            <Bot className="h-4 w-4" />
+            <span>Краулер</span>
+          </TabsTrigger>
+          <TabsTrigger value="robots" className="flex items-center space-x-2">
+            <Shield className="h-4 w-4" />
+            <span>Robots.txt</span>
           </TabsTrigger>
         </TabsList>
 
@@ -309,7 +481,7 @@ export function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={generalForm.handleSubmit(onGeneralSubmit)} className="space-y-8">
+              <div className="space-y-8">
                 {/* Favicon Upload Section */}
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
                   <div className="flex items-center space-x-3 mb-4">
@@ -567,24 +739,7 @@ export function Settings() {
                   </CardContent>
                 </Card>
 
-                {/* Submit Button */}
-                <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700 px-8 py-2"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Сохранение...
-                      </>
-                    ) : (
-                      'Сохранить общие настройки'
-                    )}
-                  </Button>
-                </div>
-              </form>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -601,7 +756,7 @@ export function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={seoForm.handleSubmit(onSEOSubmit)} className="space-y-8">
+              <div className="space-y-8">
                 {/* Language Tabs */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                   {/* Russian SEO Settings */}
@@ -936,23 +1091,6 @@ export function Settings() {
                       />
                     </div>
 
-                    <div className="space-y-2 mt-6">
-                      <Label htmlFor="robotsTxt" className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <span>Содержимое robots.txt</span>
-                      </Label>
-                      <Textarea
-                        id="robotsTxt"
-                        {...seoForm.register('robotsTxt')}
-                        placeholder="User-agent: *&#10;Disallow: /admin&#10;Disallow: /api"
-                        rows={6}
-                        disabled={loading}
-                        className="resize-none font-mono text-sm"
-                      />
-                      <p className="text-xs text-gray-500">
-                        Инструкции для поисковых роботов (создается файл в корне сайта)
-                      </p>
-                    </div>
                   </CardContent>
                 </Card>
 
@@ -1005,24 +1143,199 @@ export function Settings() {
                   </CardContent>
                 </Card>
 
-                {/* Submit Button */}
-                <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700 px-8 py-2"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Сохранение...
-                      </>
-                    ) : (
-                      'Сохранить SEO настройки'
-                    )}
-                  </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="crawler">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Bot className="h-5 w-5 text-purple-600" />
+                <span>Краулер сайта</span>
+              </CardTitle>
+              <CardDescription>
+                Автоматическое сканирование страниц и генерация sitemap.xml
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Что делает краулер */}
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <h3 className="text-lg font-semibold text-purple-800 mb-2">Что делает краулер:</h3>
+                  <ul className="space-y-2 text-sm text-purple-700">
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Сканирует все активные страницы сайта</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Проверяет доступность страниц</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Генерирует sitemap.xml для поисковых систем</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Обновляет структуру сайта автоматически</span>
+                    </li>
+                  </ul>
                 </div>
-              </form>
+
+                {/* Результаты последнего краулинга - всегда показываем */}
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-800 mb-3">Результаты последнего краулинга:</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-white p-3 rounded border">
+                      <div className="text-2xl font-bold text-green-600">{crawlResults?.totalPages || 0}</div>
+                      <div className="text-sm text-gray-600">Всего страниц</div>
+                    </div>
+                    <div className="bg-white p-3 rounded border">
+                      <div className="text-2xl font-bold text-blue-600">{crawlResults?.clinicPages || 0}</div>
+                      <div className="text-sm text-gray-600">Страниц клиник</div>
+                    </div>
+                    <div className="bg-white p-3 rounded border">
+                      <div className="text-2xl font-bold text-purple-600">{crawlResults?.mainPages || 0}</div>
+                      <div className="text-sm text-gray-600">Основных страниц</div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm text-green-700">
+                      <strong>Sitemap доступен по адресу:</strong> 
+                      <a 
+                        href="/sitemap.xml" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="ml-2 text-blue-600 hover:underline"
+                      >
+                        {window.location.origin}/sitemap.xml
+                      </a>
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Последнее обновление: {crawlResults?.lastUpdated ? new Date(crawlResults.lastUpdated).toLocaleString('ru-RU') : 'Краулинг не выполнялся'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Включаемые страницы:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Основные страницы:</h4>
+                    <ul className="space-y-1 text-gray-600">
+                      <li>• Главная страница (/)</li>
+                      <li>• Главная страница RO (/ro)</li>
+                      <li>• Страница цен (/pricing)</li>
+                      <li>• Страница цен RO (/ro/pricing)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Страницы клиник:</h4>
+                    <ul className="space-y-1 text-gray-600">
+                      <li>• Только верифицированные клиники</li>
+                      <li>• Только активные клиники</li>
+                      <li>• Русская и румынская версии</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Важно:</h3>
+                <ul className="space-y-1 text-sm text-yellow-700">
+                  <li>• Краулер работает только с публичными страницами</li>
+                  <li>• Админ панель и API не включаются в sitemap</li>
+                  <li>• Sitemap автоматически обновляется при запуске краулера</li>
+                  <li>• Рекомендуется запускать краулер после добавления новых клиник</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="robots">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                <span>Robots.txt</span>
+              </CardTitle>
+              <CardDescription>
+                Управление файлом robots.txt для поисковых систем
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">Что такое robots.txt:</h3>
+                <ul className="space-y-2 text-sm text-blue-700">
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Указывает поисковым роботам, какие страницы можно индексировать</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Помогает контролировать индексацию сайта</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Указывает расположение sitemap.xml</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Доступен по адресу /robots.txt</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="robotsTxt" className="text-base font-medium">
+                    Содержимое robots.txt
+                  </Label>
+                  <Textarea
+                    id="robotsTxt"
+                    {...robotsForm.register('robotsTxt')}
+                    placeholder="User-agent: *&#10;Disallow: /admin&#10;Disallow: /api&#10;&#10;Sitemap: https://dentmoldova.md/sitemap.xml"
+                    className="min-h-[200px] font-mono text-sm"
+                    rows={10}
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Введите содержимое файла robots.txt. Каждая директива должна быть на новой строке.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">✅ Рекомендации:</h3>
+                <ul className="space-y-1 text-sm text-green-700">
+                  <li>• <code>User-agent: *</code> - применяется ко всем роботам</li>
+                  <li>• <code>Disallow: /admin</code> - запрещает индексацию админ панели</li>
+                  <li>• <code>Disallow: /api</code> - запрещает индексацию API</li>
+                  <li>• <code>Sitemap:</code> - указывает путь к sitemap.xml</li>
+                  <li>• Файл автоматически сохраняется в корне сайта</li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Текущий robots.txt:</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Файл доступен по адресу: 
+                  <a 
+                    href="/robots.txt" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="ml-2 text-blue-600 hover:underline"
+                  >
+                    {window.location.origin}/robots.txt
+                  </a>
+                </p>
+                <div className="bg-white p-3 rounded border font-mono text-xs text-gray-700 whitespace-pre-wrap">
+                  {robotsForm.watch('robotsTxt') || 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml'}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
