@@ -40,6 +40,17 @@ export function AdminApp() {
     } catch (error) {
       console.error('Logout error:', error);
     }
+    // Очищаем localStorage при выходе из админки
+    localStorage.removeItem('adminActiveTab');
+    // Очищаем URL параметры при выходе
+    const url = new URL(window.location.href);
+    url.searchParams.delete('tab');
+    url.searchParams.delete('clinicId');
+    url.searchParams.delete('id');
+    url.searchParams.delete('edit');
+    url.searchParams.delete('new');
+    url.searchParams.delete('status');
+    window.history.replaceState({}, '', url.toString());
     setIsAuthenticated(false);
   };
 
