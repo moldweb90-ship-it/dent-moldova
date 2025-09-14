@@ -17,12 +17,12 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
       if (clinic) {
         // Добавляем SEO данные в объект запроса
         (req as any).clinicSEO = {
-          title: clinic.seoTitle || (isRomanian ? `${clinic.nameRo} - clinică stomatologică în ${clinic.city.nameRo}` : `${clinic.nameRu} - стоматологическая клиника в ${clinic.city.nameRu}`),
-          description: clinic.seoDescription || (isRomanian ? `${clinic.nameRo} - clinică modernă în ${clinic.city.nameRo}. Programare online, consultație gratuită.` : `${clinic.nameRu} - современная клиника в ${clinic.city.nameRu}. Запись онлайн, консультация бесплатно.`),
-          keywords: clinic.seoKeywords,
-          h1: clinic.seoH1,
-          ogTitle: clinic.ogTitle || clinic.seoTitle || (isRomanian ? clinic.nameRo : clinic.nameRu),
-          ogDescription: clinic.ogDescription || clinic.seoDescription,
+          title: clinic.seoTitleRu || clinic.seoTitleRo || (isRomanian ? `${clinic.nameRo} - clinică stomatologică în ${clinic.city.nameRo}` : `${clinic.nameRu} - стоматологическая клиника в ${clinic.city.nameRu}`),
+          description: clinic.seoDescriptionRu || clinic.seoDescriptionRo || (isRomanian ? `${clinic.nameRo} - clinică modernă în ${clinic.city.nameRo}. Programare online, consultație gratuită.` : `${clinic.nameRu} - современная клиника в ${clinic.city.nameRu}. Запись онлайн, консультация бесплатно.`),
+          keywords: isRomanian ? clinic.seoKeywordsRo : clinic.seoKeywordsRu,
+          h1: isRomanian ? clinic.seoH1Ro : clinic.seoH1Ru,
+          ogTitle: clinic.ogTitleRu || clinic.ogTitleRo || clinic.seoTitleRu || clinic.seoTitleRo || (isRomanian ? clinic.nameRo : clinic.nameRu),
+          ogDescription: clinic.ogDescriptionRu || clinic.ogDescriptionRo || clinic.seoDescriptionRu || clinic.seoDescriptionRo,
           ogImage: clinic.ogImage,
           canonical: clinic.seoCanonical,
           robots: clinic.seoRobots || 'index,follow',

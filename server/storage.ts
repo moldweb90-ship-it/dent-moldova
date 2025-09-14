@@ -18,6 +18,7 @@ export interface IStorage {
   getCitiesWithDistricts(searchQuery?: string): Promise<(City & { districts: District[] })[]>;
   createCity(city: InsertCity): Promise<City>;
   updateCity(id: string, updates: Partial<InsertCity>): Promise<City>;
+  updateCitySortOrder(cityId: string, sortOrder: number): Promise<City>;
   deleteCity(id: string): Promise<void>;
 
   // District methods
@@ -160,7 +161,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCities(): Promise<City[]> {
-    return await db.select().from(cities);
+    return await db.select().from(cities).orderBy(asc(cities.sortOrder), asc(cities.nameRu));
   }
 
   async getCitiesWithDistricts(searchQuery?: string): Promise<(City & { districts: District[] })[]> {
@@ -174,6 +175,9 @@ export class DatabaseStorage implements IStorage {
         )
       );
     }
+    
+    // Always sort by sortOrder, then by nameRu
+    query = query.orderBy(asc(cities.sortOrder), asc(cities.nameRu));
     
     const citiesList = await query;
     
@@ -196,7 +200,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCity(city: InsertCity): Promise<City> {
-    const [newCity] = await db.insert(cities).values(city).returning();
+    // Get the highest sortOrder and add 1 for the new city
+    const maxSortOrder = await db.select({ maxSort: sql<number>`MAX(${cities.sortOrder})` }).from(cities);
+    const nextSortOrder = (maxSortOrder[0]?.maxSort || 0) + 1;
+    
+    const [newCity] = await db.insert(cities).values({
+      ...city,
+      sortOrder: nextSortOrder
+    }).returning();
     
     await DataProtection.logAudit({
       tableName: 'cities',
@@ -230,6 +241,29 @@ export class DatabaseStorage implements IStorage {
       oldData: oldCity[0],
       newData: updatedCity,
       changedFields: Object.keys(updates),
+      userAgent: 'system',
+    });
+    
+    await this.updateLastDataModification();
+    return updatedCity;
+  }
+
+  async updateCitySortOrder(cityId: string, sortOrder: number): Promise<City> {
+    const [updatedCity] = await db
+      .update(cities)
+      .set({ sortOrder })
+      .where(eq(cities.id, cityId))
+      .returning();
+    
+    if (!updatedCity) {
+      throw new Error('Город не найден');
+    }
+    
+    await DataProtection.logAudit({
+      tableName: 'cities',
+      recordId: cityId,
+      action: 'update',
+      newData: { sortOrder },
       userAgent: 'system',
     });
     

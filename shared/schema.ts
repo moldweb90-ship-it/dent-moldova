@@ -7,6 +7,7 @@ export const cities = pgTable("cities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   nameRu: text("name_ru").notNull(),
   nameRo: text("name_ro").notNull(),
+  sortOrder: integer("sort_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

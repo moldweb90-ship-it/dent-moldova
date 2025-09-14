@@ -75,6 +75,49 @@ export async function setupVite(app: Express, server: Server) {
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', url);
 
+      // Получаем глобальные настройки для фавиконки
+      const { storage } = await import('./storage');
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+
+      // Добавляем фавикон ко всем страницам для лучшей индексации
+      console.log('🔍 Favicon check:', settingsMap.favicon);
+      if (settingsMap.favicon) {
+        console.log('✅ Adding favicon to HTML:', settingsMap.favicon);
+        // Удаляем существующие favicon теги
+        template = template.replace(/<link[^>]*rel="[^"]*icon[^"]*"[^>]*>/gi, '');
+        
+        // Получаем расширение файла для определения типа
+        const faviconUrl = settingsMap.favicon;
+        const extension = faviconUrl.split('.').pop()?.toLowerCase();
+        let mimeType = 'image/x-icon';
+        
+        if (extension === 'png') mimeType = 'image/png';
+        else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
+        else if (extension === 'svg') mimeType = 'image/svg+xml';
+        
+        // Добавляем полный набор тегов для максимальной совместимости и индексации
+        template = template.replace(
+          /<\/head>/,
+          `    <!-- Favicon для поисковиков и браузеров -->
+    <link rel="icon" type="${mimeType}" href="${faviconUrl}" sizes="any">
+    <link rel="shortcut icon" href="${faviconUrl}" type="${mimeType}">
+    <link rel="icon" href="${faviconUrl}" type="${mimeType}">
+    <link rel="apple-touch-icon" href="${faviconUrl}" sizes="180x180">
+    <link rel="apple-touch-icon-precomposed" href="${faviconUrl}">
+    <meta name="msapplication-TileImage" content="${faviconUrl}">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    <link rel="manifest" href="/site.webmanifest">
+  </head>`
+        );
+        console.log('✅ Favicon tags added to HTML');
+      } else {
+        console.log('❌ No favicon found in settings');
+      }
+
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
       const homepageSEO = (req as any).homepageSEO;
@@ -138,6 +181,7 @@ export async function setupVite(app: Express, server: Server) {
             `<link rel="canonical" href="${seoData.canonical}"`
           );
         }
+        
       }
 
       const page = await vite.transformIndexHtml(url, template);
@@ -175,6 +219,49 @@ export function serveStatic(app: Express) {
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', req.originalUrl);
 
+      // Получаем глобальные настройки для фавиконки (продакшн)
+      const { storage } = await import('./storage');
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+
+      // Добавляем фавикон ко всем страницам для лучшей индексации (продакшн)
+      console.log('🔍 Favicon check (prod):', settingsMap.favicon);
+      if (settingsMap.favicon) {
+        console.log('✅ Adding favicon to HTML (prod):', settingsMap.favicon);
+        // Удаляем существующие favicon теги
+        template = template.replace(/<link[^>]*rel="[^"]*icon[^"]*"[^>]*>/gi, '');
+        
+        // Получаем расширение файла для определения типа
+        const faviconUrl = settingsMap.favicon;
+        const extension = faviconUrl.split('.').pop()?.toLowerCase();
+        let mimeType = 'image/x-icon';
+        
+        if (extension === 'png') mimeType = 'image/png';
+        else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
+        else if (extension === 'svg') mimeType = 'image/svg+xml';
+        
+        // Добавляем полный набор тегов для максимальной совместимости и индексации
+        template = template.replace(
+          /<\/head>/,
+          `    <!-- Favicon для поисковиков и браузеров -->
+    <link rel="icon" type="${mimeType}" href="${faviconUrl}" sizes="any">
+    <link rel="shortcut icon" href="${faviconUrl}" type="${mimeType}">
+    <link rel="icon" href="${faviconUrl}" type="${mimeType}">
+    <link rel="apple-touch-icon" href="${faviconUrl}" sizes="180x180">
+    <link rel="apple-touch-icon-precomposed" href="${faviconUrl}">
+    <meta name="msapplication-TileImage" content="${faviconUrl}">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    <link rel="manifest" href="/site.webmanifest">
+  </head>`
+        );
+        console.log('✅ Favicon tags added to HTML (prod)');
+      } else {
+        console.log('❌ No favicon found in settings (prod)');
+      }
+
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
       const homepageSEO = (req as any).homepageSEO;
@@ -238,6 +325,7 @@ export function serveStatic(app: Express) {
             `<link rel="canonical" href="${seoData.canonical}"`
           );
         }
+        
       }
       
       res.status(200).set({ "Content-Type": "text/html" }).end(template);

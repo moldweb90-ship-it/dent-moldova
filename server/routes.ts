@@ -36,7 +36,12 @@ const upload = multer({
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       // Определяем префикс в зависимости от типа файла
-      const prefix = file.fieldname === 'logo' ? 'clinic-logo-' : 'clinic-image-';
+      let prefix = 'clinic-image-';
+      if (file.fieldname === 'logo') {
+        prefix = 'clinic-logo-';
+      } else if (req.body?.type === 'favicon') {
+        prefix = 'favicon-';
+      }
       cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
     }
   }),
@@ -1074,6 +1079,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (schemaType !== undefined) promises.push(storage.setSiteSetting('schemaType', schemaType));
       if (schemaData !== undefined) promises.push(storage.setSiteSetting('schemaData', schemaData));
       
+      // General settings
+      if (req.body.favicon !== undefined) promises.push(storage.setSiteSetting('favicon', req.body.favicon));
+      if (req.body.websiteName !== undefined) promises.push(storage.setSiteSetting('websiteName', req.body.websiteName));
+      if (req.body.websiteUrl !== undefined) promises.push(storage.setSiteSetting('websiteUrl', req.body.websiteUrl));
+      if (req.body.organizationName !== undefined) promises.push(storage.setSiteSetting('organizationName', req.body.organizationName));
+      if (req.body.organizationDescription !== undefined) promises.push(storage.setSiteSetting('organizationDescription', req.body.organizationDescription));
+      if (req.body.organizationUrl !== undefined) promises.push(storage.setSiteSetting('organizationUrl', req.body.organizationUrl));
+      if (req.body.organizationCity !== undefined) promises.push(storage.setSiteSetting('organizationCity', req.body.organizationCity));
+      if (req.body.organizationCountry !== undefined) promises.push(storage.setSiteSetting('organizationCountry', req.body.organizationCountry));
+      if (req.body.businessType !== undefined) promises.push(storage.setSiteSetting('businessType', req.body.businessType));
+      if (req.body.businessPriceRange !== undefined) promises.push(storage.setSiteSetting('businessPriceRange', req.body.businessPriceRange));
+      if (req.body.businessOpeningHours !== undefined) promises.push(storage.setSiteSetting('businessOpeningHours', req.body.businessOpeningHours));
+      
       await Promise.all(promises);
       console.log('✅ All SEO settings saved successfully');
       console.log('🔧 Saved settings count:', promises.length);
@@ -1095,6 +1113,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload endpoint for admin files
+  app.post('/api/admin/upload', requireAdminAuth, (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        console.error('Upload error:', err);
+        return res.status(400).json({ message: 'File upload error: ' + err.message });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const fileType = req.body.type || 'general';
+      const fileUrl = `/images/${req.file.filename}`;
+      
+      console.log(`📁 File uploaded: ${req.file.filename}, type: ${fileType}, size: ${req.file.size}`);
+      
+      res.json({
+        success: true,
+        filename: req.file.filename,
+        url: fileUrl,
+        size: req.file.size,
+        type: fileType
+      });
+    });
+  });
+
   // Serve robots.txt
   app.get('/robots.txt', (req, res) => {
     const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
@@ -1104,6 +1149,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Default robots.txt if file doesn't exist
       res.type('text/plain');
       res.send('User-agent: *\nDisallow: /admin\nDisallow: /api\n');
+    }
+  });
+
+  // Serve browserconfig.xml for Windows/Microsoft Edge
+  app.get('/browserconfig.xml', (req, res) => {
+    const browserconfigPath = path.join(process.cwd(), 'public', 'browserconfig.xml');
+    if (fs.existsSync(browserconfigPath)) {
+      res.setHeader('Content-Type', 'application/xml');
+      res.sendFile(browserconfigPath);
+    } else {
+      res.status(404).send('browserconfig.xml not found');
     }
   });
 
@@ -1248,6 +1304,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(city);
     } catch (error) {
       console.error("Error updating city:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put('/api/admin/cities/:id/sort-order', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { sortOrder } = req.body;
+      
+      if (typeof sortOrder !== 'number') {
+        return res.status(400).json({ message: 'sortOrder должен быть числом' });
+      }
+
+      const city = await storage.updateCitySortOrder(id, sortOrder);
+      res.json(city);
+    } catch (error) {
+      console.error("Error updating city sort order:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
