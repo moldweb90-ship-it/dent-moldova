@@ -57,9 +57,14 @@ const robotsSettingsSchema = z.object({
   robotsTxt: z.string().optional(),
 });
 
+const securitySettingsSchema = z.object({
+  adminAccessCode: z.string().optional(),
+});
+
 type GeneralSettingsData = z.infer<typeof generalSettingsSchema>;
 type SEOSettingsData = z.infer<typeof seoSettingsSchema>;
 type RobotsSettingsData = z.infer<typeof robotsSettingsSchema>;
+type SecuritySettingsData = z.infer<typeof securitySettingsSchema>;
 
 export function Settings() {
   console.log('🔧 Settings component is rendering...');
@@ -132,6 +137,13 @@ export function Settings() {
     },
   });
 
+  const securityForm = useForm<SecuritySettingsData>({
+    resolver: zodResolver(securitySettingsSchema),
+    defaultValues: {
+      adminAccessCode: '',
+    },
+  });
+
   useEffect(() => {
     loadSettings();
   }, []);
@@ -196,6 +208,11 @@ export function Settings() {
       robotsForm.reset({
         robotsTxt: settingsMap.robotsTxt || 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml',
       });
+
+      // Load security settings
+      securityForm.reset({
+        adminAccessCode: settingsMap.adminAccessCode || '',
+      });
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -259,6 +276,31 @@ export function Settings() {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось сохранить robots.txt.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSecuritySubmit = async (data: SecuritySettingsData) => {
+    setLoading(true);
+    try {
+      // Отправляем настройки безопасности в том же формате, что и другие настройки
+      await apiRequest('POST', '/api/admin/settings', {
+        adminAccessCode: data.adminAccessCode || ''
+      });
+
+      toast({
+        title: 'Настройки безопасности обновлены',
+        description: 'Настройки защиты админки успешно сохранены',
+      });
+      // Перезагружаем настройки для обновления формы
+      loadSettings();
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить настройки безопасности.',
         variant: 'destructive',
       });
     } finally {
@@ -466,6 +508,10 @@ export function Settings() {
           <TabsTrigger value="robots" className="flex items-center space-x-2">
             <Shield className="h-4 w-4" />
             <span>Robots.txt</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center space-x-2">
+            <Shield className="h-4 w-4" />
+            <span>Защита</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1336,6 +1382,70 @@ export function Settings() {
                   {robotsForm.watch('robotsTxt') || 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://dentmoldova.md/sitemap.xml'}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-red-600" />
+                <span>Защита админки</span>
+              </CardTitle>
+              <CardDescription>
+                Настройки безопасности для доступа к административной панели
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <h3 className="text-lg font-semibold text-red-800 mb-2">🛡️ Защита админки:</h3>
+                <ul className="space-y-2 text-sm text-red-700">
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Кодовое слово для доступа к админке</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Без кодового слова админка доступна по /admin</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>С кодовым словом доступ только по /admin?кодовое_слово</span>
+                  </li>
+                </ul>
+              </div>
+
+              <form onSubmit={securityForm.handleSubmit(onSecuritySubmit)} className="space-y-4">
+                <div>
+                  <Label htmlFor="adminAccessCode" className="text-base font-medium">
+                    Кодовое слово для доступа к админке
+                  </Label>
+                  <Input
+                    id="adminAccessCode"
+                    {...securityForm.register('adminAccessCode')}
+                    placeholder="Введите кодовое слово (например: ruslan)"
+                    className="mt-2"
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Если указано кодовое слово, админка будет доступна только по адресу /admin?кодовое_слово
+                  </p>
+                </div>
+
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h3 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Важно:</h3>
+                  <ul className="space-y-1 text-sm text-yellow-700">
+                    <li>• Если кодовое слово не указано - админка доступна по /admin</li>
+                    <li>• Если кодовое слово указано - админка доступна только по /admin?кодовое_слово</li>
+                    <li>• Попытка зайти по /admin без кодового слова перенаправит на главную</li>
+                    <li>• Кодовое слово должно быть уникальным и сложным</li>
+                  </ul>
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? 'Сохранение...' : 'Сохранить настройки безопасности'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

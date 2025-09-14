@@ -173,6 +173,51 @@ const requireAdminAuth = (req: any, res: any, next: any) => {
   next();
 };
 
+// Middleware to check admin access code
+const checkAdminAccessCode = async (req: any, res: any, next: any) => {
+  try {
+    console.log('🔍 Checking admin access code for URL:', req.originalUrl);
+    
+    // Get admin access code from settings
+    const settings = await storage.getAllSiteSettings();
+    const settingsMap = settings.reduce((acc: any, setting: any) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {});
+    
+    const adminAccessCode = settingsMap.adminAccessCode;
+    console.log('🔍 Admin access code from settings:', adminAccessCode);
+    
+    // If no access code is set, allow normal access
+    if (!adminAccessCode || adminAccessCode.trim() === '') {
+      console.log('🔍 No access code set, allowing normal access');
+      return next();
+    }
+    
+    // Check if access code is provided in query parameters
+    // The URL should be /admin?ruslan (where ruslan is the access code)
+    const providedCode = req.query[adminAccessCode];
+    console.log('🔍 Provided code in query:', providedCode);
+    console.log('🔍 All query params:', req.query);
+    console.log('🔍 Looking for param:', adminAccessCode);
+    
+    // Check if the access code parameter exists (even if empty)
+    if (!(adminAccessCode in req.query)) {
+      console.log('🔍 Access code parameter not found, redirecting to home');
+      // Redirect to home page if access code parameter is not found
+      return res.redirect('/');
+    }
+    
+    console.log('🔍 Access code parameter found, allowing access to login page');
+    // If access code parameter is found, allow access to admin login page
+    next();
+  } catch (error) {
+    console.error('Error checking admin access code:', error);
+    // On error, allow normal access
+    next();
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS middleware
   app.use((req, res, next) => {
@@ -186,6 +231,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     }
   });
+
+  // Admin access code middleware - проверяем доступ к админке
+  app.use('/admin', checkAdminAccessCode);
 
   // Session configuration
   app.use(session({
@@ -1198,6 +1246,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.businessType !== undefined) promises.push(storage.setSiteSetting('businessType', req.body.businessType));
       if (req.body.businessPriceRange !== undefined) promises.push(storage.setSiteSetting('businessPriceRange', req.body.businessPriceRange));
       if (req.body.businessOpeningHours !== undefined) promises.push(storage.setSiteSetting('businessOpeningHours', req.body.businessOpeningHours));
+      
+      // Security settings
+      if (req.body.adminAccessCode !== undefined) promises.push(storage.setSiteSetting('adminAccessCode', req.body.adminAccessCode));
       
       await Promise.all(promises);
       console.log('✅ All SEO settings saved successfully');

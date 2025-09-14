@@ -52,7 +52,9 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     queryKey: ['/api/admin/recent-clinics'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/recent-clinics');
-      return response.json();
+      const data = await response.json();
+      console.log('🔍 Dashboard - recent clinics data:', data);
+      return data;
     }
   });
 
@@ -284,12 +286,19 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center text-base sm:text-lg">
               <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Последние добавленные клиники
+              Клиники с отзывами
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 sm:space-y-4">
-              {recentClinics?.slice(0, 5).map((clinic: any) => (
+              {recentClinics?.filter((clinic: any) => {
+                const hasReviews = clinic.reviewsData && clinic.reviewsData.reviewCount > 0 && clinic.reviewsData.averageRating > 0;
+                console.log(`🔍 Clinic ${clinic.nameRu}:`, {
+                  reviewsData: clinic.reviewsData,
+                  hasReviews
+                });
+                return hasReviews;
+              }).slice(0, 5).map((clinic: any) => (
                 <div 
                   key={clinic.id} 
                   className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
@@ -300,9 +309,13 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
                     <p className="text-xs sm:text-sm text-gray-600">{clinic.city?.nameRu}</p>
                   </div>
                   <div className="text-right ml-2">
-                    <div className="text-xs sm:text-sm font-medium text-green-600">
-                      Рейтинг: {clinic.dScore}
-                    </div>
+                    {clinic.reviewsData && clinic.reviewsData.reviewCount > 0 && clinic.reviewsData.averageRating > 0 && (
+                      <div className="text-xs sm:text-sm font-medium text-green-600 flex items-center justify-end gap-1">
+                        <span>⭐</span>
+                        <span>{clinic.reviewsData.averageRating.toFixed(1)}</span>
+                        <span className="text-gray-500">({clinic.reviewsData.reviewCount})</span>
+                      </div>
+                    )}
                     <div className="text-xs text-gray-500">
                       {new Date(clinic.createdAt).toLocaleDateString('ru-RU')}
                     </div>

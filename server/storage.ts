@@ -53,7 +53,7 @@ export interface IStorage {
   // View tracking methods
   recordView(view: InsertSiteView): Promise<SiteView>;
   getTodayViews(): Promise<number>;
-  getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null })[]>;
+  getRecentClinics(limit?: number): Promise<(Clinic & { city: City; district: District | null; reviewsData?: { averageRating: number; reviewCount: number } })[]>;
   getRecommendedClinics(): Promise<(Clinic & { city: City; district: District | null; services: Service[] })[]>;
   
   // Site settings methods
@@ -1068,7 +1068,7 @@ export class DatabaseStorage implements IStorage {
     return results as any;
   }
 
-  async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City; district: District | null })[]> {
+  async getRecentClinics(limit: number = 5): Promise<(Clinic & { city: City; district: District | null; reviewsData?: { averageRating: number; reviewCount: number } })[]> {
     const results = await db.query.clinics.findMany({
       with: {
         city: true,
@@ -1078,7 +1078,48 @@ export class DatabaseStorage implements IStorage {
       limit: limit,
     });
 
-    return results as (Clinic & { city: City; district: District | null })[];
+    // Get reviews data for each clinic
+    const clinicIds = results.map(clinic => clinic.id);
+    console.log('🔍 getRecentClinics - clinic IDs:', clinicIds);
+    
+    const reviewsData = await db
+      .select({
+        clinicId: reviews.clinicId,
+        averageRating: sql<number>`AVG(${reviews.averageRating})`,
+        reviewCount: sql<number>`COUNT(*)`
+      })
+      .from(reviews)
+      .where(and(
+        eq(reviews.status, 'approved'),
+        inArray(reviews.clinicId, clinicIds)
+      ))
+      .groupBy(reviews.clinicId);
+
+    console.log('🔍 getRecentClinics - reviews data:', reviewsData);
+
+    // Create a map of clinic reviews data
+    const reviewsDataMap: Record<string, { averageRating: number; reviewCount: number }> = {};
+    reviewsData.forEach(data => {
+      reviewsDataMap[data.clinicId] = {
+        averageRating: Number(data.averageRating) || 0,
+        reviewCount: Number(data.reviewCount) || 0
+      };
+    });
+
+    console.log('🔍 getRecentClinics - reviews data map:', reviewsDataMap);
+
+    // Add reviews data to each clinic
+    const resultsWithReviews = results.map(clinic => ({
+      ...clinic,
+      reviewsData: reviewsDataMap[clinic.id] || { averageRating: 0, reviewCount: 0 }
+    }));
+
+    console.log('🔍 getRecentClinics - final results with reviews:', resultsWithReviews.map(c => ({ 
+      name: c.nameRu, 
+      reviewsData: c.reviewsData 
+    })));
+
+    return resultsWithReviews as (Clinic & { city: City; district: District | null; reviewsData?: { averageRating: number; reviewCount: number } })[];
   }
 
   // Site settings methods

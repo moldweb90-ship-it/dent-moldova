@@ -44,6 +44,49 @@ export async function setupVite(app: Express, server: Server) {
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
+    // Проверяем доступ к админке
+    if (url.startsWith('/admin')) {
+      try {
+        console.log('🔍 Vite middleware - checking admin access for URL:', url);
+        
+        // Get admin access code from settings
+        const { storage } = await import('./storage');
+        const settings = await storage.getAllSiteSettings();
+        const settingsMap = settings.reduce((acc: any, setting: any) => {
+          acc[setting.key] = setting.value;
+          return acc;
+        }, {});
+        
+        const adminAccessCode = settingsMap.adminAccessCode;
+        console.log('🔍 Vite middleware - admin access code from settings:', adminAccessCode);
+        
+        // If no access code is set, allow normal access
+        if (!adminAccessCode || adminAccessCode.trim() === '') {
+          console.log('🔍 Vite middleware - no access code set, allowing normal access');
+        } else {
+          // Check if access code is provided in query parameters
+          // The URL should be /admin?ruslan (where ruslan is the access code)
+          const providedCode = req.query[adminAccessCode];
+          console.log('🔍 Vite middleware - provided code in query:', providedCode);
+          console.log('🔍 Vite middleware - all query params:', req.query);
+          console.log('🔍 Vite middleware - looking for param:', adminAccessCode);
+          
+          // Check if the access code parameter exists (even if empty)
+          if (!(adminAccessCode in req.query)) {
+            console.log('🔍 Vite middleware - access code parameter not found, redirecting to home');
+            // Redirect to home page if access code parameter is not found
+            return res.redirect('/');
+          }
+          
+          console.log('🔍 Vite middleware - access code parameter found, allowing access to login page');
+          // If access code parameter is found, allow access to admin login page
+        }
+      } catch (error) {
+        console.error('Error checking admin access code in Vite middleware:', error);
+        // On error, allow normal access
+      }
+    }
+
     // Отключаем кеширование для HTML страниц
     if (url.includes('/clinic/')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
