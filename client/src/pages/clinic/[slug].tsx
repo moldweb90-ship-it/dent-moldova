@@ -331,94 +331,135 @@ export default function ClinicPage() {
         {/* Header - прилипающий к верху */}
         <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50">
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
-            {/* Top row - Clinic name and language toggle */}
-            <div className="flex items-start justify-between mb-3 sm:mb-0">
-              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                {clinic.logoUrl && (
-                  <img 
-                    src={clinic.logoUrl} 
-                    alt={language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
-                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg object-cover flex-shrink-0"
-                  />
-                )}
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 leading-tight">
-                    <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                      {language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
-                      {clinic.verified && (
-                        <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'}>
-                          <svg 
-                            className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-blue-500 flex-shrink-0 cursor-help" 
-                            viewBox="0 0 24 24" 
-                            fill="currentColor"
-                          >
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                          </svg>
-                        </Tooltip>
-                      )}
-                    </span>
-                  </h1>
-                  <p className="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base line-clamp-2">
-                    {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
-                    {(clinic.addressRu || clinic.addressRo) && ', '}
-                    {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
-                    {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
-                  </p>
+            {/* Two column layout - Clinic info and Actions */}
+            <div className="flex items-start justify-between gap-4">
+              {/* Left column - Clinic name and info */}
+              <div className="flex-1 min-w-0">
+                {/* Clinic name above photo */}
+                <h1 className="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 leading-tight mb-3">
+                  <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                    {language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
+                    {clinic.verified && (
+                      <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'}>
+                        <svg 
+                          className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-blue-500 flex-shrink-0 cursor-help" 
+                          viewBox="0 0 24 24" 
+                          fill="currentColor"
+                        >
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                      </Tooltip>
+                    )}
+                  </span>
+                </h1>
+                
+                {/* Photo and details below */}
+                <div className="flex items-start gap-3 sm:gap-4">
+                  {clinic.logoUrl && (
+                    <img 
+                      src={clinic.logoUrl} 
+                      alt={language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
+                      className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-600 text-xs sm:text-sm lg:text-base line-clamp-2">
+                      {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
+                      {(clinic.addressRu || clinic.addressRo) && ', '}
+                      {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
+                      {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
+                    </p>
+                    
+                    {/* Working Hours */}
+                    {clinic.workingHours && clinic.workingHours.length > 0 && (
+                      <div className="mt-1">
+                        <WorkingHoursDisplay 
+                          workingHours={clinic.workingHours} 
+                          compact={true} 
+                          showToday={true}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Right column - Language toggle, Review button and rating */}
+              <div className="flex flex-col items-end gap-2 sm:gap-3 flex-shrink-0">
+                {/* Language toggle */}
+                <LanguageToggle />
+                
+                {/* Mobile: Compact vertical layout */}
+                <div className="flex flex-col items-end gap-1 sm:hidden">
+                  <Button
+                    onClick={() => setShowReviewModal(true)}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1"
+                  >
+                    <Star className="h-3 w-3 mr-1" />
+                    {t('leaveReview')}
+                  </Button>
                   
-                  {/* Working Hours */}
-                  {clinic.workingHours && clinic.workingHours.length > 0 && (
-                    <div className="mt-1">
-                      <WorkingHoursDisplay 
-                        workingHours={clinic.workingHours} 
-                        compact={true} 
-                        showToday={true}
-                      />
+                  {ratingData.hasRating && (
+                    <div className="flex items-center gap-1">
+                      <div 
+                        className="flex items-center bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg border border-white/20 flex-shrink-0 cursor-pointer hover:bg-white hover:shadow-xl transition-all duration-200"
+                        onClick={scrollToReviews}
+                      >
+                        <svg 
+                          className="w-3 h-3 text-yellow-400 fill-current mr-1" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="text-gray-800 font-bold text-xs">
+                          {ratingData.averageRating.toFixed(2)}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {t('overallRating')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Desktop: Horizontal layout */}
+                <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                  <Button
+                    onClick={() => setShowReviewModal(true)}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2.5"
+                  >
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    {t('leaveReview')}
+                  </Button>
+                  
+                  {ratingData.hasRating && (
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div 
+                        className="flex items-center bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 shadow-lg border border-white/20 flex-shrink-0 cursor-pointer hover:bg-white hover:shadow-xl transition-all duration-200"
+                        onClick={scrollToReviews}
+                      >
+                        <svg 
+                          className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-yellow-400 fill-current mr-1 sm:mr-2" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="text-gray-800 font-bold text-xs sm:text-sm lg:text-base">
+                          {ratingData.averageRating.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <p 
+                          className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:text-gray-700 transition-colors duration-200"
+                          onClick={scrollToReviews}
+                        >
+                          {t('overallRating')}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-              {/* Language toggle - moved to top right */}
-              <div className="flex-shrink-0 ml-3">
-                <LanguageToggle />
-              </div>
-            </div>
-
-            {/* Bottom row - Review button and rating */}
-            <div className="flex items-center justify-between gap-2 sm:gap-3 sm:justify-end">
-              <Button
-                onClick={() => setShowReviewModal(true)}
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2.5"
-              >
-                <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                {t('leaveReview')}
-              </Button>
-              
-              {ratingData.hasRating && (
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div 
-                    className="flex items-center bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 shadow-lg border border-white/20 flex-shrink-0 cursor-pointer hover:bg-white hover:shadow-xl transition-all duration-200"
-                    onClick={scrollToReviews}
-                  >
-                    <svg 
-                      className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-yellow-400 fill-current mr-1 sm:mr-2" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <span className="text-gray-800 font-bold text-xs sm:text-sm lg:text-base">
-                      {ratingData.averageRating.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p 
-                      className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:text-gray-700 transition-colors duration-200"
-                      onClick={scrollToReviews}
-                    >
-                      {t('overallRating')}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

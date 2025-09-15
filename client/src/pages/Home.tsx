@@ -170,6 +170,40 @@ export default function Home() {
     },
   });
 
+  // Fetch site settings for logo
+  const { data: siteSettings, isLoading: settingsLoading } = useQuery({
+    queryKey: ['/api/admin/settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings');
+      if (!response.ok) throw new Error('Failed to fetch site settings');
+      const settings = await response.json();
+      
+      // Convert array of settings to object
+      const settingsMap = Array.isArray(settings)
+        ? settings.reduce((acc: any, setting: any) => {
+            acc[setting.key] = setting.value;
+            return acc;
+          }, {})
+        : settings || {};
+      
+      return settingsMap;
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch recommended clinics to check if they exist
+  const { data: recommendedData, isLoading: recommendedLoading } = useQuery({
+    queryKey: ['/api/recommended-clinics'],
+    queryFn: async () => {
+      const response = await fetch('/api/recommended-clinics');
+      if (!response.ok) throw new Error('Failed to fetch recommended clinics');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  const hasRecommendedClinics = recommendedData?.clinics && recommendedData.clinics.length > 0;
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setPage(1);
@@ -233,22 +267,37 @@ export default function Home() {
             <div className="flex items-center">
               <button 
                 onClick={() => window.location.href = '/'}
-                className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+                className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+                title={siteSettings?.logoAlt || t('appTitle')}
               >
-                {t('appTitle')}
+                {settingsLoading ? (
+                  <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+      ) : siteSettings?.logo ? (
+        <img 
+          src={siteSettings.logo} 
+          alt={siteSettings.logoAlt || t('appTitle')}
+          style={{ 
+            width: `${siteSettings.logoWidth || 100}px`,
+            height: 'auto'
+          }}
+          className="object-contain"
+        />
+      ) : (
+                  <span>{t('appTitle')}</span>
+                )}
               </button>
             </div>
             
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
               {/* Mobile Filter Toggle */}
               <Button
                 onClick={() => setMobileFiltersOpen(true)}
                 variant="outline"
                 size="sm"
-                className="flex md:hidden items-center space-x-2"
+                className="flex md:hidden items-center space-x-1 px-2"
               >
-                <Filter className="h-4 w-4" />
-                <span>{t('filters')}</span>
+                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">{t('filters')}</span>
               </Button>
               
               {/* Desktop Filter Toggle */}
@@ -271,19 +320,25 @@ export default function Home() {
                 )}
               </Button>
               
+              {/* Language Toggle - moved before Add Clinic Button for mobile */}
+              <div className="flex md:hidden">
+                <LanguageToggle />
+              </div>
+              
               {/* Add Clinic Button */}
               <Button
                 onClick={() => setClinicFormOpen(true)}
-                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-2"
+                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-1 px-2"
                 size="sm"
               >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('addClinic')}</span>
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline text-xs sm:text-sm">{t('addClinic')}</span>
               </Button>
               
-              
-              {/* Language Toggle */}
-              <LanguageToggle />
+              {/* Language Toggle - for desktop */}
+              <div className="hidden md:flex">
+                <LanguageToggle />
+              </div>
             </div>
           </div>
         </div>
@@ -326,11 +381,34 @@ export default function Home() {
         {/* Main Content */}
         <main className={`flex-1 px-4 md:px-8 py-2 md:py-8 md:min-h-screen ${!filtersVisible ? 'max-w-full' : ''}`}>
         {/* Recommended Clinics Section */}
-        <RecommendedClinics
-          onClinicClick={handleClinicClick}
-          onBookClick={handleBookClick}
-          language={language}
-        />
+        {recommendedLoading ? (
+          <div className="mb-8">
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="h-5 w-5 sm:h-6 sm:w-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md animate-pulse">
+                  <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                  <div className="p-3 md:p-4 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-2 bg-gray-200 rounded-full"></div>
+                    <div className="h-8 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : hasRecommendedClinics ? (
+          <RecommendedClinics
+            onClinicClick={handleClinicClick}
+            onBookClick={handleBookClick}
+            language={language}
+            clinics={recommendedData.clinics}
+          />
+        ) : null}
         
 
         {isLoading ? (

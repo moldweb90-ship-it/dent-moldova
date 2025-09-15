@@ -225,9 +225,12 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-6xl max-h-[95vh] overflow-y-auto mx-auto z-[9999]">
         <DialogHeader className="border-b border-gray-200 pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+          {/* Two column layout - Desktop */}
+          <div className="hidden sm:flex items-start justify-between gap-6 mb-4">
+            {/* Left column - Clinic info */}
+            <div className="flex-1 min-w-0">
+              {/* Clinic name */}
+              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 break-words text-left mb-3">
                 {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
                 {clinic.verified && (
                   <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
@@ -241,78 +244,159 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
                   </Tooltip>
                 )}
               </DialogTitle>
-              <div className="flex flex-wrap items-center gap-2">
-                {clinic.cnam && (
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full">
-                    {t('cnamBadge')}
+
+              {/* Address and working hours */}
+              <div className="space-y-2">
+                <div className="flex items-center text-gray-600 text-sm">
+                  <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>
+                    {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
+                    {(clinic.addressRu || clinic.addressRo) && ', '}
+                    {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
+                    {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
                   </span>
-                )}
-                {ratingData.hasRating && (
-                  <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
-                    <svg 
-                      className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 fill-current mr-1" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <span className="text-gray-800 font-bold text-sm sm:text-base">
-                      {ratingData.averageRating.toFixed(2)}
-                    </span>
+                </div>
+                
+                {clinic.workingHours && clinic.workingHours.length > 0 && (
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <WorkingHoursDisplay 
+                      workingHours={clinic.workingHours} 
+                      compact={true} 
+                      showToday={true}
+                    />
                   </div>
                 )}
-                {/* Mobile buttons - рядом с рейтингом */}
-                <div className="sm:hidden flex space-x-2">
-                  <Button
-                    onClick={() => setShowReviewModal(true)}
-                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >
-                    <Star className="h-3 w-3" />
-                  </Button>
-                  
-                  <Button
-                    onClick={handleViewFullPage}
-                    className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
-                </div>
               </div>
             </div>
-            {/* Desktop buttons */}
-            <div className="hidden sm:flex justify-end space-x-3">
+
+            {/* Right column - Rating and Action buttons */}
+            <div className="flex flex-col items-end gap-3 mr-16">
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => setShowReviewModal(true)}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <Star className="h-4 w-4" />
+                  <span className="font-medium">{t('leaveReview')}</span>
+                </Button>
+                
+                <Button
+                  onClick={handleViewFullPage}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="font-medium">{t('details')}</span>
+                </Button>
+              </div>
+              
+              {ratingData.hasRating && (
+                <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
+                  <svg 
+                    className="w-5 h-5 text-yellow-400 fill-current mr-1" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span className="text-gray-800 font-bold text-sm">
+                    {ratingData.averageRating.toFixed(2)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile layout */}
+          <div className="sm:hidden">
+            {/* Clinic name */}
+            <DialogTitle className="text-xl font-bold text-gray-900 break-words text-left mb-3">
+              {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
+              {clinic.verified && (
+                <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
+                  <svg 
+                    className="inline-block w-5 h-5 text-blue-500 cursor-help ml-2" 
+                    viewBox="0 0 24 24" 
+                    fill="currentColor"
+                  >
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </Tooltip>
+              )}
+            </DialogTitle>
+
+            {/* Address and working hours */}
+            <div className="mb-4 space-y-2">
+              <div className="flex items-center text-gray-600 text-sm">
+                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>
+                  {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
+                  {(clinic.addressRu || clinic.addressRo) && ', '}
+                  {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
+                  {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
+                </span>
+              </div>
+              
+              {clinic.workingHours && clinic.workingHours.length > 0 && (
+                <div className="flex items-center text-gray-600 text-sm">
+                  <WorkingHoursDisplay 
+                    workingHours={clinic.workingHours} 
+                    compact={true} 
+                    showToday={true}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {clinic.cnam && (
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full">
+                {t('cnamBadge')}
+              </span>
+            )}
+          </div>
+
+          {/* Rating and Action buttons - Mobile */}
+          <div className="sm:hidden flex items-center justify-between gap-2 mb-4">
+            {ratingData.hasRating && (
+              <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
+                <svg 
+                  className="w-4 h-4 text-yellow-400 fill-current mr-1" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span className="text-gray-800 font-bold text-sm">
+                  {ratingData.averageRating.toFixed(2)}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex space-x-2">
               <Button
                 onClick={() => setShowReviewModal(true)}
-                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1 h-7"
               >
-                <Star className="h-4 w-4" />
-                <span className="font-medium">{t('leaveReview')}</span>
+                <Star className="h-3 w-3" />
+                <span>{language === 'ru' ? 'Оставить отзыв' : 'Lasă recenzie'}</span>
               </Button>
               
               <Button
                 onClick={handleViewFullPage}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="flex items-center space-x-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1 h-7"
               >
-                <ExternalLink className="h-4 w-4" />
-                <span className="font-medium">{t('details')}</span>
+                <ExternalLink className="h-3 w-3" />
+                <span>{language === 'ru' ? 'Подробнее' : 'Detalii'}</span>
               </Button>
             </div>
           </div>
-          <p className="text-gray-600 mt-2">
-            {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
-            {(clinic.addressRu || clinic.addressRo) && ', '}
-            {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
-            {clinic.district && `, ${language === 'ru' ? clinic.district.nameRu : clinic.district.nameRo}`}
-          </p>
-          {/* Working Hours - compact display */}
-          {clinic.workingHours && clinic.workingHours.length > 0 && (
-            <div className="mt-1">
-              <WorkingHoursDisplay 
-                workingHours={clinic.workingHours} 
-                compact={true} 
-                showToday={true}
-              />
-            </div>
-          )}
+
         </DialogHeader>
 
         <div className="p-4 sm:p-6">

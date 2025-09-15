@@ -15,6 +15,7 @@ interface RecommendedClinicsProps {
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: any) => void;
   language?: string; // Добавляем язык как пропс
+  clinics?: any[]; // Добавляем клиники как пропс
 }
 
 const promotionalLabelStyles: Record<string, string> = {
@@ -50,7 +51,7 @@ function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
   );
 }
 
-export function RecommendedClinics({ onClinicClick, onBookClick, language: propLanguage }: RecommendedClinicsProps) {
+export function RecommendedClinics({ onClinicClick, onBookClick, language: propLanguage, clinics: propClinics }: RecommendedClinicsProps) {
   const { language: i18nLanguage, t } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -115,6 +116,7 @@ export function RecommendedClinics({ onClinicClick, onBookClick, language: propL
     return texts[label] || label;
   };
 
+  // Use clinics from props if provided, otherwise fetch them
   const { data: clinicsData, isLoading } = useQuery({
     queryKey: ['/api/recommended-clinics'],
     queryFn: async () => {
@@ -122,36 +124,12 @@ export function RecommendedClinics({ onClinicClick, onBookClick, language: propL
       if (!response.ok) throw new Error('Failed to fetch recommended clinics');
       return response.json();
     },
+    enabled: !propClinics, // Only fetch if clinics not provided via props
   });
 
-  const clinics = clinicsData?.clinics || [];
+  const clinics = propClinics || clinicsData?.clinics || [];
 
-  if (isLoading) {
-    return (
-      <div className="mb-8">
-        <div className="flex items-center space-x-2 mb-6">
-          <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-            {language === 'ru' ? 'Рекомендуем' : 'Recomandăm'}
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg"></div>
-              <div className="p-3 md:p-4 space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-2 bg-gray-200 rounded-full animate-pulse"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  // Don't render anything if no clinics
   if (clinics.length === 0) {
     return null;
   }

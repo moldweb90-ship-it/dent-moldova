@@ -1130,19 +1130,24 @@ export class DatabaseStorage implements IStorage {
 
   async setSiteSetting(key: string, value: string): Promise<SiteSetting> {
     console.log(`🔧 Setting site setting: ${key} = ${value}`);
-    const [setting] = await db
-      .insert(siteSettings)
-      .values({ key, value })
-      .onConflictDoUpdate({
-        target: siteSettings.key,
-        set: {
-          value,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    console.log(`✅ Site setting saved: ${key} = ${value}`);
-    return setting;
+    try {
+      const [setting] = await db
+        .insert(siteSettings)
+        .values({ key, value })
+        .onConflictDoUpdate({
+          target: siteSettings.key,
+          set: {
+            value,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      console.log(`✅ Site setting saved: ${key} = ${value}`, setting);
+      return setting;
+    } catch (error) {
+      console.error(`❌ Error saving site setting ${key}:`, error);
+      throw error;
+    }
   }
 
   async getAllSiteSettings(): Promise<SiteSetting[]> {

@@ -130,8 +130,6 @@ export async function setupVite(app: Express, server: Server) {
       console.log('🔍 Favicon check:', settingsMap.favicon);
       if (settingsMap.favicon) {
         console.log('✅ Adding favicon to HTML:', settingsMap.favicon);
-        // Удаляем существующие favicon теги
-        template = template.replace(/<link[^>]*rel="[^"]*icon[^"]*"[^>]*>/gi, '');
         
         // Получаем расширение файла для определения типа
         const faviconUrl = settingsMap.favicon;
@@ -141,6 +139,14 @@ export async function setupVite(app: Express, server: Server) {
         if (extension === 'png') mimeType = 'image/png';
         else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
         else if (extension === 'svg') mimeType = 'image/svg+xml';
+        
+        // Добавляем preload в начало head для мгновенной загрузки
+        template = template.replace(
+          /<head>/,
+          `<head>
+    <!-- Favicon preload для мгновенной загрузки -->
+    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}">`
+        );
         
         // Добавляем полный набор тегов для максимальной совместимости и индексации
         template = template.replace(
@@ -156,7 +162,7 @@ export async function setupVite(app: Express, server: Server) {
     <link rel="manifest" href="/site.webmanifest">
   </head>`
         );
-        console.log('✅ Favicon tags added to HTML');
+        console.log('✅ Favicon preload and tags added to HTML');
       } else {
         console.log('❌ No favicon found in settings');
       }
@@ -274,8 +280,6 @@ export function serveStatic(app: Express) {
       console.log('🔍 Favicon check (prod):', settingsMap.favicon);
       if (settingsMap.favicon) {
         console.log('✅ Adding favicon to HTML (prod):', settingsMap.favicon);
-        // Удаляем существующие favicon теги
-        template = template.replace(/<link[^>]*rel="[^"]*icon[^"]*"[^>]*>/gi, '');
         
         // Получаем расширение файла для определения типа
         const faviconUrl = settingsMap.favicon;
@@ -285,6 +289,14 @@ export function serveStatic(app: Express) {
         if (extension === 'png') mimeType = 'image/png';
         else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
         else if (extension === 'svg') mimeType = 'image/svg+xml';
+        
+        // Добавляем preload в начало head для мгновенной загрузки
+        template = template.replace(
+          /<head>/,
+          `<head>
+    <!-- Favicon preload для мгновенной загрузки -->
+    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}">`
+        );
         
         // Добавляем полный набор тегов для максимальной совместимости и индексации
         template = template.replace(
@@ -300,7 +312,7 @@ export function serveStatic(app: Express) {
     <link rel="manifest" href="/site.webmanifest">
   </head>`
         );
-        console.log('✅ Favicon tags added to HTML (prod)');
+        console.log('✅ Favicon preload and tags added to HTML (prod)');
       } else {
         console.log('❌ No favicon found in settings (prod)');
       }

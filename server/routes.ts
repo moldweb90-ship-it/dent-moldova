@@ -146,6 +146,8 @@ const upload = multer({
       let prefix = 'clinic-image-';
       if (file.fieldname === 'logo') {
         prefix = 'clinic-logo-';
+      } else if (req.body?.type === 'logo') {
+        prefix = 'site-logo-';
       } else if (req.body?.type === 'favicon') {
         prefix = 'favicon-';
       }
@@ -1197,7 +1199,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     try {
-      console.log('🔧 Received SEO settings request:', req.body);
+      console.log('🔧 Received settings request:', req.body);
+        console.log('🔍 Logo data:', { logo: req.body.logo, logoAlt: req.body.logoAlt, LogoWidth_capital: req.body.LogoWidth, logoWidth_camel: req.body.logoWidth, logoWidth_lower: req.body.logowidth });
+      console.log('🔍 All request body keys:', Object.keys(req.body));
+      console.log('🔍 LogoWidth_capital type:', typeof req.body.LogoWidth, 'value:', req.body.LogoWidth);
+      console.log('🔍 logoWidth_camel type:', typeof req.body.logoWidth, 'value:', req.body.logoWidth);
+      console.log('🔍 logoWidth_lower type:', typeof req.body.logowidth, 'value:', req.body.logowidth);
       const {
         // Russian SEO settings
         siteTitleRu, metaDescriptionRu, keywordsRu, ogTitleRu, ogDescriptionRu, ogImageRu, canonicalRu, h1Ru,
@@ -1237,6 +1244,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (schemaData !== undefined) promises.push(storage.setSiteSetting('schemaData', schemaData));
       
       // General settings
+      if (req.body.logo !== undefined) {
+        console.log('🔧 Saving logo:', req.body.logo);
+        promises.push(storage.setSiteSetting('logo', req.body.logo));
+      }
+      if (req.body.logoAlt !== undefined) {
+        console.log('🔧 Saving logoAlt:', req.body.logoAlt);
+        promises.push(storage.setSiteSetting('logoAlt', req.body.logoAlt));
+      }
+      if (req.body.LogoWidth !== undefined) {
+        console.log('🔧 Saving logoWidth (from LogoWidth):', req.body.LogoWidth);
+        promises.push(storage.setSiteSetting('logoWidth', req.body.LogoWidth));
+      } else if (req.body.logoWidth !== undefined) {
+        console.log('🔧 Saving logoWidth (from camelCase):', req.body.logoWidth);
+        promises.push(storage.setSiteSetting('logoWidth', req.body.logoWidth));
+      } else if (req.body.logowidth !== undefined) {
+        console.log('🔧 Saving logoWidth (from lowercase):', req.body.logowidth);
+        promises.push(storage.setSiteSetting('logoWidth', req.body.logowidth));
+      }
       if (req.body.favicon !== undefined) promises.push(storage.setSiteSetting('favicon', req.body.favicon));
       if (req.body.websiteName !== undefined) promises.push(storage.setSiteSetting('websiteName', req.body.websiteName));
       if (req.body.websiteUrl !== undefined) promises.push(storage.setSiteSetting('websiteUrl', req.body.websiteUrl));
@@ -1253,7 +1278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.adminAccessCode !== undefined) promises.push(storage.setSiteSetting('adminAccessCode', req.body.adminAccessCode));
       
       await Promise.all(promises);
-      console.log('✅ All SEO settings saved successfully');
+      console.log('✅ All settings saved successfully');
       console.log('🔧 Saved settings count:', promises.length);
       
       // Create robots.txt file in public directory

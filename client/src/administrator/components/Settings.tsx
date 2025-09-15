@@ -13,6 +13,9 @@ import { apiRequest } from '@/lib/queryClient';
 import { Globe, FileText, Search, Settings as SettingsIcon, Upload, Image, Monitor, Building2, Briefcase, Clock, DollarSign, MapPin, Link, User, Globe2, Eye, Hash, Tag, Bot, Shield } from 'lucide-react';
 
 const generalSettingsSchema = z.object({
+  logo: z.string().optional(),
+  logoAlt: z.string().optional(),
+  logoWidth: z.string().optional(),
   favicon: z.string().optional(),
   websiteName: z.string().optional(),
   websiteUrl: z.string().optional(),
@@ -71,6 +74,7 @@ export function Settings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [crawling, setCrawling] = useState(false);
@@ -86,6 +90,9 @@ export function Settings() {
   const generalForm = useForm<GeneralSettingsData>({
     resolver: zodResolver(generalSettingsSchema),
     defaultValues: {
+      logo: '',
+      logoAlt: '',
+      logoWidth: '100',
       favicon: '',
       websiteName: '',
       websiteUrl: '',
@@ -162,7 +169,12 @@ export function Settings() {
         : settings || {};
 
       // Load general settings
+      console.log('🔧 Loading settings:', settingsMap);
+      console.log('🔍 Logo settings:', { logo: settingsMap.logo, logoAlt: settingsMap.logoAlt, logoWidth: settingsMap.logoWidth });
       generalForm.reset({
+        logo: settingsMap.logo || '',
+        logoAlt: settingsMap.logoAlt || 'Dent Moldova',
+        logoWidth: settingsMap.logoWidth || '100',
         favicon: settingsMap.favicon || '',
         websiteName: settingsMap.websiteName || 'Dent Moldova',
         websiteUrl: settingsMap.websiteUrl || 'https://dentmoldova.md',
@@ -223,6 +235,10 @@ export function Settings() {
   const onGeneralSubmit = async (data: GeneralSettingsData) => {
     setLoading(true);
     try {
+      console.log('🔧 Sending general settings:', data);
+      console.log('🔍 Logo data being sent:', { logo: data.logo, logoAlt: data.logoAlt, logoWidth: data.logoWidth });
+      console.log('🔍 Form data keys:', Object.keys(data));
+      console.log('🔍 logoWidth in data:', 'logoWidth' in data, data.logoWidth);
       const result = await apiRequest('POST', '/api/admin/settings', data);
       toast({
         title: 'Настройки сохранены',
@@ -338,6 +354,55 @@ export function Settings() {
       });
     } finally {
       setCrawling(false);
+    }
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, выберите файл изображения.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit for logo
+      toast({
+        title: 'Ошибка',
+        description: 'Размер файла не должен превышать 5MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'logo');
+
+      const response = await apiRequest('POST', '/api/admin/upload', formData);
+      const result = await response.json();
+      
+      if (result.success) {
+        generalForm.setValue('logo', result.url);
+        toast({
+          title: 'Логотип загружен',
+          description: 'Логотип успешно загружен.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось загрузить логотип.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -530,6 +595,95 @@ export function Settings() {
               <div className="space-y-8">
                 {/* Favicon Upload Section */}
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                  {/* Logo Section */}
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Image className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Логотип сайта</h3>
+                      <p className="text-sm text-gray-600">Логотип, отображаемый на главной странице</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6 mb-6">
+                    {generalForm.watch('logo') && (
+                      <div className="w-32 h-20 border-2 border-dashed border-green-300 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                        <img 
+                          src={generalForm.watch('logo')} 
+                          alt="Logo preview" 
+                          className="max-w-full max-h-full object-contain rounded-lg"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          disabled={uploadingLogo}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('logo-upload')?.click()}
+                          disabled={uploadingLogo}
+                          className="flex items-center space-x-2 border-green-200 hover:bg-green-50"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>{uploadingLogo ? 'Загрузка...' : 'Выбрать логотип'}</span>
+                        </Button>
+                        {generalForm.watch('logo') && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generalForm.setValue('logo', '')}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                          >
+                            Удалить
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logo Alt Text */}
+                  <div className="mb-6">
+                    <Label htmlFor="logoAlt">Alt текст для логотипа</Label>
+                    <Input
+                      id="logoAlt"
+                      {...generalForm.register('logoAlt')}
+                      placeholder="Dent Moldova"
+                      className="mt-1"
+                    />
+                    <p className="text-sm text-gray-600 mt-1">Текст, который будет отображаться при наведении на логотип</p>
+                  </div>
+
+                  {/* Logo Width */}
+                  <div className="mb-6">
+                    <Label htmlFor="logoWidth">Ширина логотипа (px)</Label>
+                    <Input
+                      id="logoWidth"
+                      type="number"
+                      {...generalForm.register('logoWidth')}
+                      placeholder="100"
+                      className="mt-1"
+                      min="50"
+                      max="300"
+                      onChange={(e) => {
+                        console.log('🔧 logoWidth input changed:', e.target.value);
+                        generalForm.setValue('logoWidth', e.target.value);
+                      }}
+                    />
+                    <p className="text-sm text-gray-600 mt-1">Ширина логотипа в пикселях. Высота будет рассчитана пропорционально</p>
+                    <p className="text-xs text-gray-500 mt-1">Текущее значение: {generalForm.watch('logoWidth')}</p>
+                  </div>
+
+                  {/* Favicon Section */}
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Image className="h-5 w-5 text-blue-600" />
@@ -589,201 +743,168 @@ export function Settings() {
                   </div>
                 </div>
 
-                {/* Main Settings Grid */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                  {/* Website Settings Card */}
-                  <Card className="border-0 shadow-sm">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <Globe2 className="h-5 w-5 text-green-600" />
+                {/* Main Settings Grid - Compact 2-row layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Row 1: Website & Organization */}
+                  <div className="space-y-6">
+                    {/* Website Settings Card */}
+                    <Card className="border-0 shadow-sm">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="p-1.5 bg-green-100 rounded-lg">
+                            <Globe2 className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">Сайт</CardTitle>
+                            <CardDescription className="text-xs">Основная информация</CardDescription>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">Настройки сайта</CardTitle>
-                          <CardDescription>Основная информация о веб-сайте</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="websiteName" className="flex items-center space-x-2">
-                          <Monitor className="h-4 w-4 text-gray-500" />
-                          <span>Название сайта</span>
-                        </Label>
-                        <Input
-                          id="websiteName"
-                          {...generalForm.register('websiteName')}
-                          placeholder="Dent Moldova"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="websiteUrl" className="flex items-center space-x-2">
-                          <Link className="h-4 w-4 text-gray-500" />
-                          <span>URL сайта</span>
-                        </Label>
-                        <Input
-                          id="websiteUrl"
-                          {...generalForm.register('websiteUrl')}
-                          placeholder="https://dentmoldova.md"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Organization Settings Card */}
-                  <Card className="border-0 shadow-sm">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                          <Building2 className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">Организация</CardTitle>
-                          <CardDescription>Информация о вашей компании</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="organizationName" className="flex items-center space-x-2">
-                          <Building2 className="h-4 w-4 text-gray-500" />
-                          <span>Название организации</span>
-                        </Label>
-                        <Input
-                          id="organizationName"
-                          {...generalForm.register('organizationName')}
-                          placeholder="Dent Moldova"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="organizationUrl" className="flex items-center space-x-2">
-                          <Link className="h-4 w-4 text-gray-500" />
-                          <span>URL организации</span>
-                        </Label>
-                        <Input
-                          id="organizationUrl"
-                          {...generalForm.register('organizationUrl')}
-                          placeholder="https://dentmoldova.md"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="organizationDescription" className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-gray-500" />
-                          <span>Описание организации</span>
-                        </Label>
-                        <Textarea
-                          id="organizationDescription"
-                          {...generalForm.register('organizationDescription')}
-                          placeholder="Каталог стоматологических клиник в Молдове"
-                          rows={3}
-                          disabled={loading}
-                          className="resize-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="organizationCity" className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4 text-gray-500" />
-                            <span>Город</span>
-                          </Label>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="websiteName" className="text-sm font-medium">Название</Label>
                           <Input
-                            id="organizationCity"
-                            {...generalForm.register('organizationCity')}
-                            placeholder="Кишинёв"
+                            id="websiteName"
+                            {...generalForm.register('websiteName')}
+                            placeholder="Dent Moldova"
                             disabled={loading}
-                            className="pl-10"
+                            className="h-9 text-sm"
                           />
                         </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="organizationCountry" className="flex items-center space-x-2">
-                            <Globe className="h-4 w-4 text-gray-500" />
-                            <span>Страна</span>
-                          </Label>
+                        <div className="space-y-1">
+                          <Label htmlFor="websiteUrl" className="text-sm font-medium">URL</Label>
                           <Input
-                            id="organizationCountry"
-                            {...generalForm.register('organizationCountry')}
-                            placeholder="MD"
+                            id="websiteUrl"
+                            {...generalForm.register('websiteUrl')}
+                            placeholder="https://dentmoldova.md"
                             disabled={loading}
-                            className="pl-10"
+                            className="h-9 text-sm"
                           />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+
+                    {/* Organization Settings Card */}
+                    <Card className="border-0 shadow-sm">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="p-1.5 bg-purple-100 rounded-lg">
+                            <Building2 className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">Организация</CardTitle>
+                            <CardDescription className="text-xs">Информация о компании</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="organizationName" className="text-sm font-medium">Название</Label>
+                          <Input
+                            id="organizationName"
+                            {...generalForm.register('organizationName')}
+                            placeholder="Dent Moldova"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="organizationUrl" className="text-sm font-medium">URL</Label>
+                          <Input
+                            id="organizationUrl"
+                            {...generalForm.register('organizationUrl')}
+                            placeholder="https://dentmoldova.md"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <Label htmlFor="organizationCity" className="text-sm font-medium">Город</Label>
+                            <Input
+                              id="organizationCity"
+                              {...generalForm.register('organizationCity')}
+                              placeholder="Кишинёв"
+                              disabled={loading}
+                              className="h-9 text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="organizationCountry" className="text-sm font-medium">Страна</Label>
+                            <Input
+                              id="organizationCountry"
+                              {...generalForm.register('organizationCountry')}
+                              placeholder="MD"
+                              disabled={loading}
+                              className="h-9 text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="organizationDescription" className="text-sm font-medium">Описание</Label>
+                          <Textarea
+                            id="organizationDescription"
+                            {...generalForm.register('organizationDescription')}
+                            placeholder="Каталог стоматологических клиник в Молдове"
+                            rows={2}
+                            disabled={loading}
+                            className="resize-none text-sm"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Row 2: Business Information */}
+                  <div className="space-y-6">
+                    {/* Business Information Card */}
+                    <Card className="border-0 shadow-sm">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="p-1.5 bg-orange-100 rounded-lg">
+                            <Briefcase className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">Бизнес</CardTitle>
+                            <CardDescription className="text-xs">Детали о бизнесе</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="businessType" className="text-sm font-medium">Тип бизнеса</Label>
+                          <Input
+                            id="businessType"
+                            {...generalForm.register('businessType')}
+                            placeholder="Dentist"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="businessPriceRange" className="text-sm font-medium">Ценовой диапазон</Label>
+                          <Input
+                            id="businessPriceRange"
+                            {...generalForm.register('businessPriceRange')}
+                            placeholder="$$"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="businessOpeningHours" className="text-sm font-medium">Часы работы</Label>
+                          <Input
+                            id="businessOpeningHours"
+                            {...generalForm.register('businessOpeningHours')}
+                            placeholder="Mo-Fr 09:00-18:00"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-
-                {/* Business Information Card */}
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <Briefcase className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">Бизнес информация</CardTitle>
-                        <CardDescription>Детали о вашем бизнесе</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="businessType" className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-gray-500" />
-                          <span>Тип бизнеса</span>
-                        </Label>
-                        <Input
-                          id="businessType"
-                          {...generalForm.register('businessType')}
-                          placeholder="Dentist"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="businessPriceRange" className="flex items-center space-x-2">
-                          <DollarSign className="h-4 w-4 text-gray-500" />
-                          <span>Ценовой диапазон</span>
-                        </Label>
-                        <Input
-                          id="businessPriceRange"
-                          {...generalForm.register('businessPriceRange')}
-                          placeholder="$$"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="businessOpeningHours" className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span>Часы работы</span>
-                        </Label>
-                        <Input
-                          id="businessOpeningHours"
-                          {...generalForm.register('businessOpeningHours')}
-                          placeholder="Mo-Fr 09:00-18:00"
-                          disabled={loading}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
               </div>
             </CardContent>

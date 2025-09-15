@@ -7,11 +7,33 @@ import { Link } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { AddClinicModal } from '../components/AddClinicModal';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export default function PricingPage() {
   const { t } = useTranslation();
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  // Fetch site settings for logo
+  const { data: siteSettings, isLoading: settingsLoading } = useQuery({
+    queryKey: ['/api/admin/settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings');
+      if (!response.ok) throw new Error('Failed to fetch site settings');
+      const settings = await response.json();
+      
+      // Convert array of settings to object
+      const settingsMap = Array.isArray(settings)
+        ? settings.reduce((acc: any, setting: any) => {
+            acc[setting.key] = setting.value;
+            return acc;
+          }, {})
+        : settings || {};
+      
+      return settingsMap;
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   // Отслеживание скролла для анимированного меню
   useEffect(() => {
@@ -53,13 +75,30 @@ export default function PricingPage() {
               {/* Logo */}
               <div className="flex items-center">
                 <Link href="/">
-                  <button className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
-                    {t('appTitle')}
+                  <button 
+                    className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+                    title={siteSettings?.logoAlt || t('appTitle')}
+                  >
+                    {settingsLoading ? (
+                      <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+      ) : siteSettings?.logo ? (
+        <img 
+          src={siteSettings.logo} 
+          alt={siteSettings.logoAlt || t('appTitle')}
+          style={{ 
+            width: `${siteSettings.logoWidth || 100}px`,
+            height: 'auto'
+          }}
+          className="object-contain"
+        />
+      ) : (
+                      <span>{t('appTitle')}</span>
+                    )}
                   </button>
                 </Link>
               </div>
               
-              <div className="flex items-center space-x-2 md:space-x-4">
+              <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
                 {/* Navigation Menu */}
                 <Link href="/">
                   <Button
@@ -72,18 +111,25 @@ export default function PricingPage() {
                   </Button>
                 </Link>
                 
+                {/* Language Toggle - moved before Add Clinic Button for mobile */}
+                <div className="flex md:hidden">
+                  <LanguageToggle />
+                </div>
+                
                 {/* Add Clinic Button */}
                 <Button
                   onClick={() => setClinicFormOpen(true)}
-                  className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-2"
+                  className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-1 px-2"
                   size="sm"
                 >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('addClinic')}</span>
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline text-xs sm:text-sm">{t('addClinic')}</span>
                 </Button>
                 
-                {/* Language Toggle */}
-                <LanguageToggle />
+                {/* Language Toggle - for desktop */}
+                <div className="hidden md:flex">
+                  <LanguageToggle />
+                </div>
               </div>
             </div>
           </div>

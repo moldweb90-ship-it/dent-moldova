@@ -80,10 +80,10 @@ export function LanguageToggle() {
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-1 sm:space-x-2">
       <button
         onClick={() => handleLanguageChange('ru')}
-        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+        className={`px-2 py-1 text-xs sm:px-3 sm:py-1 sm:text-sm font-medium rounded-md transition-colors ${
           currentLanguage === 'ru'
             ? 'bg-blue-600 text-white'
             : 'text-gray-700 hover:bg-gray-100'
@@ -93,7 +93,7 @@ export function LanguageToggle() {
       </button>
       <button
         onClick={() => handleLanguageChange('ro')}
-        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+        className={`px-2 py-1 text-xs sm:px-3 sm:py-1 sm:text-sm font-medium rounded-md transition-colors ${
           currentLanguage === 'ro'
             ? 'bg-blue-600 text-white'
             : 'text-gray-700 hover:bg-gray-100'
