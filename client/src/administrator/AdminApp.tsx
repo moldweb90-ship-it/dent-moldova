@@ -16,6 +16,23 @@ export function AdminApp() {
   const checkAuthStatus = async () => {
     try {
       await apiRequest('GET', '/api/admin/auth/check');
+      
+      // Если пользователь авторизован, но в URL есть параметры от предыдущей сессии,
+      // очищаем их и перенаправляем на главную панель
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('tab') || urlParams.has('clinicId') || urlParams.has('id') || 
+          urlParams.has('edit') || urlParams.has('new') || urlParams.has('status')) {
+        localStorage.removeItem('adminActiveTab');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('tab');
+        url.searchParams.delete('clinicId');
+        url.searchParams.delete('id');
+        url.searchParams.delete('edit');
+        url.searchParams.delete('new');
+        url.searchParams.delete('status');
+        window.history.replaceState({}, '', url.toString());
+      }
+      
       setIsAuthenticated(true);
     } catch (error) {
       setIsAuthenticated(false);
@@ -28,6 +45,18 @@ export function AdminApp() {
     setLoginError('');
     try {
       await apiRequest('POST', '/api/admin/auth/login', { username, password });
+      
+      // Очищаем localStorage и URL параметры при успешном логине
+      localStorage.removeItem('adminActiveTab');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('tab');
+      url.searchParams.delete('clinicId');
+      url.searchParams.delete('id');
+      url.searchParams.delete('edit');
+      url.searchParams.delete('new');
+      url.searchParams.delete('status');
+      window.history.replaceState({}, '', url.toString());
+      
       setIsAuthenticated(true);
     } catch (error: any) {
       setLoginError(error.message || 'Неверный логин или пароль');
