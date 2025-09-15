@@ -4,7 +4,7 @@ import {
   type InsertCity, type InsertDistrict, type InsertClinic, type InsertPackage, type InsertService, type InsertUser, type InsertSiteView, type InsertSiteSetting, type InsertBooking, type InsertVerificationRequest, type InsertNewClinicRequest, type InsertWorkingHours, type InsertReview
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql } from "drizzle-orm";
+import { eq, and, or, ilike, inArray, gte, lte, desc, asc, count, sql, isNotNull } from "drizzle-orm";
 import { DataProtection } from "./utils/dataProtection";
 
 export interface IStorage {
@@ -75,6 +75,7 @@ export interface IStorage {
   
   // Analytics methods
   recordAnalyticsEvent(event: { clinicId?: string; eventType: string; ipAddress: string; userAgent?: string; referrer?: string }): Promise<void>;
+  getUniqueVisitorsForPeriod(period: string): Promise<number>;
   getAnalyticsStats(period: string, clinicId?: string): Promise<{
     overall: { totalClicks: number; totalClinics: number; topClinic: any };
     clinics: Array<{ id: string; name: string; clicks: { book: number; phone: number; website: number; details: number }; totalClicks: number }>;
@@ -120,6 +121,22 @@ export interface IStorage {
   
   // Price range methods
   getPriceRange(): Promise<{ min: number; max: number }>;
+  
+  // Conversion analytics methods
+  getConversionStats(period: string): Promise<{
+    overallConversion: {
+      totalUniqueVisitors: number;
+      totalBookings: number;
+      conversionRate: number;
+    };
+    clinicConversions: Array<{
+      clinicId: string;
+      clinicName: string;
+      uniqueViews: number;
+      bookings: number;
+      conversionRate: number;
+    }>;
+  }>;
 }
 
 export interface ClinicFilters {
@@ -1269,6 +1286,38 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async getUniqueVisitorsForPeriod(period: string): Promise<number> {
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case '1d':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Получаем уникальных посетителей из analyticsEvents за период
+    const uniqueVisitorsResult = await db
+      .select({ 
+        count: sql<number>`count(distinct ${analyticsEvents.ipAddress})` 
+      })
+      .from(analyticsEvents)
+      .where(gte(analyticsEvents.createdAt, startDate));
+
+    return uniqueVisitorsResult[0]?.count || 0;
+  }
+
   async getAnalyticsStats(period: string, clinicId?: string): Promise<{
     overall: { totalClicks: number; totalClinics: number; topClinic: any };
     clinics: Array<{ id: string; name: string; clicks: { book: number; phone: number; website: number; details: number }; totalClicks: number }>;
@@ -2008,6 +2057,179 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviews.id, id));
     
     console.log('✅ Review deleted:', id);
+  }
+
+  async getConversionStats(period: string): Promise<{
+    overallConversion: {
+      totalUniqueVisitors: number;
+      totalBookings: number;
+      conversionRate: number;
+    };
+    clinicConversions: Array<{
+      clinicId: string;
+      clinicName: string;
+      uniqueViews: number;
+      bookings: number;
+      conversionRate: number;
+    }>;
+  }> {
+    console.log('📊 Getting conversion stats for period:', period);
+    
+    // Определяем дату начала периода
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case '1d':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Проверяем, есть ли вообще данные в site_views
+    const allViewsResult = await db
+      .select({ 
+        count: sql<number>`count(*)` 
+      })
+      .from(siteViews)
+      .where(gte(siteViews.createdAt, startDate));
+    
+    console.log('🔍 Total site_views in period:', allViewsResult[0]?.count || 0);
+    
+    // Проверяем, есть ли записи с clinicId
+    const viewsWithClinicIdResult = await db
+      .select({ 
+        count: sql<number>`count(*)` 
+      })
+      .from(siteViews)
+      .where(and(
+        gte(siteViews.createdAt, startDate),
+        isNotNull(siteViews.clinicId)
+      ));
+    
+    console.log('🔍 Site_views with clinicId in period:', viewsWithClinicIdResult[0]?.count || 0);
+
+    // Получаем общее количество кликов (все события аналитики)
+    // Это будет базой для подсчета конверсий
+    const totalClicksResult = await db
+      .select({ 
+        count: sql<number>`count(*)` 
+      })
+      .from(analyticsEvents)
+      .where(gte(analyticsEvents.createdAt, startDate));
+
+    const totalClicks = totalClicksResult[0]?.count || 0;
+    console.log('🔍 Total clicks (from analytics):', totalClicks);
+
+    // Получаем общее количество заявок за период
+    const totalBookingsResult = await db
+      .select({ 
+        count: sql<number>`count(*)` 
+      })
+      .from(bookings)
+      .where(gte(bookings.createdAt, startDate));
+
+    const totalBookings = totalBookingsResult[0]?.count || 0;
+    console.log('🔍 Total bookings:', totalBookings);
+
+    // Вычисляем общую конверсию (заявки / общие клики)
+    const overallConversionRate = totalClicks > 0 ? (totalBookings / totalClicks) * 100 : 0;
+
+    // Получаем конверсии по клиникам
+    // Используем analyticsEvents для получения всех кликов по клиникам (не уникальных)
+    const clinicViewsResult = await db
+      .select({
+        clinicId: analyticsEvents.clinicId,
+        totalClicks: sql<number>`count(*)`
+      })
+      .from(analyticsEvents)
+      .where(and(
+        gte(analyticsEvents.createdAt, startDate),
+        isNotNull(analyticsEvents.clinicId)
+      ))
+      .groupBy(analyticsEvents.clinicId);
+
+    console.log('🔍 Clinic clicks result (from analytics):', clinicViewsResult);
+    console.log('🔍 Clinic clicks result length:', clinicViewsResult.length);
+
+    // Затем получаем заявки по клиникам
+    const clinicBookingsResult = await db
+      .select({
+        clinicId: bookings.clinicId,
+        bookings: sql<number>`count(*)`
+      })
+      .from(bookings)
+      .where(gte(bookings.createdAt, startDate))
+      .groupBy(bookings.clinicId);
+
+    console.log('🔍 Clinic bookings result:', clinicBookingsResult);
+
+    // Объединяем данные
+    const clinicConversionsResult = clinicViewsResult.map(view => {
+      const booking = clinicBookingsResult.find(b => b.clinicId === view.clinicId);
+      return {
+        clinicId: view.clinicId,
+        totalClicks: view.totalClicks,
+        bookings: booking?.bookings || 0
+      };
+    });
+
+    // Добавляем клиники, у которых есть заявки, но нет кликов
+    const clinicsWithBookingsOnly = clinicBookingsResult
+      .filter(booking => !clinicViewsResult.some(view => view.clinicId === booking.clinicId))
+      .map(booking => ({
+        clinicId: booking.clinicId,
+        totalClicks: 0,
+        bookings: booking.bookings
+      }));
+
+    const allClinicConversions = [...clinicConversionsResult, ...clinicsWithBookingsOnly];
+
+    // Получаем названия клиник
+    const clinicConversions = await Promise.all(
+      allClinicConversions.map(async (conversion) => {
+        const clinic = await this.getClinicById(conversion.clinicId!);
+        const clinicName = clinic ? (clinic.nameRu || clinic.nameRo || 'Неизвестная клиника') : 'Неизвестная клиника';
+        
+        const conversionRate = conversion.totalClicks > 0 ? (conversion.bookings / conversion.totalClicks) * 100 : 0;
+        
+        return {
+          clinicId: conversion.clinicId!,
+          clinicName,
+          uniqueViews: conversion.totalClicks, // Переименуем для совместимости с интерфейсом
+          bookings: conversion.bookings,
+          conversionRate: Math.round(conversionRate * 100) / 100 // Округляем до 2 знаков
+        };
+      })
+    );
+
+    const result = {
+      overallConversion: {
+        totalUniqueVisitors: totalClicks, // Переименуем для совместимости с интерфейсом
+        totalBookings,
+        conversionRate: Math.round(overallConversionRate * 100) / 100
+      },
+      clinicConversions: clinicConversions.sort((a, b) => b.conversionRate - a.conversionRate)
+    };
+
+    console.log('✅ Conversion stats retrieved:', {
+      totalClicks,
+      totalBookings,
+      overallConversionRate: result.overallConversion.conversionRate,
+      clinicConversionsCount: clinicConversions.length
+    });
+
+    return result;
   }
 }
 

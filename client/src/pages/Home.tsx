@@ -172,21 +172,13 @@ export default function Home() {
 
   // Fetch site settings for logo
   const { data: siteSettings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['/api/admin/settings'],
+    queryKey: ['/api/seo-settings'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/settings');
+      const response = await fetch('/api/seo-settings');
       if (!response.ok) throw new Error('Failed to fetch site settings');
       const settings = await response.json();
-      
-      // Convert array of settings to object
-      const settingsMap = Array.isArray(settings)
-        ? settings.reduce((acc: any, setting: any) => {
-            acc[setting.key] = setting.value;
-            return acc;
-          }, {})
-        : settings || {};
-      
-      return settingsMap;
+      console.log('🔍 Site settings loaded:', settings);
+      return settings;
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });

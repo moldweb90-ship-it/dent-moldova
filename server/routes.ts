@@ -1382,6 +1382,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         robots: settingsMap.robots || 'index,follow',
         schemaType: settingsMap.schemaType || 'Organization',
         schemaData: settingsMap.schemaData || '',
+        logo: settingsMap.logo || '',
+        logoAlt: settingsMap.logoAlt || 'Dent Moldova',
+        logoWidth: settingsMap.logoWidth || '100',
       });
     } catch (error) {
       console.error("Error getting SEO settings:", error);
@@ -1410,6 +1413,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         robots: 'index,follow',
         schemaType: 'Organization',
         schemaData: '',
+        logo: '',
+        logoAlt: 'Dent Moldova',
+        logoWidth: '100',
       });
     }
   });
@@ -1665,6 +1671,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (slug) {
           const clinic = await storage.getClinicBySlug(slug);
           clinicId = clinic?.id || null;
+        }
+      } else if (route.includes('/api/clinics/')) {
+        // For API routes like /api/clinics/:id
+        const clinicIdFromRoute = route.split('/api/clinics/')[1];
+        if (clinicIdFromRoute && clinicIdFromRoute !== '') {
+          clinicId = clinicIdFromRoute;
         }
       }
       
@@ -1976,8 +1988,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { period = '7d', clinic } = req.query;
       console.log(`GET /api/admin/statistics - period: ${period}, clinic: ${clinic}`);
       const stats = await storage.getAnalyticsStats(period as string, clinic as string);
-      console.log(`GET /api/admin/statistics - returning stats with ${stats.overall.totalClicks} total clicks`);
-      res.json(stats);
+      const uniqueVisitors = await storage.getUniqueVisitorsForPeriod(period as string);
+      
+      // Добавляем количество уникальных посетителей к статистике
+      const statsWithVisitors = {
+        ...stats,
+        overall: {
+          ...stats.overall,
+          uniqueVisitors
+        }
+      };
+      
+      console.log(`GET /api/admin/statistics - returning stats with ${stats.overall.totalClicks} total clicks and ${uniqueVisitors} unique visitors`);
+      res.json(statsWithVisitors);
     } catch (error) {
       console.error('Error getting analytics stats:', error);
       res.status(500).json({ message: 'Internal server error' });
@@ -1993,6 +2016,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error clearing analytics stats:', error);
       res.status(500).json({ message: 'Ошибка при очистке статистики' });
+    }
+  });
+
+  // ===== CONVERSION ANALYTICS ROUTES =====
+  app.get('/api/admin/conversions', requireAdminAuth, async (req, res) => {
+    try {
+      const { period = '7d' } = req.query;
+      console.log(`GET /api/admin/conversions - period: ${period}`);
+      const conversionStats = await storage.getConversionStats(period as string);
+      console.log(`GET /api/admin/conversions - returning conversion stats with ${conversionStats.overallConversion.totalUniqueVisitors} unique visitors and ${conversionStats.overallConversion.totalBookings} bookings`);
+      res.json(conversionStats);
+    } catch (error) {
+      console.error('Error getting conversion stats:', error);
+      res.status(500).json({ message: 'Ошибка при получении статистики конверсий' });
     }
   });
 

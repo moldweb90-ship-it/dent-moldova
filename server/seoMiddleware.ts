@@ -15,6 +15,34 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
       const clinic = await storage.getClinicBySlug(slug, language);
       
       if (clinic) {
+        console.log('🔍 SEO Middleware - Clinic data:', {
+          name: clinic.nameRu,
+          googleRating: clinic.googleRating,
+          googleReviewsCount: clinic.googleReviewsCount,
+          dScore: clinic.dScore,
+          reviewsIndex: clinic.reviewsIndex,
+          workingHours: clinic.workingHours ? clinic.workingHours.length : 0,
+          priceIndex: clinic.priceIndex,
+          services: clinic.services ? clinic.services.length : 0,
+          seoSchemaData: clinic.seoSchemaData
+        });
+        
+        // Получаем рейтинг из отзывов
+        let reviewsRating = null;
+        let reviewsCount = 0;
+        try {
+          const reviews = await storage.getReviews(clinic.id, 'approved', 1000, 0);
+          if (reviews.reviews && reviews.reviews.length > 0) {
+            const totalRating = reviews.reviews.reduce((sum: number, review: any) => {
+              return sum + (review.averageRating || 0);
+            }, 0);
+            reviewsRating = Math.round((totalRating / reviews.reviews.length) * 100) / 100;
+            reviewsCount = reviews.reviews.length;
+          }
+        } catch (error) {
+          console.error('Error getting reviews for SEO:', error);
+        }
+
         // Добавляем SEO данные в объект запроса
         (req as any).clinicSEO = {
           title: clinic.seoTitleRu || clinic.seoTitleRo || (isRomanian ? `${clinic.nameRo} - clinică stomatologică în ${clinic.city.nameRo}` : `${clinic.nameRu} - стоматологическая клиника в ${clinic.city.nameRu}`),
@@ -28,7 +56,14 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           robots: clinic.seoRobots || 'index,follow',
           schemaType: clinic.seoSchemaType || 'Dentist',
           schemaData: clinic.seoSchemaData,
-          language: language
+          language: language,
+          // Добавляем данные клиники для JSON-LD схемы с рейтингом из отзывов
+          clinicData: {
+            ...clinic,
+            reviewsRating, // Добавляем рейтинг из отзывов
+            reviewsCount,  // Добавляем количество отзывов
+            services: clinic.services || [] // Добавляем услуги для анализа цен
+          }
         };
       }
     } catch (error) {
@@ -71,15 +106,17 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           ? (settingsMap.ogDescriptionRo || settingsMap.metaDescriptionRo || 'Găsiți cele mai bune clinici stomatologice din Moldova')
           : (settingsMap.ogDescriptionRu || settingsMap.metaDescriptionRu || 'Найдите лучшие стоматологические клиники в Молдове'),
         ogImage: isRomanian
-          ? (settingsMap.ogImageRo || '')
-          : (settingsMap.ogImageRu || ''),
+          ? (settingsMap.ogImageRo || settingsMap.logo || '')
+          : (settingsMap.ogImageRu || settingsMap.logo || ''),
         canonical: isRomanian
           ? (settingsMap.canonicalRo || 'https://dentmoldova.md/ro')
           : (settingsMap.canonicalRu || 'https://dentmoldova.md'),
         robots: settingsMap.robots || 'index,follow',
         schemaType: settingsMap.schemaType || 'Organization',
         schemaData: settingsMap.schemaData || '',
-        language: language
+        language: language,
+        // Добавляем настройки сайта для JSON-LD схемы
+        settingsMap: settingsMap
       };
     } catch (error) {
       console.error('Error fetching homepage SEO data:', error);

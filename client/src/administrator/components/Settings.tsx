@@ -27,6 +27,8 @@ const generalSettingsSchema = z.object({
   businessType: z.string().optional(),
   businessPriceRange: z.string().optional(),
   businessOpeningHours: z.string().optional(),
+  schemaType: z.string().optional(),
+  schemaData: z.string().optional(),
 });
 
 const seoSettingsSchema = z.object({
@@ -104,6 +106,8 @@ export function Settings() {
       businessType: '',
       businessPriceRange: '',
       businessOpeningHours: '',
+      schemaType: 'Organization',
+      schemaData: '',
     }
   });
 
@@ -186,6 +190,8 @@ export function Settings() {
         businessType: settingsMap.businessType || 'Dentist',
         businessPriceRange: settingsMap.businessPriceRange || '$$',
         businessOpeningHours: settingsMap.businessOpeningHours || 'Mo-Fr 09:00-18:00',
+        schemaType: settingsMap.schemaType || 'Organization',
+        schemaData: settingsMap.schemaData || '',
       });
 
       // Load SEO settings
@@ -593,152 +599,158 @@ export function Settings() {
             </CardHeader>
             <CardContent>
               <div className="space-y-8">
-                {/* Favicon Upload Section */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                {/* Logo and Favicon Section - Two Columns Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Logo Section */}
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Image className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Логотип сайта</h3>
-                      <p className="text-sm text-gray-600">Логотип, отображаемый на главной странице</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6 mb-6">
-                    {generalForm.watch('logo') && (
-                      <div className="w-32 h-20 border-2 border-dashed border-green-300 rounded-xl flex items-center justify-center bg-white shadow-sm">
-                        <img 
-                          src={generalForm.watch('logo')} 
-                          alt="Logo preview" 
-                          className="max-w-full max-h-full object-contain rounded-lg"
-                        />
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Image className="h-5 w-5 text-green-600" />
                       </div>
-                    )}
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <input
-                          id="logo-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          disabled={uploadingLogo}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('logo-upload')?.click()}
-                          disabled={uploadingLogo}
-                          className="flex items-center space-x-2 border-green-200 hover:bg-green-50"
-                        >
-                          <Upload className="h-4 w-4" />
-                          <span>{uploadingLogo ? 'Загрузка...' : 'Выбрать логотип'}</span>
-                        </Button>
-                        {generalForm.watch('logo') && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Логотип сайта</h3>
+                        <p className="text-sm text-gray-600">Логотип, отображаемый на главной странице</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {generalForm.watch('logo') && (
+                        <div className="w-full h-24 border-2 border-dashed border-green-300 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                          <img 
+                            src={generalForm.watch('logo')} 
+                            alt="Logo preview" 
+                            className="max-w-full max-h-full object-contain rounded-lg"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-2">
+                          <input
+                            id="logo-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            disabled={uploadingLogo}
+                            className="hidden"
+                          />
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
-                            onClick={() => generalForm.setValue('logo', '')}
-                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => document.getElementById('logo-upload')?.click()}
+                            disabled={uploadingLogo}
+                            className="flex items-center space-x-2 border-green-200 hover:bg-green-50 w-full"
                           >
-                            Удалить
+                            <Upload className="h-4 w-4" />
+                            <span>{uploadingLogo ? 'Загрузка...' : 'Выбрать логотип'}</span>
                           </Button>
-                        )}
+                          {generalForm.watch('logo') && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => generalForm.setValue('logo', '')}
+                              className="text-red-600 border-red-200 hover:bg-red-50 w-full"
+                            >
+                              Удалить
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Logo Alt Text */}
+                      <div>
+                        <Label htmlFor="logoAlt">Alt текст для логотипа</Label>
+                        <Input
+                          id="logoAlt"
+                          {...generalForm.register('logoAlt')}
+                          placeholder="Dent Moldova"
+                          className="mt-1"
+                        />
+                        <p className="text-sm text-gray-600 mt-1">Текст, который будет отображаться при наведении на логотип</p>
+                      </div>
+
+                      {/* Logo Width */}
+                      <div>
+                        <Label htmlFor="logoWidth">Ширина логотипа (px)</Label>
+                        <Input
+                          id="logoWidth"
+                          type="number"
+                          {...generalForm.register('logoWidth')}
+                          placeholder="100"
+                          className="mt-1"
+                          min="50"
+                          max="300"
+                          onChange={(e) => {
+                            console.log('🔧 logoWidth input changed:', e.target.value);
+                            generalForm.setValue('logoWidth', e.target.value);
+                          }}
+                        />
+                        <p className="text-sm text-gray-600 mt-1">Ширина логотипа в пикселях. Высота будет рассчитана пропорционально</p>
+                        <p className="text-xs text-gray-500 mt-1">Текущее значение: {generalForm.watch('logoWidth')}</p>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Logo Alt Text */}
-                  <div className="mb-6">
-                    <Label htmlFor="logoAlt">Alt текст для логотипа</Label>
-                    <Input
-                      id="logoAlt"
-                      {...generalForm.register('logoAlt')}
-                      placeholder="Dent Moldova"
-                      className="mt-1"
-                    />
-                    <p className="text-sm text-gray-600 mt-1">Текст, который будет отображаться при наведении на логотип</p>
-                  </div>
-
-                  {/* Logo Width */}
-                  <div className="mb-6">
-                    <Label htmlFor="logoWidth">Ширина логотипа (px)</Label>
-                    <Input
-                      id="logoWidth"
-                      type="number"
-                      {...generalForm.register('logoWidth')}
-                      placeholder="100"
-                      className="mt-1"
-                      min="50"
-                      max="300"
-                      onChange={(e) => {
-                        console.log('🔧 logoWidth input changed:', e.target.value);
-                        generalForm.setValue('logoWidth', e.target.value);
-                      }}
-                    />
-                    <p className="text-sm text-gray-600 mt-1">Ширина логотипа в пикселях. Высота будет рассчитана пропорционально</p>
-                    <p className="text-xs text-gray-500 mt-1">Текущее значение: {generalForm.watch('logoWidth')}</p>
                   </div>
 
                   {/* Favicon Section */}
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Image className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Фавикон сайта</h3>
-                      <p className="text-sm text-gray-600">Иконка, отображаемая в браузере</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
-                    {generalForm.watch('favicon') && (
-                      <div className="w-20 h-20 border-2 border-dashed border-blue-300 rounded-xl flex items-center justify-center bg-white shadow-sm">
-                        <img 
-                          src={generalForm.watch('favicon')} 
-                          alt="Favicon" 
-                          className="w-16 h-16 object-contain rounded-lg"
-                        />
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Image className="h-5 w-5 text-blue-600" />
                       </div>
-                    )}
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <input
-                          id="favicon-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFaviconUpload}
-                          disabled={uploadingFavicon}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('favicon-upload')?.click()}
-                          disabled={uploadingFavicon}
-                          className="flex items-center space-x-2 border-blue-200 hover:bg-blue-50"
-                        >
-                          <Upload className="h-4 w-4" />
-                          <span>{uploadingFavicon ? 'Загрузка...' : 'Выбрать файл'}</span>
-                        </Button>
-                        {generalForm.watch('favicon') && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Фавикон сайта</h3>
+                        <p className="text-sm text-gray-600">Иконка, отображаемая в браузере</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {generalForm.watch('favicon') && (
+                        <div className="w-full h-24 border-2 border-dashed border-blue-300 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                          <img 
+                            src={generalForm.watch('favicon')} 
+                            alt="Favicon" 
+                            className="w-16 h-16 object-contain rounded-lg"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-2">
+                          <input
+                            id="favicon-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFaviconUpload}
+                            disabled={uploadingFavicon}
+                            className="hidden"
+                          />
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
-                            onClick={() => generalForm.setValue('favicon', '')}
-                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => document.getElementById('favicon-upload')?.click()}
+                            disabled={uploadingFavicon}
+                            className="flex items-center space-x-2 border-blue-200 hover:bg-blue-50 w-full"
                           >
-                            Удалить
+                            <Upload className="h-4 w-4" />
+                            <span>{uploadingFavicon ? 'Загрузка...' : 'Выбрать файл'}</span>
                           </Button>
-                        )}
+                          {generalForm.watch('favicon') && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => generalForm.setValue('favicon', '')}
+                              className="text-red-600 border-red-200 hover:bg-red-50 w-full"
+                            >
+                              Удалить
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Рекомендуемый размер: 32x32px, формат: PNG, ICO, JPG. Максимум 2MB.
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        Рекомендуемый размер: 32x32px, формат: PNG, ICO, JPG. Максимум 2MB.
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -900,6 +912,46 @@ export function Settings() {
                             disabled={loading}
                             className="h-9 text-sm"
                           />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* JSON-LD Schema Card */}
+                    <Card className="border-0 shadow-sm">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="p-1.5 bg-blue-100 rounded-lg">
+                            <Hash className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">Structured Data (JSON-LD)</CardTitle>
+                            <CardDescription className="text-xs">Схема для поисковых систем</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="schemaType" className="text-sm font-medium">Тип схемы</Label>
+                          <Input
+                            id="schemaType"
+                            {...generalForm.register('schemaType')}
+                            placeholder="Organization"
+                            disabled={loading}
+                            className="h-9 text-sm"
+                          />
+                          <p className="text-xs text-gray-500">Например: Organization, LocalBusiness, Dentist</p>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="schemaData" className="text-sm font-medium">JSON-LD схема</Label>
+                          <Textarea
+                            id="schemaData"
+                            {...generalForm.register('schemaData')}
+                            placeholder='{"@context": "https://schema.org", "@type": "Organization", "name": "Dent Moldova"}'
+                            rows={6}
+                            disabled={loading}
+                            className="resize-none text-sm font-mono"
+                          />
+                          <p className="text-xs text-gray-500">Кастомная JSON-LD схема. Если пусто, будет использована автоматическая схема.</p>
                         </div>
                       </CardContent>
                     </Card>

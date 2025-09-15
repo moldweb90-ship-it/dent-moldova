@@ -19,7 +19,9 @@ import {
   BarChart3,
   PieChart,
   MapPin,
-  Navigation
+  Navigation,
+  Target,
+  Percent
 } from 'lucide-react';
 import { AnimatedProgressBar } from '../../components/AnimatedProgressBar';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
@@ -55,7 +57,23 @@ interface DistrictStats {
 interface OverallStats {
   totalClicks: number;
   totalClinics: number;
+  uniqueVisitors: number;
   topClinic: ClinicStats | null;
+}
+
+interface ConversionStats {
+  overallConversion: {
+    totalUniqueVisitors: number;
+    totalBookings: number;
+    conversionRate: number;
+  };
+  clinicConversions: Array<{
+    clinicId: string;
+    clinicName: string;
+    uniqueViews: number;
+    bookings: number;
+    conversionRate: number;
+  }>;
 }
 
 export function Statistics() {
@@ -83,6 +101,16 @@ export function Statistics() {
       const response = await apiRequest('GET', '/api/admin/clinics');
       return response.json();
     }
+  });
+
+  // Получаем данные о конверсиях
+  const { data: conversionStats, isLoading: conversionLoading } = useQuery({
+    queryKey: ['/api/admin/conversions', selectedPeriod],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/admin/conversions?period=${selectedPeriod}`);
+      return response.json();
+    },
+    refetchInterval: 30000, // Обновляем каждые 30 секунд
   });
 
   const clinics = clinicsData?.clinics || [];
@@ -235,13 +263,13 @@ export function Statistics() {
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Клиники</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Всего кликов</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  <AnimatedNumber value={overallStats.totalClinics} />
+                  <AnimatedNumber value={overallStats.uniqueVisitors || 0} />
                 </p>
                 <div className="mt-2">
                   <AnimatedProgressBar
-                    value={Math.min((overallStats.totalClinics / 10) * 100, 100)}
+                    value={Math.min(((overallStats.uniqueVisitors || 0) / 100) * 100, 100)}
                     className="w-full bg-gray-200 rounded-full h-2"
                     barClassName="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full"
                     duration={1500}
@@ -250,7 +278,7 @@ export function Statistics() {
                 </div>
               </div>
               <div className="p-3 bg-purple-100 rounded-lg flex-shrink-0 ml-3">
-                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -388,7 +416,7 @@ export function Statistics() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="clinics" className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Клиники</span>
@@ -403,6 +431,11 @@ export function Statistics() {
                 <Navigation className="h-4 w-4" />
                 <span className="hidden sm:inline">Районы</span>
                 <span className="sm:hidden">Районы</span>
+              </TabsTrigger>
+              <TabsTrigger value="conversions" className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                <span className="hidden sm:inline">Конверсии</span>
+                <span className="sm:hidden">Конверсии</span>
               </TabsTrigger>
             </TabsList>
 
@@ -562,6 +595,131 @@ export function Statistics() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Вкладка Конверсии */}
+            <TabsContent value="conversions" className="mt-4">
+              {conversionLoading ? (
+                <div className="text-center py-8 text-gray-500">
+                  Загрузка данных о конверсиях...
+                </div>
+              ) : !conversionStats ? (
+                <div className="text-center py-8 text-gray-500">
+                  Нет данных о конверсиях
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Общая конверсия */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center text-base sm:text-lg">
+                        <Percent className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                        Общая конверсия
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                          <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                            <AnimatedNumber value={conversionStats.overallConversion.totalUniqueVisitors} />
+                          </div>
+                          <div className="text-sm text-blue-800 mt-1">Всего кликов</div>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                          <div className="text-2xl sm:text-3xl font-bold text-green-600">
+                            <AnimatedNumber value={conversionStats.overallConversion.totalBookings} />
+                          </div>
+                          <div className="text-sm text-green-800 mt-1">Заявок на запись</div>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <div className="text-2xl sm:text-3xl font-bold text-purple-600">
+                            <AnimatedNumber value={conversionStats.overallConversion.conversionRate} />
+                            <span className="text-lg">%</span>
+                          </div>
+                          <div className="text-sm text-purple-800 mt-1">Конверсия</div>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <AnimatedProgressBar
+                          value={conversionStats.overallConversion.conversionRate}
+                          className="w-full bg-gray-200 rounded-full h-3"
+                          barClassName="bg-gradient-to-r from-purple-400 to-purple-600 h-3 rounded-full"
+                          duration={1500}
+                          delay={200}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Конверсии по клиникам */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center text-base sm:text-lg">
+                        <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                        Конверсии по клиникам
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {conversionStats.clinicConversions.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          Нет данных о конверсиях по клиникам
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b border-gray-200">
+                                <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 text-xs sm:text-sm">Клиника</th>
+                                <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 text-xs sm:text-sm">
+                                  <MousePointer className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+                                  <span className="hidden sm:inline">Клики</span>
+                                  <span className="sm:hidden">Клики</span>
+                                </th>
+                                <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 text-xs sm:text-sm">
+                                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+                                  <span className="hidden sm:inline">Заявки</span>
+                                  <span className="sm:hidden">Заявки</span>
+                                </th>
+                                <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 text-xs sm:text-sm">
+                                  <Percent className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+                                  <span className="hidden sm:inline">Конверсия</span>
+                                  <span className="sm:hidden">Конверсия</span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {conversionStats.clinicConversions
+                                .sort((a, b) => b.conversionRate - a.conversionRate)
+                                .map((clinic) => (
+                                <tr key={clinic.clinicId} className="border-b border-gray-100 hover:bg-gray-50">
+                                  <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 text-xs sm:text-sm truncate max-w-32 sm:max-w-none">
+                                    {clinic.clinicName}
+                                  </td>
+                                  <td className="py-2 sm:py-3 px-2 sm:px-4 text-center text-gray-700 text-xs sm:text-sm">
+                                    <AnimatedNumber value={clinic.uniqueViews} />
+                                  </td>
+                                  <td className="py-2 sm:py-3 px-2 sm:px-4 text-center text-gray-700 text-xs sm:text-sm">
+                                    <AnimatedNumber value={clinic.bookings} />
+                                  </td>
+                                  <td className="py-2 sm:py-3 px-2 sm:px-4 text-center font-medium text-gray-900 text-xs sm:text-sm">
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      clinic.conversionRate >= 10 ? 'bg-green-100 text-green-800' :
+                                      clinic.conversionRate >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      <AnimatedNumber value={clinic.conversionRate} />%
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </TabsContent>
