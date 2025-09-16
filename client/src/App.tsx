@@ -58,10 +58,19 @@ declare global {
 function Router() {
   return (
     <Switch>
+      {/* Home page handles all city/district filtering */}
       <Route path="/ro" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug" component={Home} />
+      <Route path="/ro/city/:citySlug" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug" component={Home} />
+      <Route path="/city/:citySlug" component={Home} />
       <Route path="/" component={Home} />
+      
+      {/* Clinic Routes */}
       <Route path="/clinic/ro/:slug" component={ClinicPage} />
       <Route path="/clinic/:slug" component={ClinicPage} />
+      
+      {/* Other Routes */}
       <Route path="/admin" component={AdminPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route component={NotFound} />

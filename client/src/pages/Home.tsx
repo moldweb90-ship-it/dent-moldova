@@ -21,12 +21,21 @@ import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
   const { t, changeLanguage } = useTranslation();
-  const [] = useLocation();
+  const [location, setLocation] = useLocation();
   
-  // Определяем язык из URL
+  // Определяем язык и параметры из URL
   const [, paramsRo] = useRoute('/ro');
-  const isRomanian = !!paramsRo;
+  const [, cityParamsRu] = useRoute<{ citySlug: string }>('/city/:citySlug');
+  const [, cityParamsRo] = useRoute<{ citySlug: string }>('/ro/city/:citySlug');
+  const [, districtParamsRu] = useRoute<{ citySlug: string; districtSlug: string }>('/city/:citySlug/:districtSlug');
+  const [, districtParamsRo] = useRoute<{ citySlug: string; districtSlug: string }>('/ro/city/:citySlug/:districtSlug');
+  
+  const isRomanian = !!(paramsRo || cityParamsRo || districtParamsRo);
   const language = isRomanian ? 'ro' : 'ru';
+  
+  // Определяем slug из URL
+  const citySlug = cityParamsRu?.citySlug || cityParamsRo?.citySlug || districtParamsRu?.citySlug || districtParamsRo?.citySlug;
+  const districtSlug = districtParamsRu?.districtSlug || districtParamsRo?.districtSlug;
   
   useSEO(language); // Применяем глобальные SEO настройки только на главной странице
   
@@ -36,6 +45,7 @@ export default function Home() {
     // Обновляем lang атрибут HTML
     document.documentElement.lang = language;
   }, [language, changeLanguage]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -48,6 +58,7 @@ export default function Home() {
   const [lastScrollY, setLastScrollY] = useState(0);
   
   const [filters, setFilters] = useState<FilterValues>({
+    city: '',
     districts: [],
     features: [],
     promotionalLabels: [],
@@ -105,6 +116,31 @@ export default function Home() {
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
     cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
+
+  // Устанавливаем фильтры на основе URL после загрузки данных
+  useEffect(() => {
+    if (citySlug && cities.length > 0) {
+      const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+      const selectedCity = cities.find(c => c[slugField] === citySlug);
+      
+      if (selectedCity) {
+        setFilters(prev => ({
+          ...prev,
+          city: selectedCity.id,
+          districts: districtSlug && districts.length > 0 
+            ? [districts.find(d => d[slugField] === districtSlug)?.id].filter(Boolean)
+            : []
+        }));
+      }
+    } else if (!citySlug) {
+      // Если нет citySlug в URL, сбрасываем фильтры города и района
+      setFilters(prev => ({
+        ...prev,
+        city: '',
+        districts: []
+      }));
+    }
+  }, [citySlug, districtSlug, cities, districts, language]);
   
   // Build query parameters
   const buildQueryParams = useCallback(() => {
@@ -213,13 +249,67 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Функция для навигации к URL города/района
+  const navigateToLocation = useCallback((cityId: string, districtId?: string) => {
+    const safeCities = cities || [];
+    const safeDistricts = districts || [];
+    
+    const selectedCity = safeCities.find(c => c.id === cityId);
+    if (!selectedCity) return;
+
+    const citySlug = language === 'ro' ? selectedCity.slugRo : selectedCity.slugRu;
+    if (!citySlug) return;
+
+    if (districtId) {
+      const selectedDistrict = safeDistricts.find(d => d.id === districtId);
+      if (selectedDistrict) {
+        const districtSlug = language === 'ro' ? selectedDistrict.slugRo : selectedDistrict.slugRu;
+        if (districtSlug) {
+          const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${districtSlug}`;
+          setLocation(url);
+        }
+      }
+    } else {
+      const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}`;
+      setLocation(url);
+    }
+  }, [cities, districts, language, setLocation]);
+
   const handleFiltersChange = useCallback((newFilters: FilterValues) => {
     console.log('🔍 handleFiltersChange:', newFilters);
+    
+    // Проверяем, изменился ли город или район для навигации
+    const cityChanged = newFilters.city !== filters.city;
+    const districtChanged = newFilters.districts.length !== filters.districts.length || 
+                           newFilters.districts[0] !== filters.districts[0];
+    
+    // Если пользователь выбрал "Все города" (city = ''), возвращаемся на главную
+    if (cityChanged && !newFilters.city) {
+      const homeUrl = language === 'ro' ? '/ro' : '/';
+      setLocation(homeUrl);
+      setFilters(newFilters);
+      setPage(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    if (cityChanged && newFilters.city) {
+      // Если выбран конкретный город, переходим на его страницу
+      navigateToLocation(newFilters.city);
+      return;
+    }
+    
+    if (districtChanged && newFilters.city && newFilters.districts.length > 0) {
+      // Если выбран район, переходим на страницу района
+      navigateToLocation(newFilters.city, newFilters.districts[0]);
+      return;
+    }
+    
+    // Обычное изменение фильтров без навигации
     setFilters(newFilters);
     setPage(1);
-    // Прокрутка в начало страницы при изменении фильтров
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [filters.city, filters.districts, navigateToLocation, language, setLocation]);
 
   const handleApplyFilters = useCallback(() => {
     setPage(1);
@@ -228,7 +318,9 @@ export default function Home() {
   }, []);
 
   const handleResetFilters = useCallback(() => {
+    // Сбрасываем все фильтры, включая город
     setFilters({
+      city: '',
       districts: [],
       features: [],
       promotionalLabels: [],
@@ -238,9 +330,14 @@ export default function Home() {
     });
     setSearchQuery('');
     setPage(1);
+    
+    // Возвращаемся на главную страницу
+    const homeUrl = language === 'ro' ? '/ro' : '/';
+    setLocation(homeUrl);
+    
     // Прокрутка в начало страницы при сбросе фильтров
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [language, setLocation]);
 
   const handleClinicClick = useCallback((slug: string) => {
     setSelectedClinic(slug);
@@ -269,15 +366,72 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Генерируем SEO данные в зависимости от выбранной локации
+  const generateSEOData = () => {
+    const safeCities = cities || [];
+    const safeDistricts = districts || [];
+    
+    const selectedCity = citySlug && safeCities.length > 0 
+      ? safeCities.find(c => c[language === 'ro' ? 'slugRo' : 'slugRu'] === citySlug)
+      : null;
+    
+    const selectedDistrict = districtSlug && safeDistricts.length > 0
+      ? safeDistricts.find(d => d[language === 'ro' ? 'slugRo' : 'slugRu'] === districtSlug)
+      : null;
+
+    const cityName = selectedCity ? (language === 'ru' ? selectedCity.nameRu : selectedCity.nameRo) : '';
+    const districtName = selectedDistrict ? (language === 'ru' ? selectedDistrict.nameRu : selectedDistrict.nameRo) : '';
+
+    if (selectedDistrict && selectedCity) {
+      // Страница района
+      return {
+        title: language === 'ru' 
+          ? `Стоматологические клиники в районе ${districtName}, ${cityName} - Dent Moldova`
+          : `Clinici stomatologice în sectorul ${districtName}, ${cityName} - Dent Moldova`,
+        description: language === 'ru'
+          ? `Найдите лучшие стоматологические клиники в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
+          : `Găsiți cele mai bune clinici stomatologice în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
+        keywords: language === 'ru'
+          ? `стоматология ${districtName} ${cityName}, стоматолог ${districtName}, лечение зубов ${districtName}`
+          : `stomatologie ${districtName} ${cityName}, stomatolog ${districtName}, tratament dentar ${districtName}`,
+        canonical: `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${districtSlug}`
+      };
+    } else if (selectedCity) {
+      // Страница города
+      return {
+        title: language === 'ru' 
+          ? `Стоматологические клиники в ${cityName} - Dent Moldova`
+          : `Clinici stomatologice în ${cityName} - Dent Moldova`,
+        description: language === 'ru'
+          ? `Найдите лучшие стоматологические клиники в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
+          : `Găsiți cele mai bune clinici stomatologice în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
+        keywords: language === 'ru'
+          ? `стоматология ${cityName}, стоматолог ${cityName}, лечение зубов ${cityName}, клиника ${cityName}`
+          : `stomatologie ${cityName}, stomatolog ${cityName}, tratament dentar ${cityName}, clinică ${cityName}`,
+        canonical: `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}`
+      };
+    } else {
+      // Главная страница
+      return {
+        title: language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник в Молдове" : "Dent Moldova - Catalogul clinicilor stomatologice din Moldova",
+        description: language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны." : "Găsiți cele mai bune clinici stomatologice din Moldova. Programare online, recenzii, prețuri, adrese și telefoane.",
+        keywords: language === 'ru' ? "стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв" : "stomatologie, stomatolog, tratament dentar, clinică, Moldova, Chișinău",
+        canonical: language === 'ro' ? "/ro" : "/"
+      };
+    }
+  };
+
+  const seoData = generateSEOData();
+
   return (
     <>
       <DynamicSEO
-        title={language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник в Молдове" : "Dent Moldova - Catalogul clinicilor stomatologice din Moldova"}
-        description={language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны." : "Găsiți cele mai bune clinici stomatologice din Moldova. Programare online, recenzii, prețuri, adrese și telefoane."}
-        keywords={language === 'ru' ? "стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв" : "stomatologie, stomatolog, tratament dentar, clinică, Moldova, Chișinău"}
-        ogTitle={language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник" : "Dent Moldova - Catalogul clinicilor stomatologice"}
-        ogDescription={language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове" : "Găsiți cele mai bune clinici stomatologice din Moldova"}
-        canonical="http://localhost:5000"
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        ogTitle={seoData.title}
+        ogDescription={seoData.description}
+        canonical={seoData.canonical}
       />
       <div className="min-h-screen bg-gray-50">
       {/* Header */}

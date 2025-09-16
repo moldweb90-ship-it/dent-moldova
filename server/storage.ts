@@ -16,6 +16,7 @@ export interface IStorage {
   // City methods
   getCities(): Promise<City[]>;
   getCitiesWithDistricts(searchQuery?: string): Promise<(City & { districts: District[] })[]>;
+  getCityBySlug(slug: string, language: 'ru' | 'ro'): Promise<City | undefined>;
   createCity(city: InsertCity): Promise<City>;
   updateCity(id: string, updates: Partial<InsertCity>): Promise<City>;
   updateCitySortOrder(cityId: string, sortOrder: number): Promise<City>;
@@ -23,6 +24,7 @@ export interface IStorage {
 
   // District methods
   getDistrictsByCity(cityId: string): Promise<District[]>;
+  getDistrictBySlug(citySlug: string, districtSlug: string, language: 'ru' | 'ro'): Promise<{ city: City; district: District } | undefined>;
   createDistrict(district: InsertDistrict): Promise<District>;
   updateDistrict(id: string, updates: Partial<InsertDistrict>): Promise<District>;
   deleteDistrict(id: string): Promise<void>;
@@ -328,6 +330,33 @@ export class DatabaseStorage implements IStorage {
 
   async getDistrictsByCity(cityId: string): Promise<District[]> {
     return await db.select().from(districts).where(eq(districts.cityId, cityId));
+  }
+
+  async getCityBySlug(slug: string, language: 'ru' | 'ro'): Promise<City | undefined> {
+    const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+    const [city] = await db.select().from(cities).where(eq(cities[slugField], slug));
+    return city;
+  }
+
+  async getDistrictBySlug(citySlug: string, districtSlug: string, language: 'ru' | 'ro'): Promise<{ city: City; district: District } | undefined> {
+    const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+    
+    // Сначала находим город
+    const [city] = await db.select().from(cities).where(eq(cities[slugField], citySlug));
+    if (!city) return undefined;
+    
+    // Затем находим район в этом городе
+    const [district] = await db
+      .select()
+      .from(districts)
+      .where(and(
+        eq(districts.cityId, city.id),
+        eq(districts[slugField], districtSlug)
+      ));
+    
+    if (!district) return undefined;
+    
+    return { city, district };
   }
 
   async createDistrict(district: InsertDistrict): Promise<District> {

@@ -44,15 +44,20 @@ interface ReviewWithClinic {
 
 export function ReviewsManagement() {
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedClinic, setSelectedClinic] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedReview, setSelectedReview] = useState<ReviewWithClinic | null>(null);
   const queryClient = useQueryClient();
 
   const { data: reviewsData, isLoading, error } = useQuery({
-    queryKey: ['admin-reviews', selectedStatus],
+    queryKey: ['admin-reviews', selectedStatus, selectedClinic],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedStatus !== 'all') {
         params.append('status', selectedStatus);
+      }
+      if (selectedClinic !== 'all') {
+        params.append('clinicId', selectedClinic);
       }
       
       const response = await apiRequest('GET', `/api/admin/reviews?${params.toString()}`);
@@ -65,6 +70,18 @@ export function ReviewsManagement() {
 
   const reviews = reviewsData?.reviews || [];
   const total = reviewsData?.total || 0;
+
+  // Загружаем список клиник для фильтра
+  const { data: clinicsData } = useQuery({
+    queryKey: ['admin-clinics-list'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/clinics');
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки клиник');
+      }
+      return response.json();
+    },
+  });
 
   const updateReviewStatus = async (reviewId: string, status: 'approved' | 'rejected') => {
     try {
@@ -163,7 +180,14 @@ export function ReviewsManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Управление отзывами</h2>
-          <p className="text-gray-600">Всего отзывов: {total}</p>
+          <div className="flex items-center gap-4 text-gray-600">
+            <span>Всего отзывов: {total}</span>
+            {selectedClinic !== 'all' && (
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                Фильтр: {clinicsData?.clinics?.find((c: any) => c.id === selectedClinic)?.nameRu}
+              </span>
+            )}
+          </div>
         </div>
         
         {/* Filters */}
@@ -180,6 +204,19 @@ export function ReviewsManagement() {
           </div>
           
           <select
+            value={selectedClinic}
+            onChange={(e) => setSelectedClinic(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
+          >
+            <option value="all">Все клиники</option>
+            {clinicsData?.clinics?.map((clinic: any) => (
+              <option key={clinic.id} value={clinic.id}>
+                {clinic.nameRu}
+              </option>
+            ))}
+          </select>
+          
+          <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -189,10 +226,25 @@ export function ReviewsManagement() {
             <option value="approved">Одобрены</option>
             <option value="rejected">Отклонены</option>
           </select>
+
+          {(selectedClinic !== 'all' || selectedStatus !== 'all') && (
+            <Button
+              onClick={() => {
+                setSelectedClinic('all');
+                setSelectedStatus('all');
+                setSearchQuery('');
+              }}
+              variant="outline"
+              className="whitespace-nowrap"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Сбросить
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Reviews List */}
+      {/* Compact Reviews Grid */}
       <div className="space-y-4">
         {reviews.length === 0 ? (
           <Card>
@@ -202,104 +254,86 @@ export function ReviewsManagement() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {reviews.map((item: ReviewWithClinic) => (
-              <Card key={item.review.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4">
+              <Card 
+                key={item.review.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedReview(item)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-3">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-gray-900 truncate">
                           {item.clinic.nameRu}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(item.review.createdAt).toLocaleDateString('ru-RU')}</span>
-                          </div>
-                          {item.review.authorName && (
-                            <div className="flex items-center gap-1">
-                              <User className="w-4 h-4" />
-                              <span>{item.review.authorName}</span>
-                            </div>
-                          )}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{new Date(item.review.createdAt).toLocaleDateString('ru-RU')}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="ml-2">
                         {getStatusBadge(item.review.status)}
                       </div>
                     </div>
 
-                    {/* Ratings */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-2">Качество</p>
-                        <div className="flex justify-center mb-1">
-                          {renderStars(item.review.qualityRating)}
-                        </div>
-                        <p className="text-sm font-medium">{item.review.qualityRating}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-2">Сервис</p>
-                        <div className="flex justify-center mb-1">
-                          {renderStars(item.review.serviceRating)}
-                        </div>
-                        <p className="text-sm font-medium">{item.review.serviceRating}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-2">Комфорт</p>
-                        <div className="flex justify-center mb-1">
-                          {renderStars(item.review.comfortRating)}
-                        </div>
-                        <p className="text-sm font-medium">{item.review.comfortRating}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-2">Цены</p>
-                        <div className="flex justify-center mb-1">
-                          {renderStars(item.review.priceRating)}
-                        </div>
-                        <p className="text-sm font-medium">{item.review.priceRating}</p>
-                      </div>
-                    </div>
-
-                    {/* Average Rating */}
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">Средний рейтинг</p>
-                      <div className="flex justify-center items-center gap-2">
-                        <div className="flex">
-                          {renderStars(item.review.averageRating)}
-                        </div>
-                        <span className="text-xl font-bold text-gray-900">
-                          {item.review.averageRating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Comment */}
-                    {item.review.comment && (
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <p className="text-gray-700 italic">"{item.review.comment}"</p>
+                    {/* Author */}
+                    {item.review.authorName && (
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <User className="w-3 h-3" />
+                        <span className="truncate">{item.review.authorName}</span>
                       </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    {/* Average Rating */}
+                    <div className="flex items-center justify-center gap-2 p-2 bg-gray-50 rounded">
+                      <div className="flex">
+                        {renderStars(item.review.averageRating)}
+                      </div>
+                      <span className="text-lg font-bold text-gray-900">
+                        {item.review.averageRating}
+                      </span>
+                    </div>
+
+                    {/* Comment Preview */}
+                    {item.review.comment && (
+                      <div className="text-xs text-gray-600" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        "{item.review.comment}"
+                      </div>
+                    )}
+
+                    {/* Quick Actions */}
+                    <div className="flex gap-1 pt-2 border-t">
                       {item.review.status === 'pending' && (
                         <>
                           <Button
-                            onClick={() => updateReviewStatus(item.review.id, 'approved')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateReviewStatus(item.review.id, 'approved');
+                            }}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1"
                           >
-                            <Check className="w-4 h-4 mr-2" />
+                            <Check className="w-3 h-3 mr-1" />
                             Одобрить
                           </Button>
                           <Button
-                            onClick={() => updateReviewStatus(item.review.id, 'rejected')}
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateReviewStatus(item.review.id, 'rejected');
+                            }}
                             variant="outline"
-                            className="border-red-300 text-red-600 hover:bg-red-50"
+                            className="flex-1 border-red-300 text-red-600 hover:bg-red-50 text-xs py-1"
                           >
-                            <X className="w-4 h-4 mr-2" />
+                            <X className="w-3 h-3 mr-1" />
                             Отклонить
                           </Button>
                         </>
@@ -307,33 +341,32 @@ export function ReviewsManagement() {
 
                       {item.review.status === 'approved' && (
                         <Button
-                          onClick={() => updateReviewStatus(item.review.id, 'rejected')}
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateReviewStatus(item.review.id, 'rejected');
+                          }}
                           variant="outline"
-                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          className="flex-1 border-red-300 text-red-600 hover:bg-red-50 text-xs py-1"
                         >
-                          <X className="w-4 h-4 mr-2" />
+                          <X className="w-3 h-3 mr-1" />
                           Отклонить
                         </Button>
                       )}
 
                       {item.review.status === 'rejected' && (
                         <Button
-                          onClick={() => updateReviewStatus(item.review.id, 'approved')}
-                          className="bg-green-600 hover:bg-green-700 text-white"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateReviewStatus(item.review.id, 'approved');
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1"
                         >
-                          <Check className="w-4 h-4 mr-2" />
+                          <Check className="w-3 h-3 mr-1" />
                           Одобрить
                         </Button>
                       )}
-
-                      <Button
-                        onClick={() => deleteReview(item.review.id)}
-                        variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Удалить
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -342,6 +375,211 @@ export function ReviewsManagement() {
           </div>
         )}
       </div>
+
+      {/* Review Detail Modal */}
+      {selectedReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Детали отзыва</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {selectedReview.clinic.nameRu}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {getStatusBadge(selectedReview.review.status)}
+                  <button
+                    onClick={() => setSelectedReview(null)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Review Info */}
+              <div className="space-y-6">
+                {/* Author & Date */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Автор</label>
+                    <p className="text-gray-900">{selectedReview.review.authorName || 'Не указан'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Дата</label>
+                    <p className="text-gray-900">
+                      {new Date(selectedReview.review.createdAt).toLocaleDateString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                {(selectedReview.review.authorEmail || selectedReview.review.authorPhone) && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedReview.review.authorEmail && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Email</label>
+                        <p className="text-gray-900">{selectedReview.review.authorEmail}</p>
+                      </div>
+                    )}
+                    {selectedReview.review.authorPhone && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Телефон</label>
+                        <p className="text-gray-900">{selectedReview.review.authorPhone}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Detailed Ratings */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-3 block">Оценки по критериям</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Качество</p>
+                      <div className="flex justify-center mb-1">
+                        {renderStars(selectedReview.review.qualityRating)}
+                      </div>
+                      <p className="font-medium">{selectedReview.review.qualityRating}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Сервис</p>
+                      <div className="flex justify-center mb-1">
+                        {renderStars(selectedReview.review.serviceRating)}
+                      </div>
+                      <p className="font-medium">{selectedReview.review.serviceRating}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Комфорт</p>
+                      <div className="flex justify-center mb-1">
+                        {renderStars(selectedReview.review.comfortRating)}
+                      </div>
+                      <p className="font-medium">{selectedReview.review.comfortRating}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Цены</p>
+                      <div className="flex justify-center mb-1">
+                        {renderStars(selectedReview.review.priceRating)}
+                      </div>
+                      <p className="font-medium">{selectedReview.review.priceRating}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Average Rating */}
+                <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">Средний рейтинг</label>
+                  <div className="flex justify-center items-center gap-3">
+                    <div className="flex">
+                      {renderStars(selectedReview.review.averageRating)}
+                    </div>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {selectedReview.review.averageRating}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Comment */}
+                {selectedReview.review.comment && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Комментарий</label>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-gray-700 italic">"{selectedReview.review.comment}"</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-3 pt-4 border-t">
+                  {selectedReview.review.status === 'pending' && (
+                    <>
+                      <Button
+                        onClick={() => {
+                          updateReviewStatus(selectedReview.review.id, 'approved');
+                          setSelectedReview(null);
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Одобрить
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          updateReviewStatus(selectedReview.review.id, 'rejected');
+                          setSelectedReview(null);
+                        }}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Отклонить
+                      </Button>
+                    </>
+                  )}
+
+                  {selectedReview.review.status === 'approved' && (
+                    <Button
+                      onClick={() => {
+                        updateReviewStatus(selectedReview.review.id, 'rejected');
+                        setSelectedReview(null);
+                      }}
+                      variant="outline"
+                      className="border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Отклонить
+                    </Button>
+                  )}
+
+                  {selectedReview.review.status === 'rejected' && (
+                    <Button
+                      onClick={() => {
+                        updateReviewStatus(selectedReview.review.id, 'approved');
+                        setSelectedReview(null);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Одобрить
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={() => {
+                      if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                        deleteReview(selectedReview.review.id);
+                        setSelectedReview(null);
+                      }
+                    }}
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Удалить
+                  </Button>
+
+                  <Button
+                    onClick={() => setSelectedReview(null)}
+                    variant="outline"
+                    className="ml-auto"
+                  >
+                    Закрыть
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

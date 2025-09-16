@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { clinics, workingHours, reviews } from "@shared/schema";
+import { cities, districts, clinics, workingHours, reviews } from "@shared/schema";
 import { z } from "zod";
 import { eq, sql } from "drizzle-orm";
 import session from "express-session";
@@ -77,7 +77,59 @@ async function generateSitemap(baseUrl: string) {
     priority: '0.8'
   });
   
-  // 2. Active clinic pages
+  // 2. City pages
+  const allCities = await db.select().from(cities);
+  
+  for (const city of allCities) {
+    if (city.slugRu) {
+      urls.push({
+        loc: `${baseUrl}/city/${city.slugRu}`,
+        lastmod: new Date().toISOString(),
+        changefreq: 'daily',
+        priority: '0.9'
+      });
+    }
+    
+    if (city.slugRo) {
+      urls.push({
+        loc: `${baseUrl}/ro/city/${city.slugRo}`,
+        lastmod: new Date().toISOString(),
+        changefreq: 'daily',
+        priority: '0.9'
+      });
+    }
+  }
+  
+  // 3. District pages
+  const allDistricts = await db
+    .select()
+    .from(districts)
+    .leftJoin(cities, eq(districts.cityId, cities.id));
+  
+  for (const item of allDistricts) {
+    const district = item.districts;
+    const city = item.cities;
+    
+    if (district.slugRu && city?.slugRu) {
+      urls.push({
+        loc: `${baseUrl}/city/${city.slugRu}/${district.slugRu}`,
+        lastmod: new Date().toISOString(),
+        changefreq: 'daily',
+        priority: '0.8'
+      });
+    }
+    
+    if (district.slugRo && city?.slugRo) {
+      urls.push({
+        loc: `${baseUrl}/ro/city/${city.slugRo}/${district.slugRo}`,
+        lastmod: new Date().toISOString(),
+        changefreq: 'daily',
+        priority: '0.8'
+      });
+    }
+  }
+
+  // 4. Active clinic pages
   const activeClinics = await db.query.clinics.findMany({
     where: eq(clinics.verified, true),
     columns: {
@@ -92,7 +144,7 @@ async function generateSitemap(baseUrl: string) {
       loc: `${baseUrl}/clinic/${clinic.slug}`,
       lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
       changefreq: 'weekly',
-      priority: '0.8'
+      priority: '0.7'
     });
     
     // Romanian version
@@ -100,7 +152,7 @@ async function generateSitemap(baseUrl: string) {
       loc: `${baseUrl}/ro/clinic/${clinic.slug}`,
       lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
       changefreq: 'weekly',
-      priority: '0.8'
+      priority: '0.7'
     });
   }
   
@@ -118,8 +170,10 @@ ${urls.map(url => `  <url>
   return {
     xml,
     totalPages: urls.length,
-    clinicPages: activeClinics.length * 2, // Russian + Romanian
     mainPages: 4,
+    cityPages: allCities.length * 2, // Russian + Romanian
+    districtPages: allDistricts.length * 2, // Russian + Romanian
+    clinicPages: activeClinics.length * 2, // Russian + Romanian
     lastUpdated: new Date().toISOString()
   };
 }
@@ -2620,6 +2674,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Failed to generate robots.txt', 
         error: error.message 
       });
+    }
+  });
+
+  // ===== CITY AND DISTRICT SEO ROUTES =====
+  
+  // Get city by slug
+  app.get('/api/cities/slug/:citySlug', async (req, res) => {
+    try {
+      const { citySlug } = req.params;
+      const { language = 'ru' } = req.query;
+      
+      const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+      const city = await storage.getCityBySlug(citySlug, language as 'ru' | 'ro');
+      
+      if (!city) {
+        return res.status(404).json({ message: 'City not found' });
+      }
+      
+      res.json({ city });
+    } catch (error) {
+      console.error('Error getting city by slug:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  // Get district by city and district slug
+  app.get('/api/districts/slug/:citySlug/:districtSlug', async (req, res) => {
+    try {
+      const { citySlug, districtSlug } = req.params;
+      const { language = 'ru' } = req.query;
+      
+      const result = await storage.getDistrictBySlug(citySlug, districtSlug, language as 'ru' | 'ro');
+      
+      if (!result) {
+        return res.status(404).json({ message: 'District not found' });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting district by slug:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 

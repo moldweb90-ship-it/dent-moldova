@@ -7,6 +7,8 @@ export const cities = pgTable("cities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   nameRu: text("name_ru").notNull(),
   nameRo: text("name_ro").notNull(),
+  slugRu: varchar("slug_ru", { length: 255 }),
+  slugRo: varchar("slug_ro", { length: 255 }),
   sortOrder: integer("sort_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -16,6 +18,8 @@ export const districts = pgTable("districts", {
   cityId: varchar("city_id").notNull().references(() => cities.id),
   nameRu: text("name_ru").notNull(),
   nameRo: text("name_ro").notNull(),
+  slugRu: varchar("slug_ru", { length: 255 }),
+  slugRo: varchar("slug_ro", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -2,122 +2,302 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://localhost:5000/</loc>
-    <lastmod>2025-09-14T19:16:39.871Z</lastmod>
+    <lastmod>2025-09-16T11:42:23.917Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/</loc>
-    <lastmod>2025-09-14T19:16:39.871Z</lastmod>
+    <lastmod>2025-09-16T11:42:23.917Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>http://localhost:5000/pricing</loc>
-    <lastmod>2025-09-14T19:16:39.871Z</lastmod>
+    <lastmod>2025-09-16T11:42:23.917Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/pricing</loc>
-    <lastmod>2025-09-14T19:16:39.871Z</lastmod>
+    <lastmod>2025-09-16T11:42:23.917Z</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/komrat</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/comrat</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/orhey</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/orhei</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/soroka</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/soroca</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/ungeny</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/ungheni</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/vulkaneshty</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/vulcanest</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/tiraspol</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/tiraspol</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/durleshty</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/durlesti</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/baltsy</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/balti</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/kahul</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/cahul</loc>
+    <lastmod>2025-09-16T11:42:23.975Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev/centr</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau/centru</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev/chekany</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau/ciocana</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev/buyukany</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau/buiucani</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev/ryshkanovka</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau/riscani</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/city/chisinev/botanica</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/city/chisinau/botanica</loc>
+    <lastmod>2025-09-16T11:42:24.021Z</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/iceberg-dent</loc>
-    <lastmod>2025-08-22T18:06:41.331Z</lastmod>
+    <lastmod>2025-09-16T11:02:21.932Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/iceberg-dent</loc>
-    <lastmod>2025-08-22T18:06:41.331Z</lastmod>
+    <lastmod>2025-09-16T11:02:21.932Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/doktor-romanyuk</loc>
     <lastmod>2025-09-12T11:14:44.771Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/doktor-romanyuk</loc>
     <lastmod>2025-09-12T11:14:44.771Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:5000/clinic/life-dental-botanika</loc>
-    <lastmod>2025-08-22T18:23:40.996Z</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:5000/ro/clinic/life-dental-botanika</loc>
-    <lastmod>2025-08-22T18:23:40.996Z</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/nobil-dent</loc>
     <lastmod>2025-08-19T21:25:44.734Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/nobil-dent</loc>
     <lastmod>2025-08-19T21:25:44.734Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/clinic/life-dental-botanika</loc>
+    <lastmod>2025-09-15T15:39:15.429Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/ro/clinic/life-dental-botanika</loc>
+    <lastmod>2025-09-15T15:39:15.429Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/life-dental-chekany</loc>
-    <lastmod>2025-09-12T13:05:46.354Z</lastmod>
+    <lastmod>2025-09-15T16:33:51.652Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/life-dental-chekany</loc>
-    <lastmod>2025-09-12T13:05:46.354Z</lastmod>
+    <lastmod>2025-09-15T16:33:51.652Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/prim-dent</loc>
     <lastmod>2025-08-22T18:23:52.543Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/prim-dent</loc>
     <lastmod>2025-08-22T18:23:52.543Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/punto-bianco</loc>
     <lastmod>2025-08-22T18:23:25.659Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/punto-bianco</loc>
     <lastmod>2025-08-22T18:23:25.659Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/clinic/omni-dent</loc>
     <lastmod>2025-08-22T18:25:26.367Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://localhost:5000/ro/clinic/omni-dent</loc>
     <lastmod>2025-08-22T18:25:26.367Z</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>
