@@ -1,4 +1,5 @@
 import { ClinicCard } from './ClinicCard';
+import { LazyClinicCard } from './LazyClinicCard';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useTranslation } from '../lib/i18n';
 
@@ -40,6 +41,8 @@ interface ClinicGridProps {
   onPageChange: (page: number) => void;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
+  onPhoneClick?: (clinic: Clinic) => void;
+  onWebsiteClick?: (clinic: Clinic) => void;
   filtersVisible?: boolean; // Новый пропс для состояния фильтров
   language?: string; // Добавляем язык для передачи в ссылки
 }
@@ -52,6 +55,8 @@ export function ClinicGrid({
   onPageChange, 
   onClinicClick, 
   onBookClick,
+  onPhoneClick,
+  onWebsiteClick,
   filtersVisible = true, // По умолчанию фильтры видимы
   language = 'ru' // По умолчанию русский язык
 }: ClinicGridProps) {
@@ -70,20 +75,22 @@ export function ClinicGrid({
 
       {/* Grid */}
       <div className={`grid ${gridCols} gap-4 md:gap-6`}>
-        {clinics.map(clinic => {
+        {clinics.map((clinic, index) => {
           // console.log('🔍 ClinicGrid clinic:', {
           //   id: clinic.id,
           //   nameRu: clinic.nameRu,
           //   nameRo: clinic.nameRo
           // });
           return (
-            <ClinicCard
+            <LazyClinicCard
               key={clinic.id}
               clinic={clinic}
+              language={language}
               onClinicClick={onClinicClick}
               onBookClick={onBookClick}
-              onPricesClick={(slug) => onClinicClick(slug)}
-              language={language}
+              onPhoneClick={onPhoneClick}
+              onWebsiteClick={onWebsiteClick}
+              priority={index < 6} // Приоритетная загрузка для первых 6 карточек
             />
           );
         })}

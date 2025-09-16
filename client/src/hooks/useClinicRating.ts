@@ -30,7 +30,8 @@ export const useClinicRating = (clinicId: string): {
       return response.json();
     },
     enabled: !!clinicId,
-    staleTime: 5 * 60 * 1000, // Кешируем на 5 минут
+    staleTime: 10 * 60 * 1000, // Кешируем на 10 минут
+    cacheTime: 15 * 60 * 1000, // Храним в кеше 15 минут
   });
 
   const ratingData = calculateClinicRating(data?.reviews || []);

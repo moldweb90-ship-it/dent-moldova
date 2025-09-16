@@ -13,6 +13,7 @@ import { Tooltip } from './Tooltip';
 import { SosButton } from './SosButton';
 import { ReviewModal } from './ReviewModal';
 import { useClinicRating } from '../hooks/useClinicRating';
+import { LazyImage } from './LazyImage';
 
 
 import { type Currency } from '@/lib/currency';
@@ -619,10 +620,11 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
               <div className="flex items-center space-x-4">
                 {clinic.logoUrl ? (
                   <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white">
-                    <img 
+                    <LazyImage 
                       src={clinic.logoUrl} 
                       alt={language === 'ru' ? clinic.nameRu : clinic.nameRo}
                       className="w-full h-full object-cover"
+                      priority={true}
                     />
                   </div>
                 ) : (

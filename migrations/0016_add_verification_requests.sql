@@ -28,3 +28,5 @@ ALTER TABLE "verification_requests" ADD CONSTRAINT "verification_requests_clinic
 
 
 
+
+

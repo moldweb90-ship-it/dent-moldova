@@ -18,11 +18,13 @@ import {
   Trash2,
   BarChart3,
   PieChart,
+  Database,
   MapPin,
   Navigation,
   Target,
   Percent
 } from 'lucide-react';
+import { CacheMonitor } from '../../components/CacheMonitor';
 import { AnimatedProgressBar } from '../../components/AnimatedProgressBar';
 import { AnimatedNumber } from '../../components/AnimatedNumber';
 import { getClinicName } from '@/lib/utils';
@@ -724,6 +726,19 @@ export function Statistics() {
               )}
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Монитор кеша изображений */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Монитор кеша изображений
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CacheMonitor show={true} />
         </CardContent>
       </Card>
     </div>

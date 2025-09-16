@@ -10,6 +10,7 @@ import { useTranslation } from '../lib/i18n';
 import { getClinicName, getCityName, getDistrictName } from '../lib/utils';
 import FancyProgressBar from './FancyProgressBar';
 import { useClinicRating } from '../hooks/useClinicRating';
+import { LazyImage } from './LazyImage';
 
 interface RecommendedClinicsProps {
   onClinicClick: (slug: string) => void;
@@ -170,10 +171,11 @@ export function RecommendedClinics({ onClinicClick, onBookClick, language: propL
 
             {/* Clinic Image */}
             <div className="h-32 md:h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden relative">
-              <img
+              <LazyImage
                 src={`https://images.unsplash.com/photo-${clinic.id.slice(0, 10)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`}
                 alt={getClinicName(clinic)}
                 className="w-full h-full object-cover absolute inset-0"
+                fallbackSrc={clinic.logoUrl || 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300'}
                 onError={(e) => {
                   if (clinic.logoUrl && !(e.target as HTMLImageElement).src.includes(clinic.logoUrl)) {
                     (e.target as HTMLImageElement).src = clinic.logoUrl;

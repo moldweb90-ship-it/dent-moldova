@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n';
 import { getCurrencyName } from '@/lib/currency';
 import { WorkingHoursEditor } from '@/components/WorkingHoursEditor';
+import { LazyImage } from '@/components/LazyImage';
 
 interface ClinicFormProps {
   clinic?: any;
@@ -530,10 +531,11 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                   <div>
                     <Label>Текущее фото обложки</Label>
                     <div className="mt-2">
-                      <img 
+                      <LazyImage 
                         src={logoPreview} 
                         alt="Cover photo preview" 
                         className="w-full max-w-48 h-48 object-cover rounded-lg border"
+                        priority={true}
                       />
                     </div>
                   </div>

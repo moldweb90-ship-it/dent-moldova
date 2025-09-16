@@ -535,12 +535,12 @@ export async function setupVite(app: Express, server: Server) {
         else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
         else if (extension === 'svg') mimeType = 'image/svg+xml';
         
-        // Добавляем preload в начало head для мгновенной загрузки
+        // Добавляем preload в начало head для мгновенной загрузки с высоким приоритетом
         template = template.replace(
           /<head>/,
           `<head>
     <!-- Favicon preload для мгновенной загрузки -->
-    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}">`
+    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}" fetchpriority="high" crossorigin="anonymous">`
         );
         
         // Добавляем полный набор тегов для максимальной совместимости и индексации
@@ -757,12 +757,12 @@ export function serveStatic(app: Express) {
         else if (extension === 'jpg' || extension === 'jpeg') mimeType = 'image/jpeg';
         else if (extension === 'svg') mimeType = 'image/svg+xml';
         
-        // Добавляем preload в начало head для мгновенной загрузки
+        // Добавляем preload в начало head для мгновенной загрузки с высоким приоритетом
         template = template.replace(
           /<head>/,
           `<head>
     <!-- Favicon preload для мгновенной загрузки -->
-    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}">`
+    <link rel="preload" href="${faviconUrl}" as="image" type="${mimeType}" fetchpriority="high" crossorigin="anonymous">`
         );
         
         // Добавляем полный набор тегов для максимальной совместимости и индексации

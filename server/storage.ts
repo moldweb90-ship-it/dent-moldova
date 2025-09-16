@@ -1961,24 +1961,25 @@ export class DatabaseStorage implements IStorage {
       .from(reviews)
       .leftJoin(clinics, eq(reviews.clinicId, clinics.id));
     
+    const conditions = [];
     if (status) {
-      query = query.where(eq(reviews.status, status));
+      conditions.push(eq(reviews.status, status));
     }
     
     if (clinicId) {
-      query = query.where(eq(reviews.clinicId, clinicId));
+      conditions.push(eq(reviews.clinicId, clinicId));
     }
     
-    const totalQuery = db
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    let totalQuery = db
       .select({ count: count() })
       .from(reviews);
     
-    if (status) {
-      totalQuery.where(eq(reviews.status, status));
-    }
-    
-    if (clinicId) {
-      totalQuery.where(eq(reviews.clinicId, clinicId));
+    if (conditions.length > 0) {
+      totalQuery = totalQuery.where(and(...conditions));
     }
     
     const [totalResult] = await totalQuery;

@@ -509,6 +509,8 @@ export function MobileFiltersModal({
                 });
                 onApply();
                 onClose();
+                // Прокрутка в начало страницы при клике на "Активные клиники" в мобильной версии
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             />
           </div>

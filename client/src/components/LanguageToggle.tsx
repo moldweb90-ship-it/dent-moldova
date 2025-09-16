@@ -1,27 +1,18 @@
 import { useTranslation } from '../lib/i18n';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { useState, useEffect } from 'react';
 
 export function LanguageToggle() {
   const [, setLocation] = useLocation();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  
+  // Слушаем изменения URL через wouter
+  const [, params] = useRoute('*');
 
   // Обновляем путь при изменении URL
   useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname);
-    };
-
-    // Слушаем изменения URL
-    window.addEventListener('popstate', handleLocationChange);
-    
-    // Обновляем при каждом рендере (для программных изменений)
     setCurrentPath(window.location.pathname);
-
-    return () => {
-      window.removeEventListener('popstate', handleLocationChange);
-    };
-  }, [currentPath]); // Добавляем currentPath в зависимости
+  }, [params]); // Обновляем при изменении параметров wouter
 
   // Определяем текущий язык по URL
   const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath === '/ro' ? 'ro' : 'ru';
@@ -40,7 +31,6 @@ export function LanguageToggle() {
           const newPath = `/clinic/${slug}`;
           console.log('🔄 LanguageToggle: Переключаем с румынского на русский:', newPath);
           setLocation(newPath);
-          setCurrentPath(newPath); // Обновляем currentPath
           // Обновляем lang атрибут
           document.documentElement.lang = newLanguage;
         }
@@ -51,7 +41,6 @@ export function LanguageToggle() {
           const newPath = `/clinic/ro/${slug}`;
           console.log('🔄 LanguageToggle: Переключаем с русского на румынский:', newPath);
           setLocation(newPath);
-          setCurrentPath(newPath); // Обновляем currentPath
           // Обновляем lang атрибут
           document.documentElement.lang = newLanguage;
         }
@@ -62,14 +51,12 @@ export function LanguageToggle() {
         // Сейчас румынская главная, переключаем на русскую
         console.log('🔄 LanguageToggle: Переключаем с румынской главной на русскую: /');
         setLocation('/');
-        setCurrentPath('/'); // Обновляем currentPath
         // Обновляем lang атрибут
         document.documentElement.lang = newLanguage;
       } else if (path === '/' && newLanguage === 'ro') {
         // Сейчас русская главная, переключаем на румынскую
         console.log('🔄 LanguageToggle: Переключаем с русской главной на румынскую: /ro');
         setLocation('/ro');
-        setCurrentPath('/ro'); // Обновляем currentPath
         // Обновляем lang атрибут
         document.documentElement.lang = newLanguage;
       }

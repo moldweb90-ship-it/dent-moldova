@@ -29,3 +29,5 @@ COMMENT ON COLUMN "clinics"."online_price_calculator" IS 'Онлайн-каль�
 
 
 
+
+

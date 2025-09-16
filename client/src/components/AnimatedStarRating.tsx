@@ -81,29 +81,6 @@ export function AnimatedStarRating({
   return (
     <div className={`flex items-center space-x-0.5 ${className}`}>
       {renderStars()}
-      <style jsx>{`
-        @keyframes starFill {
-          from {
-            transform: scale(0.5);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes starEmpty {
-          from {
-            transform: scale(0.5);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }

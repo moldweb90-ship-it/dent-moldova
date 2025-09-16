@@ -11,9 +11,9 @@ import { trackClickDetails, trackClickBook, trackClickPhone, trackClickWebsite }
 import { toast } from '@/hooks/use-toast';
 import { WorkingHoursDisplay } from './WorkingHoursDisplay';
 import { Tooltip } from './Tooltip';
-import { useClinicRating } from '../hooks/useClinicRating';
-import { useClinicRealRatings } from '../hooks/useClinicRealRatings';
+import { useClinicRatings } from '../hooks/useClinicRatings';
 import { AnimatedStarRating } from './AnimatedStarRating';
+import { LazyImage } from './LazyImage';
 
 interface Service {
   id: string;
@@ -58,9 +58,10 @@ interface ClinicCardProps {
   onBookClick: (clinic: Clinic) => void;
   onPricesClick: (slug: string) => void;
   language?: string; // Добавляем язык как пропс
+  priority?: boolean; // Приоритетная загрузка для первых карточек
 }
 
-export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, language: propLanguage }: ClinicCardProps) {
+export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, language: propLanguage, priority = false }: ClinicCardProps) {
   const { t, language: i18nLanguage } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [isHovered, setIsHovered] = useState(false);
@@ -68,11 +69,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Получаем реальный рейтинг на основе отзывов
-  const { ratingData } = useClinicRating(clinic.id);
-  
-  // Получаем детальные рейтинги из отзывов
-  const { data: realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRealRatings(clinic.id);
+  // Получаем все рейтинги клиники (объединенный хук для устранения дублирования запросов)
+  const { ratingData, realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRatings(clinic.id);
   
   
   // Отладка названий клиник (временно отключено)
@@ -241,10 +239,12 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img 
+        <LazyImage
           src={clinicImage}
           alt={language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Клиника') : (clinic.nameRo || clinic.nameRu || 'Clinică')}
           className="w-full h-full object-cover"
+          fallbackSrc={fallbackImage}
+          priority={priority}
           onError={(e) => {
             // Если не загрузилось загруженное фото, пробуем сгенерированное
             if (clinic.logoUrl && (e.target as HTMLImageElement).src === clinic.logoUrl) {
@@ -516,10 +516,11 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
               <div className="flex items-center space-x-4">
                 {clinic.logoUrl ? (
                   <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white">
-                    <img 
+                    <LazyImage
                       src={clinic.logoUrl} 
                       alt={language === 'ru' ? clinic.nameRu : clinic.nameRo}
                       className="w-full h-full object-cover"
+                      priority={priority}
                     />
                   </div>
                 ) : (

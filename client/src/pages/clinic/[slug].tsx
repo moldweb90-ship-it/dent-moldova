@@ -16,6 +16,7 @@ import { WorkingHoursDisplay } from '@/components/WorkingHoursDisplay';
 import { Tooltip } from '@/components/Tooltip';
 import { SosButton } from '@/components/SosButton';
 import { useClinicRating } from '@/hooks/useClinicRating';
+import { LazyImage } from '@/components/LazyImage';
 
 import { type Currency } from '@/lib/currency';
 import { trackClickBook, trackClickPhone, trackClickWebsite } from '@/lib/analytics';
@@ -356,10 +357,11 @@ export default function ClinicPage() {
                 {/* Photo and details below */}
                 <div className="flex items-start gap-3 sm:gap-4">
                   {clinic.logoUrl && (
-                    <img 
+                    <LazyImage 
                       src={clinic.logoUrl} 
                       alt={language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
                       className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg object-cover flex-shrink-0"
+                      priority={true}
                     />
                   )}
                   <div className="min-w-0 flex-1">

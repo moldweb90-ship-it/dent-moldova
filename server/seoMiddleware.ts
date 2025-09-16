@@ -31,7 +31,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         let reviewsRating = null;
         let reviewsCount = 0;
         try {
-          const reviews = await storage.getReviews(clinic.id, 'approved', 1000, 0);
+          const reviews = await storage.getReviews({ clinicId: clinic.id, status: 'approved', limit: 1000, offset: 0 });
           if (reviews.reviews && reviews.reviews.length > 0) {
             const totalRating = reviews.reviews.reduce((sum: number, review: any) => {
               return sum + (review.averageRating || 0);

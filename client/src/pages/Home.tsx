@@ -8,6 +8,7 @@ import { SearchBar } from '../components/SearchBar';
 import { FiltersSidebar, FilterValues } from '../components/FiltersSidebar';
 import { ClinicGrid } from '../components/ClinicGrid';
 import { ClinicDetail } from '../components/ClinicDetail';
+import { LazyClinicCard } from '../components/LazyClinicCard';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicModal } from '../components/AddClinicModal';
@@ -86,6 +87,8 @@ export default function Home() {
       console.log('🔍 Cities loaded:', data);
       return data;
     },
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   // Fetch districts for selected city
@@ -99,6 +102,8 @@ export default function Home() {
       console.log('🔍 Districts loaded for city', filters.city, ':', data);
       return data;
     },
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
   
   // Build query parameters
@@ -143,7 +148,7 @@ export default function Home() {
   const queryKey = ['/api/clinics', buildQueryParams(), language];
   console.log('🔍 Query key:', queryKey);
   
-  const { data: clinicsData, isLoading } = useQuery({
+  const { data: clinicsData, isLoading, isFetching } = useQuery({
     queryKey,
     queryFn: async () => {
       const response = await fetch(`/api/clinics?${buildQueryParams()}`);
@@ -153,7 +158,8 @@ export default function Home() {
       // console.log('🔍 First clinic sample:', data.clinics[0]);
       return data;
     },
-          staleTime: 0, // Disable caching for debugging
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
   // Fetch clinic detail
@@ -168,6 +174,8 @@ export default function Home() {
       }
       return response.json();
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   // Fetch site settings for logo
@@ -180,7 +188,8 @@ export default function Home() {
       console.log('🔍 Site settings loaded:', settings);
       return settings;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   // Fetch recommended clinics to check if they exist
@@ -191,7 +200,8 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to fetch recommended clinics');
       return response.json();
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   const hasRecommendedClinics = recommendedData?.clinics && recommendedData.clinics.length > 0;
@@ -199,16 +209,22 @@ export default function Home() {
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setPage(1);
+    // Прокрутка в начало страницы при поиске
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleFiltersChange = useCallback((newFilters: FilterValues) => {
     console.log('🔍 handleFiltersChange:', newFilters);
     setFilters(newFilters);
     setPage(1);
+    // Прокрутка в начало страницы при изменении фильтров
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleApplyFilters = useCallback(() => {
     setPage(1);
+    // Прокрутка в начало страницы при применении фильтров
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleResetFilters = useCallback(() => {
@@ -222,6 +238,8 @@ export default function Home() {
     });
     setSearchQuery('');
     setPage(1);
+    // Прокрутка в начало страницы при сбросе фильтров
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleClinicClick = useCallback((slug: string) => {
@@ -234,6 +252,17 @@ export default function Home() {
     setBookingOpen(true);
   }, []);
 
+  const handlePhoneClick = useCallback((clinic: any) => {
+    if (clinic.phone) {
+      window.open(`tel:${clinic.phone}`, '_self');
+    }
+  }, []);
+
+  const handleWebsiteClick = useCallback((clinic: any) => {
+    if (clinic.website) {
+      window.open(clinic.website, '_blank');
+    }
+  }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
@@ -363,6 +392,8 @@ export default function Home() {
                       verified: true 
                     });
                     setPage(1);
+                    // Прокрутка в начало страницы при клике на "Активные клиники"
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                 />
               </div>
@@ -439,6 +470,8 @@ export default function Home() {
             onPageChange={handlePageChange}
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
+            onPhoneClick={handlePhoneClick}
+            onWebsiteClick={handleWebsiteClick}
             filtersVisible={filtersVisible}
             language={language}
           />
@@ -536,6 +569,7 @@ export default function Home() {
         </div>
       </footer>
       </div>
+      
     </>
   );
 }
