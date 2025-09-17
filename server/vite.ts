@@ -505,7 +505,7 @@ export async function setupVite(app: Express, server: Server) {
       );
 
       // Определяем язык из URL и устанавливаем lang атрибут
-      const isRomanian = url.startsWith('/clinic/ro/') || url === '/ro';
+      const isRomanian = url.startsWith('/clinic/ro/') || url.startsWith('/ro/') || url === '/ro';
       const lang = isRomanian ? 'ro' : 'ru';
       template = template.replace(
         /<html lang="[^"]*"/,
@@ -583,7 +583,9 @@ export async function setupVite(app: Express, server: Server) {
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
       const homepageSEO = (req as any).homepageSEO;
-      const seoData = clinicSEO || homepageSEO;
+      const featureSEO = (req as any).featureSEO;
+      const locationSEO = (req as any).locationSEO;
+      const seoData = clinicSEO || featureSEO || locationSEO || homepageSEO;
       
       if (seoData) {
         console.log('🔧 Applying SEO data:', seoData.title);
@@ -727,7 +729,7 @@ export function serveStatic(app: Express) {
       let template = await fs.promises.readFile(indexPath, "utf-8");
       
       // Определяем язык из URL и устанавливаем lang атрибут
-      const isRomanian = req.originalUrl.startsWith('/clinic/ro/') || req.originalUrl === '/ro';
+      const isRomanian = req.originalUrl.startsWith('/clinic/ro/') || req.originalUrl.startsWith('/ro/') || req.originalUrl === '/ro';
       const lang = isRomanian ? 'ro' : 'ru';
       template = template.replace(
         /<html lang="[^"]*"/,
@@ -805,7 +807,9 @@ export function serveStatic(app: Express) {
       // Применяем SEO данные если они есть
       const clinicSEO = (req as any).clinicSEO;
       const homepageSEO = (req as any).homepageSEO;
-      const seoData = clinicSEO || homepageSEO;
+      const featureSEO = (req as any).featureSEO;
+      const locationSEO = (req as any).locationSEO;
+      const seoData = clinicSEO || featureSEO || locationSEO || homepageSEO;
       
       if (seoData) {
         console.log('🔧 Applying SEO data:', seoData.title);

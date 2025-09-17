@@ -55,10 +55,26 @@ export function DynamicSEO({
       schemaData
     });
 
-    // Update document title immediately
+    // Принудительно очищаем старые мета-теги
+    const oldMetas = document.querySelectorAll('meta[name="description"], meta[name="keywords"], meta[name="robots"], meta[property^="og:"]');
+    oldMetas.forEach(meta => meta.remove());
+    
+    const oldCanonical = document.querySelector('link[rel="canonical"]');
+    if (oldCanonical) oldCanonical.remove();
+    
+    const oldSchemas = document.querySelectorAll('script[type="application/ld+json"]');
+    oldSchemas.forEach(script => script.remove());
+
+    // Update document title immediately and force it
     if (title) {
       document.title = title;
       console.log('✅ DynamicSEO: Установлен title:', title);
+      
+      // Также обновляем title тег в head если он есть
+      const titleElement = document.querySelector('title');
+      if (titleElement) {
+        titleElement.textContent = title;
+      }
     }
 
     // Function to update or create meta tag
@@ -155,7 +171,7 @@ export function DynamicSEO({
         }
       });
     };
-  }, [title, description, keywords, h1, ogTitle, ogDescription, ogImage, canonical, robots, schemaType, schemaData, window.location.href, language]);
+  }, [title, description, keywords, h1, ogTitle, ogDescription, ogImage, canonical, robots, schemaType, schemaData, language]);
 
   return null;
 }

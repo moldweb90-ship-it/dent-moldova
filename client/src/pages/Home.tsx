@@ -17,7 +17,6 @@ import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
 
 import { useTranslation } from '../lib/i18n';
-import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
   const { t, changeLanguage } = useTranslation();
@@ -129,7 +128,7 @@ export default function Home() {
   const activeFeatures = getActiveFeaturesFromUrl();
   const activeFeature = activeFeatures.length > 0 ? activeFeatures[0] : null; // Для обратной совместимости
   
-  useSEO(language); // Применяем глобальные SEO настройки только на главной странице
+  // useSEO(language); // Убрано - используем только динамическое SEO
   
   // Переключаем язык в i18n системе при изменении URL
   useEffect(() => {
@@ -485,8 +484,8 @@ export default function Home() {
       if (newFilters.features.length > 0) {
         navigateToFeature(newFilters.features);
       } else {
-        const homeUrl = language === 'ro' ? '/ro' : '/';
-        setLocation(homeUrl);
+      const homeUrl = language === 'ro' ? '/ro' : '/';
+      setLocation(homeUrl);
       }
       setFilters(newFilters);
       setPage(1);
@@ -540,7 +539,7 @@ export default function Home() {
         if (districtId) {
           navigateToLocation(newFilters.city, districtId);
         } else {
-          navigateToLocation(newFilters.city);
+      navigateToLocation(newFilters.city);
         }
       }
       // Обновляем фильтры после навигации
@@ -560,7 +559,7 @@ export default function Home() {
           navigateToFeature(newFilters.features, newFilters.city, newFilters.districts[0]);
         } else {
           // Нет функции - переходим на страницу района
-          navigateToLocation(newFilters.city, newFilters.districts[0]);
+      navigateToLocation(newFilters.city, newFilters.districts[0]);
         }
       } else {
         // Район убран - переходим на страницу города или город+функция
@@ -829,13 +828,36 @@ export default function Home() {
         title: language === 'ru' 
           ? `${featureTitle} в ${cityName} на ${districtName} - Dent Moldova`
           : `${featureTitle} în ${cityName}, ${districtName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `${featureTitle} в ${cityName} на ${districtName}`
+          : `${featureTitle} în ${cityName}, ${districtName}`,
         description: language === 'ru'
           ? `Найдите ${featureTitle.toLowerCase()} в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
           : `Găsiți ${featureTitle.toLowerCase()} în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
         keywords: language === 'ru'
           ? `${featureName.toLowerCase()} ${districtName} ${cityName}, стоматология ${districtName}, ${featureName.toLowerCase()} ${cityName}`
           : `${featureName.toLowerCase()} ${districtName} ${cityName}, stomatologie ${districtName}, ${featureName.toLowerCase()} ${cityName}`,
-        canonical
+        canonical,
+        schemaType: 'LocalBusiness',
+        schemaData: {
+          name: language === 'ru' ? `${featureTitle} в ${cityName} на ${districtName}` : `${featureTitle} în ${cityName}, ${districtName}`,
+          description: language === 'ru'
+            ? `Найдите ${featureTitle.toLowerCase()} в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
+            : `Găsiți ${featureTitle.toLowerCase()} în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
+          '@type': 'Dentist',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: selectedCity ? selectedCity[language === 'ro' ? 'nameRo' : 'nameRu'] : '',
+            addressRegion: selectedDistrict ? selectedDistrict[language === 'ro' ? 'nameRo' : 'nameRu'] : '',
+            addressCountry: 'MD'
+          },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: '47.0105',
+            longitude: '28.8638'
+          },
+          url: `https://dent-moldova.com${canonical}`
+        }
       };
     } else if (selectedFeatures.length > 0 && selectedCity) {
       // Страница функций + город
@@ -843,6 +865,9 @@ export default function Home() {
         title: language === 'ru' 
           ? `${featureTitle} в ${cityName} - Dent Moldova`
           : `${featureTitle} în ${cityName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `${featureTitle} в ${cityName}`
+          : `${featureTitle} în ${cityName}`,
         description: language === 'ru'
           ? `Найдите ${featureTitle.toLowerCase()} в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
           : `Găsiți ${featureTitle.toLowerCase()} în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
@@ -857,6 +882,9 @@ export default function Home() {
         title: language === 'ru' 
           ? `${featureTitle} в Молдове - Dent Moldova`
           : `${featureTitle} în Moldova - Dent Moldova`,
+        h1: language === 'ru'
+          ? `${featureTitle} в Молдове`
+          : `${featureTitle} în Moldova`,
         description: language === 'ru'
           ? `Найдите ${featureTitle.toLowerCase()} в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны.`
           : `Găsiți ${featureTitle.toLowerCase()} în Moldova. Programare online, recenzii, prețuri, adrese și telefoane.`,
@@ -871,6 +899,9 @@ export default function Home() {
         title: language === 'ru' 
           ? `Стоматологические клиники в районе ${districtName}, ${cityName} - Dent Moldova`
           : `Clinici stomatologice în sectorul ${districtName}, ${cityName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `Стоматологические клиники в районе ${districtName}, ${cityName}`
+          : `Clinici stomatologice în sectorul ${districtName}, ${cityName}`,
         description: language === 'ru'
           ? `Найдите лучшие стоматологические клиники в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
           : `Găsiți cele mai bune clinici stomatologice în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
@@ -885,6 +916,9 @@ export default function Home() {
         title: language === 'ru' 
           ? `Стоматологические клиники в ${cityName} - Dent Moldova`
           : `Clinici stomatologice în ${cityName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `Стоматологические клиники в ${cityName}`
+          : `Clinici stomatologice în ${cityName}`,
         description: language === 'ru'
           ? `Найдите лучшие стоматологические клиники в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
           : `Găsiți cele mai bune clinici stomatologice în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
@@ -897,9 +931,29 @@ export default function Home() {
       // Главная страница
       return {
         title: language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник в Молдове" : "Dent Moldova - Catalogul clinicilor stomatologice din Moldova",
+        h1: language === 'ru' ? "Каталог стоматологических клиник в Молдове" : "Catalogul clinicilor stomatologice din Moldova",
         description: language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны." : "Găsiți cele mai bune clinici stomatologice din Moldova. Programare online, recenzii, prețuri, adrese și telefoane.",
         keywords: language === 'ru' ? "стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв" : "stomatologie, stomatolog, tratament dentar, clinică, Moldova, Chișinău",
-        canonical
+        canonical,
+        schemaType: 'WebSite',
+        schemaData: {
+          name: 'Dent Moldova',
+          description: language === 'ru' ? "Каталог стоматологических клиник в Молдове" : "Catalogul clinicilor stomatologice din Moldova",
+          url: 'https://dent-moldova.com',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: 'https://dent-moldova.com/?search={search_term_string}'
+            },
+            'query-input': 'required name=search_term_string'
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Dent Moldova',
+            url: 'https://dent-moldova.com'
+          }
+        }
       };
     }
   };
@@ -912,9 +966,13 @@ export default function Home() {
         title={seoData.title}
         description={seoData.description}
         keywords={seoData.keywords}
+        h1={seoData.h1}
         ogTitle={seoData.title}
         ogDescription={seoData.description}
         canonical={seoData.canonical}
+        schemaType={seoData.schemaType}
+        schemaData={seoData.schemaData}
+        language={language}
       />
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1040,6 +1098,8 @@ export default function Home() {
 
         {/* Main Content */}
         <main className={`flex-1 px-4 md:px-8 py-2 md:py-8 md:min-h-screen ${!filtersVisible ? 'max-w-full' : ''}`}>
+        
+
         {/* Recommended Clinics Section */}
         {recommendedLoading ? (
           <div className="mb-8">
