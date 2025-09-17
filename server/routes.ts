@@ -547,12 +547,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const querySchema = z.object({
         q: z.string().optional(),
+        city: z.string().optional(),
+        district: z.string().optional(),
         page: z.string().optional().transform(val => val ? parseInt(val) : 1),
         limit: z.string().optional().transform(val => val ? parseInt(val) : 30),
       });
 
-      const { q, page, limit } = querySchema.parse(req.query);
-      const result = await storage.getClinics({ q, page, limit });
+      const { q, city, district, page, limit } = querySchema.parse(req.query);
+      const result = await storage.getClinics({ 
+        q, 
+        city, 
+        districts: district ? [district] : [], 
+        page, 
+        limit 
+      });
       
       res.json(result);
     } catch (error) {

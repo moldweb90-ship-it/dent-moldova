@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Plus, 
   Search, 
@@ -46,18 +47,48 @@ interface Clinic {
 
 export function ClinicsManagement() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingClinic, setEditingClinic] = useState<Clinic | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Запрос клиник с фильтрами
   const { data: clinicsData, isLoading } = useQuery({
-    queryKey: ['/api/admin/clinics', { q: searchQuery, page: currentPage }],
+    queryKey: ['/api/admin/clinics', { q: searchQuery, city: selectedCity, district: selectedDistrict, page: currentPage }],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/admin/clinics?q=${searchQuery}&page=${currentPage}&limit=30`);
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('q', searchQuery);
+      if (selectedCity) params.set('city', selectedCity);
+      if (selectedDistrict) params.set('district', selectedDistrict);
+      params.set('page', currentPage.toString());
+      params.set('limit', '30');
+      
+      const response = await apiRequest('GET', `/api/admin/clinics?${params.toString()}`);
       return response.json();
     }
+  });
+
+  // Запрос городов для фильтра
+  const { data: citiesData } = useQuery({
+    queryKey: ['/api/cities'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/cities');
+      return response.json();
+    }
+  });
+
+  // Запрос районов для выбранного города
+  const { data: districtsData } = useQuery({
+    queryKey: ['/api/districts', selectedCity],
+    queryFn: async () => {
+      if (!selectedCity) return [];
+      const response = await apiRequest('GET', `/api/cities/${selectedCity}/districts`);
+      return response.json();
+    },
+    enabled: !!selectedCity
   });
 
   // Проверяем URL на наличие clinicId для автоматического открытия формы редактирования
@@ -101,6 +132,25 @@ export function ClinicsManagement() {
     }
   };
 
+  // Обработчики фильтров
+  const handleCityChange = (cityId: string) => {
+    setSelectedCity(cityId === 'all' ? '' : cityId);
+    setSelectedDistrict(''); // Сбрасываем район при смене города
+    setCurrentPage(1); // Сбрасываем пагинацию
+  };
+
+  const handleDistrictChange = (districtId: string) => {
+    setSelectedDistrict(districtId === 'all' ? '' : districtId);
+    setCurrentPage(1); // Сбрасываем пагинацию
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCity('');
+    setSelectedDistrict('');
+    setCurrentPage(1);
+  };
+
   const clinics = clinicsData?.clinics || [];
   const total = clinicsData?.total || 0;
   const totalPages = Math.ceil(total / 30);
@@ -138,8 +188,9 @@ export function ClinicsManagement() {
       {/* Search and Filters */}
       <Card>
         <CardContent className="p-4 sm:p-6">
-          <div className="flex space-x-2 sm:space-x-4">
-            <div className="relative flex-1">
+          <div className="space-y-4">
+            {/* Поиск */}
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Поиск клиник..."
@@ -147,6 +198,75 @@ export function ClinicsManagement() {
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10 text-sm sm:text-base"
               />
+            </div>
+            
+            {/* Фильтры по городам и районам */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              {/* Фильтр по городу */}
+              <div className="flex-1">
+                <Select value={selectedCity || 'all'} onValueChange={handleCityChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все города" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все города</SelectItem>
+                    {citiesData?.map((city: any) => (
+                      <SelectItem key={city.id} value={city.id}>
+                        {city.nameRu}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Фильтр по району */}
+              <div className="flex-1">
+                <Select 
+                  value={selectedDistrict || 'all'} 
+                  onValueChange={handleDistrictChange}
+                  disabled={!selectedCity}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все районы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все районы</SelectItem>
+                    {districtsData?.map((district: any) => (
+                      <SelectItem key={district.id} value={district.id}>
+                        {district.nameRu}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Кнопка сброса фильтров */}
+              <Button 
+                variant="outline" 
+                onClick={handleResetFilters}
+                className="sm:w-auto"
+              >
+                Сбросить
+              </Button>
+            </div>
+            
+            {/* Счетчик результатов */}
+            <div className="text-sm text-gray-600">
+              Найдено клиник: <span className="font-medium">{total}</span>
+              {selectedCity && (
+                <span className="ml-2">
+                  в городе: <span className="font-medium">
+                    {citiesData?.find((c: any) => c.id === selectedCity)?.nameRu}
+                  </span>
+                </span>
+              )}
+              {selectedDistrict && (
+                <span className="ml-2">
+                  в районе: <span className="font-medium">
+                    {districtsData?.find((d: any) => d.id === selectedDistrict)?.nameRu}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </CardContent>

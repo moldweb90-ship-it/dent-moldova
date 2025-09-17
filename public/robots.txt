@@ -1,48 +1,91 @@
+# Основные правила для всех ботов
 User-agent: *
 Allow: /
+
+# Закрываем служебные разделы
 Disallow: /admin
-Disallow: /api
+Disallow: /api/
 Disallow: /administrator
 Disallow: /_next
 Disallow: /static
 Disallow: /images/private
 Disallow: /uploads/temp
+Disallow: /dist/
+
+# Закрываем динамические поисковые страницы (избегаем дублирования)
 Disallow: /search?*
+Disallow: /*?q=*
+Disallow: /*?search=*
+Disallow: /*?page=*
+Disallow: /*?limit=*
+Disallow: /*?sort=*
+
+# Закрываем служебные действия с клиниками
 Disallow: /clinic/*/edit
 Disallow: /clinic/*/delete
 Disallow: /booking/*
 Disallow: /reviews/*/edit
 Disallow: /reviews/*/delete
 
-# Разрешаем основные страницы
+# ЯВНО разрешаем важные страницы для индексации
 Allow: /$
 Allow: /ro/$
-Allow: /pricing
-Allow: /ro/pricing
+
+# Разрешаем все страницы клиник
 Allow: /clinic/
 Allow: /ro/clinic/
 
-# Указываем sitemap
-Sitemap: https://dentmoldova.md/sitemap.xml
+# Разрешаем все страницы городов
+Allow: /city/
+Allow: /ro/city/
 
-# Дополнительные директивы для поисковых систем
-Crawl-delay: 1
+# Разрешаем все страницы функций (новые SEO страницы)
+Allow: /pediatric-dentistry
+Allow: /parking
+Allow: /sos
+Allow: /work24h
+Allow: /credit
+Allow: /weekend-work
+Allow: /ro/pediatric-dentistry
+Allow: /ro/parking
+Allow: /ro/sos
+Allow: /ro/work24h
+Allow: /ro/credit
+Allow: /ro/weekend-work
 
-# Специальные правила для разных ботов
+# Разрешаем статические страницы
+Allow: /pricing
+Allow: /ro/pricing
+Allow: /sitemap.xml
+Allow: /robots.txt
+Allow: /favicon.ico
+Allow: /site.webmanifest
+
+# Специальные правила для поисковых систем
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
+Request-rate: 10/1m
 
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
+Request-rate: 5/1m
 
 User-agent: Yandex
 Allow: /
-Crawl-delay: 2
+Crawl-delay: 1
+Request-rate: 5/1m
 
-# Блокируем агрессивных ботов
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 1
+
+# Блокируем агрессивных и ненужных ботов
 User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
 Disallow: /
 
 User-agent: MJ12bot
@@ -50,3 +93,15 @@ Disallow: /
 
 User-agent: DotBot
 Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: SeznamBot
+Crawl-delay: 10
+
+# Указываем sitemap
+Sitemap: https://dentmoldova.md/sitemap.xml
+
+# Дополнительные директивы
+Crawl-delay: 1

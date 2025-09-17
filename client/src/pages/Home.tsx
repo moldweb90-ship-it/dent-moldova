@@ -17,6 +17,7 @@ import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
 
 import { useTranslation } from '../lib/i18n';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function Home() {
   const { t, changeLanguage } = useTranslation();
@@ -928,52 +929,34 @@ export default function Home() {
         canonical
       };
     } else {
-      // Главная страница
-      return {
-        title: language === 'ru' ? "Dent Moldova - Каталог стоматологических клиник в Молдове" : "Dent Moldova - Catalogul clinicilor stomatologice din Moldova",
-        h1: language === 'ru' ? "Каталог стоматологических клиник в Молдове" : "Catalogul clinicilor stomatologice din Moldova",
-        description: language === 'ru' ? "Найдите лучшие стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны." : "Găsiți cele mai bune clinici stomatologice din Moldova. Programare online, recenzii, prețuri, adrese și telefoane.",
-        keywords: language === 'ru' ? "стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв" : "stomatologie, stomatolog, tratament dentar, clinică, Moldova, Chișinău",
-        canonical,
-        schemaType: 'WebSite',
-        schemaData: {
-          name: 'Dent Moldova',
-          description: language === 'ru' ? "Каталог стоматологических клиник в Молдове" : "Catalogul clinicilor stomatologice din Moldova",
-          url: 'https://dent-moldova.com',
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: {
-              '@type': 'EntryPoint',
-              urlTemplate: 'https://dent-moldova.com/?search={search_term_string}'
-            },
-            'query-input': 'required name=search_term_string'
-          },
-          publisher: {
-            '@type': 'Organization',
-            name: 'Dent Moldova',
-            url: 'https://dent-moldova.com'
-          }
-        }
-      };
+      // Главная страница - НЕ генерируем SEO данные, используем настройки из админки
+      return null; // Возвращаем null чтобы использовались настройки из useSEO
     }
   };
 
   const seoData = generateSEOData();
+  
+  // Используем useSEO для главной страницы, DynamicSEO для остальных
+  if (!seoData) {
+    useSEO(language); // Для главной страницы используем настройки из админки
+  }
 
   return (
     <>
-      <DynamicSEO
-        title={seoData.title}
-        description={seoData.description}
-        keywords={seoData.keywords}
-        h1={seoData.h1}
-        ogTitle={seoData.title}
-        ogDescription={seoData.description}
-        canonical={seoData.canonical}
-        schemaType={seoData.schemaType}
-        schemaData={seoData.schemaData}
-        language={language}
-      />
+      {seoData && (
+        <DynamicSEO
+          title={seoData.title}
+          description={seoData.description}
+          keywords={seoData.keywords}
+          h1={seoData.h1}
+          ogTitle={seoData.title}
+          ogDescription={seoData.description}
+          canonical={seoData.canonical}
+          schemaType={seoData.schemaType}
+          schemaData={seoData.schemaData}
+          language={language}
+        />
+      )}
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
