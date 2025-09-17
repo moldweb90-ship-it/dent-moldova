@@ -24,6 +24,43 @@ import { useToast } from '@/hooks/use-toast';
 import { getCityName, getDistrictName } from '@/lib/utils';
 import ClinicForm from './ClinicForm';
 import { AnimatedProgressBar } from '../../components/AnimatedProgressBar';
+import { useClinicRating } from '../../hooks/useClinicRating';
+
+// Компонент для отображения рейтинга клиники в админке
+function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
+  const { ratingData, isLoading } = useClinicRating(clinicId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-xs sm:text-sm font-medium text-gray-700">Рейтинг</span>
+        <div className="flex items-center">
+          <div className="animate-pulse bg-gray-200 h-4 w-12 rounded mr-2"></div>
+          <span className="text-xs sm:text-sm text-gray-500">...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ratingData.hasRating) {
+    return null; // Не показываем блок, если нет рейтинга
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs sm:text-sm font-medium text-gray-700">Рейтинг</span>
+      <div className="flex items-center">
+        <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 fill-current mr-1" />
+        <span className="text-xs sm:text-sm font-bold text-yellow-600">
+          {ratingData.averageRating.toFixed(2)}
+        </span>
+        <span className="text-xs text-gray-500 ml-1">
+          ({ratingData.totalReviews})
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface Clinic {
   id: string;
@@ -351,20 +388,8 @@ export function ClinicsManagement() {
 
                   </div>
 
-                  {/* D-Score */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-medium text-gray-700">Общий рейтинг</span>
-                    <div className="flex items-center">
-                      <AnimatedProgressBar
-                        value={clinic.dScore}
-                        className="w-12 sm:w-20 bg-gray-200 rounded-full h-1.5 sm:h-2 mr-2"
-                        barClassName="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 sm:h-2 rounded-full"
-                        duration={1000}
-                        delay={200}
-                      />
-                      <span className="text-xs sm:text-sm font-bold">{clinic.dScore}</span>
-                    </div>
-                  </div>
+                  {/* Rating based on reviews */}
+                  <ClinicRatingDisplay clinicId={clinic.id} />
 
                   {/* Contact Info */}
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">

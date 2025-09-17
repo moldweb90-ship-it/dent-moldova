@@ -563,28 +563,30 @@ export function Settings() {
       </div>
 
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="general" className="flex items-center space-x-2">
-            <SettingsIcon className="h-4 w-4" />
-            <span>Общие</span>
-          </TabsTrigger>
-          <TabsTrigger value="seo" className="flex items-center space-x-2">
-            <Search className="h-4 w-4" />
-            <span>SEO</span>
-          </TabsTrigger>
-          <TabsTrigger value="crawler" className="flex items-center space-x-2">
-            <Bot className="h-4 w-4" />
-            <span>Краулер</span>
-          </TabsTrigger>
-          <TabsTrigger value="robots" className="flex items-center space-x-2">
-            <Shield className="h-4 w-4" />
-            <span>Robots.txt</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center space-x-2">
-            <Shield className="h-4 w-4" />
-            <span>Защита</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="w-full min-w-max flex-nowrap justify-start">
+            <TabsTrigger value="general" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0 px-2 sm:px-3">
+              <SettingsIcon className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Общие</span>
+            </TabsTrigger>
+            <TabsTrigger value="seo" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0 px-2 sm:px-3">
+              <Search className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">SEO</span>
+            </TabsTrigger>
+            <TabsTrigger value="crawler" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0 px-2 sm:px-3">
+              <Bot className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Краулер</span>
+            </TabsTrigger>
+            <TabsTrigger value="robots" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0 px-2 sm:px-3">
+              <FileText className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Robots</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0 px-2 sm:px-3">
+              <Shield className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Защита</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="general">
           <Card>

@@ -9,7 +9,7 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ onLogout, onToggleSidebar, sidebarOpen }: AdminHeaderProps) {
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center space-x-4">
         {/* Мобильная кнопка меню */}
         <button 

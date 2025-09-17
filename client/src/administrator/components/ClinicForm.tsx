@@ -122,22 +122,8 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
       doctorExperience: clinic?.doctorExperience || 0,
       hasLicenses: clinic?.hasLicenses || false,
       hasCertificates: clinic?.hasCertificates || false,
-      // Booking Convenience
-      onlineBooking: clinic?.onlineBooking || false,
+      // Weekend work (moved to additional features)
       weekendWork: clinic?.weekendWork || false,
-      eveningWork: clinic?.eveningWork || false,
-      urgentCare: clinic?.urgentCare || false,
-      convenientLocation: clinic?.convenientLocation || false,
-      // Pricing Policy (старые поля)
-      installmentPlan: clinic?.installmentPlan || false,
-      hasPromotions: clinic?.hasPromotions || false,
-      // Pricing Policy (новые поля)
-      publishedPricing: clinic?.publishedPricing || false,
-      freeConsultation: clinic?.freeConsultation || false,
-      interestFreeInstallment: clinic?.interestFreeInstallment || false,
-      implantWarranty: clinic?.implantWarranty || false,
-      popularServicesPromotions: clinic?.popularServicesPromotions || false,
-      onlinePriceCalculator: clinic?.onlinePriceCalculator || false,
       // Additional Features
       pediatricDentistry: clinic?.pediatricDentistry || false,
               parking: clinic?.parking || false,
@@ -1116,130 +1102,6 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
 
           {/* Clinic Characteristics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Booking Convenience */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-green-500" />
-                  Удобство записи
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="onlineBooking"
-                      checked={form.watch('onlineBooking')}
-                      onCheckedChange={(checked) => form.setValue('onlineBooking', checked as boolean)}
-                    />
-                    <Label htmlFor="onlineBooking">Онлайн запись на сайте</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="weekendWork"
-                      checked={form.watch('weekendWork')}
-                      onCheckedChange={(checked) => form.setValue('weekendWork', checked as boolean)}
-                    />
-                    <Label htmlFor="weekendWork">Работает в выходные</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="eveningWork"
-                      checked={form.watch('eveningWork')}
-                      onCheckedChange={(checked) => form.setValue('eveningWork', checked as boolean)}
-                    />
-                    <Label htmlFor="eveningWork">Работает вечером (после 18:00)</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="urgentCare"
-                      checked={form.watch('urgentCare')}
-                      onCheckedChange={(checked) => form.setValue('urgentCare', checked as boolean)}
-                    />
-                    <Label htmlFor="urgentCare">Срочный прием</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="convenientLocation"
-                      checked={form.watch('convenientLocation')}
-                      onCheckedChange={(checked) => form.setValue('convenientLocation', checked as boolean)}
-                    />
-                    <Label htmlFor="convenientLocation">Удобное расположение (центр, парковка)</Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Pricing Policy */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-emerald-500" />
-                  Ценовая политика
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="publishedPricing"
-                      checked={form.watch('publishedPricing')}
-                      onCheckedChange={(checked) => form.setValue('publishedPricing', checked as boolean)}
-                    />
-                    <Label htmlFor="publishedPricing">Опубликован прайс на сайте/в приложении</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="freeConsultation"
-                      checked={form.watch('freeConsultation')}
-                      onCheckedChange={(checked) => form.setValue('freeConsultation', checked as boolean)}
-                    />
-                    <Label htmlFor="freeConsultation">Бесплатная консультация</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="interestFreeInstallment"
-                      checked={form.watch('interestFreeInstallment')}
-                      onCheckedChange={(checked) => form.setValue('interestFreeInstallment', checked as boolean)}
-                    />
-                    <Label htmlFor="interestFreeInstallment">Рассрочка без %</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="implantWarranty"
-                      checked={form.watch('implantWarranty')}
-                      onCheckedChange={(checked) => form.setValue('implantWarranty', checked as boolean)}
-                    />
-                    <Label htmlFor="implantWarranty">Гарантия на импланты/работы</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="popularServicesPromotions"
-                      checked={form.watch('popularServicesPromotions')}
-                      onCheckedChange={(checked) => form.setValue('popularServicesPromotions', checked as boolean)}
-                    />
-                    <Label htmlFor="popularServicesPromotions">Акции на популярные услуги</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="onlinePriceCalculator"
-                      checked={form.watch('onlinePriceCalculator')}
-                      onCheckedChange={(checked) => form.setValue('onlinePriceCalculator', checked as boolean)}
-                    />
-                    <Label htmlFor="onlinePriceCalculator">Онлайн-калькулятор стоимости</Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Additional Features */}
@@ -1259,6 +1121,15 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                     onCheckedChange={(checked) => form.setValue('pediatricDentistry', checked as boolean)}
                   />
                   <Label htmlFor="pediatricDentistry">Детская стоматология</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="weekendWork"
+                    checked={form.watch('weekendWork')}
+                    onCheckedChange={(checked) => form.setValue('weekendWork', checked as boolean)}
+                  />
+                  <Label htmlFor="weekendWork">Работает в выходные</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">

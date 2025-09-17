@@ -665,15 +665,15 @@ export function PackagesManagement() {
         </Card>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Пакеты услуг</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={resetData} className="text-red-600 hover:text-red-700">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={resetData} className="text-red-600 hover:text-red-700 w-full sm:w-auto">
             Сбросить данные
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Создать пакет
               </Button>

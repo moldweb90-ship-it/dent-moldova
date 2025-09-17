@@ -23,3 +23,4 @@ COMMENT ON COLUMN services.price_type IS 'Type of price: "fixed" for exact price
 
 
 
+

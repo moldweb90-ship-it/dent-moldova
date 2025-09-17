@@ -129,7 +129,7 @@ export default function Home() {
   const activeFeatures = getActiveFeaturesFromUrl();
   const activeFeature = activeFeatures.length > 0 ? activeFeatures[0] : null; // Для обратной совместимости
   
-  // useSEO(language); // Убрано - используем только динамическое SEO
+  // useSEO будет вызван условно ниже
   
   // Переключаем язык в i18n системе при изменении URL
   useEffect(() => {
@@ -936,10 +936,10 @@ export default function Home() {
 
   const seoData = generateSEOData();
   
-  // Используем useSEO для главной страницы, DynamicSEO для остальных
-  if (!seoData) {
-    useSEO(language); // Для главной страницы используем настройки из админки
-  }
+  // Всегда вызываем useSEO для правильной работы хуков
+  const seoSettings = useSEO(language);
+  
+  // Но применяем только для главной страницы (когда seoData === null)
 
   return (
     <>

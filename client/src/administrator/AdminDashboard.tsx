@@ -259,13 +259,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminHeader onLogout={onLogout} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
-      <div className="flex h-screen">
+      <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - адаптивный */}
         <div className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
           fixed lg:static
-          top-0 left-0 z-40
+          top-16 lg:top-0 left-0 z-40
           w-64 bg-white border-r border-gray-200 h-full shadow-lg
           transition-transform duration-300 ease-in-out
         `}>
