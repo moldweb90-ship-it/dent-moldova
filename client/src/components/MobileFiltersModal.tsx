@@ -115,6 +115,9 @@ export function MobileFiltersModal({
         </DialogHeader>
 
         <div className="p-6 space-y-6">
+          {/* Hidden button to receive initial focus */}
+          <button tabIndex={-1} className="sr-only" autoFocus></button>
+          
           {/* Search */}
           <div>
             <div className="relative">

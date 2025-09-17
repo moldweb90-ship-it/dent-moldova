@@ -344,6 +344,11 @@ export default function Home() {
     setDetailOpen(true);
   }, []);
 
+  const handlePricesClick = useCallback((slug: string) => {
+    setSelectedClinic(slug);
+    setDetailOpen(true);
+  }, []);
+
   const handleBookClick = useCallback((clinic: any) => {
     setBookingClinic(clinic);
     setBookingOpen(true);
@@ -469,7 +474,7 @@ export default function Home() {
                 onClick={() => setMobileFiltersOpen(true)}
                 variant="outline"
                 size="sm"
-                className="flex md:hidden items-center space-x-1 px-2"
+                className="flex md:hidden items-center space-x-1 px-2 bg-gray-100 border-gray-300"
               >
                 <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t('filters')}</span>
@@ -582,6 +587,7 @@ export default function Home() {
           <RecommendedClinics
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
+            onPricesClick={handlePricesClick}
             language={language}
             clinics={recommendedData.clinics}
           />
@@ -624,6 +630,7 @@ export default function Home() {
             onPageChange={handlePageChange}
             onClinicClick={handleClinicClick}
             onBookClick={handleBookClick}
+            onPricesClick={handlePricesClick}
             onPhoneClick={handlePhoneClick}
             onWebsiteClick={handleWebsiteClick}
             filtersVisible={filtersVisible}

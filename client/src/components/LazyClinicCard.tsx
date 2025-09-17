@@ -6,6 +6,7 @@ interface LazyClinicCardProps {
   language: string;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: any) => void;
+  onPricesClick: (slug: string) => void;
   onPhoneClick: (clinic: any) => void;
   onWebsiteClick: (clinic: any) => void;
   priority?: boolean; // Приоритетная загрузка для первых карточек
@@ -16,6 +17,7 @@ export function LazyClinicCard({
   language,
   onClinicClick,
   onBookClick,
+  onPricesClick,
   onPhoneClick,
   onWebsiteClick,
   priority = false,
@@ -58,6 +60,7 @@ export function LazyClinicCard({
           language={language}
           onClinicClick={onClinicClick}
           onBookClick={onBookClick}
+          onPricesClick={onPricesClick}
           onPhoneClick={onPhoneClick}
           onWebsiteClick={onWebsiteClick}
           priority={priority}

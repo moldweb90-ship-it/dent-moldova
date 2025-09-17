@@ -15,6 +15,7 @@ import { LazyImage } from './LazyImage';
 interface RecommendedClinicsProps {
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: any) => void;
+  onPricesClick: (slug: string) => void;
   language?: string; // Добавляем язык как пропс
   clinics?: any[]; // Добавляем клиники как пропс
 }
@@ -52,7 +53,7 @@ function ClinicRatingDisplay({ clinicId }: { clinicId: string }) {
   );
 }
 
-export function RecommendedClinics({ onClinicClick, onBookClick, language: propLanguage, clinics: propClinics }: RecommendedClinicsProps) {
+export function RecommendedClinics({ onClinicClick, onBookClick, onPricesClick, language: propLanguage, clinics: propClinics }: RecommendedClinicsProps) {
   const { language: i18nLanguage, t } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showVerificationModal, setShowVerificationModal] = useState(false);

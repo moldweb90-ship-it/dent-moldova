@@ -41,6 +41,7 @@ interface ClinicGridProps {
   onPageChange: (page: number) => void;
   onClinicClick: (slug: string) => void;
   onBookClick: (clinic: Clinic) => void;
+  onPricesClick: (slug: string) => void;
   onPhoneClick?: (clinic: Clinic) => void;
   onWebsiteClick?: (clinic: Clinic) => void;
   filtersVisible?: boolean; // Новый пропс для состояния фильтров
@@ -55,6 +56,7 @@ export function ClinicGrid({
   onPageChange, 
   onClinicClick, 
   onBookClick,
+  onPricesClick,
   onPhoneClick,
   onWebsiteClick,
   filtersVisible = true, // По умолчанию фильтры видимы
@@ -88,6 +90,7 @@ export function ClinicGrid({
               language={language}
               onClinicClick={onClinicClick}
               onBookClick={onBookClick}
+              onPricesClick={onPricesClick}
               onPhoneClick={onPhoneClick}
               onWebsiteClick={onWebsiteClick}
               priority={index < 6} // Приоритетная загрузка для первых 6 карточек
