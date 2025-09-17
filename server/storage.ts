@@ -1015,10 +1015,13 @@ export class DatabaseStorage implements IStorage {
 
     const [clinic] = await db.select().from(clinics).where(eq(clinics.id, id));
     
-    // Delete associated packages first
+    // Delete all associated data first
     await db.delete(packages).where(eq(packages.clinicId, id));
-    // Delete associated services
     await db.delete(services).where(eq(services.clinicId, id));
+    await db.delete(workingHours).where(eq(workingHours.clinicId, id));
+    await db.delete(analyticsEvents).where(eq(analyticsEvents.clinicId, id));
+    await db.delete(bookings).where(eq(bookings.clinicId, id));
+    await db.delete(reviews).where(eq(reviews.clinicId, id));
     // Then delete clinic
     await db.delete(clinics).where(eq(clinics.id, id));
     

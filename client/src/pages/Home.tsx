@@ -92,13 +92,42 @@ export default function Home() {
                        districtFeaturePediatricRo?.districtSlug || districtFeatureParkingRo?.districtSlug || districtFeatureSosRo?.districtSlug ||
                        districtFeatureWork24hRo?.districtSlug || districtFeatureCreditRo?.districtSlug || districtFeatureWeekendRo?.districtSlug;
   
-  // Определяем активную функцию из URL
-  const activeFeature = featurePediatricRu || featurePediatricRo || cityFeaturePediatricRu || cityFeaturePediatricRo || districtFeaturePediatricRu || districtFeaturePediatricRo ? 'pediatricDentistry' :
-                       featureParkingRu || featureParkingRo || cityFeatureParkingRu || cityFeatureParkingRo || districtFeatureParkingRu || districtFeatureParkingRo ? 'parking' :
-                       featureSosRu || featureSosRo || cityFeatureSosRu || cityFeatureSosRo || districtFeatureSosRu || districtFeatureSosRo ? 'sos' :
-                       featureWork24hRu || featureWork24hRo || cityFeatureWork24hRu || cityFeatureWork24hRo || districtFeatureWork24hRu || districtFeatureWork24hRo ? 'work24h' :
-                       featureCreditRu || featureCreditRo || cityFeatureCreditRu || cityFeatureCreditRo || districtFeatureCreditRu || districtFeatureCreditRo ? 'credit' :
-                       featureWeekendRu || featureWeekendRo || cityFeatureWeekendRu || cityFeatureWeekendRo || districtFeatureWeekendRu || districtFeatureWeekendRo ? 'weekendWork' : null;
+  // Определяем активные функции из URL
+  const getActiveFeaturesFromUrl = () => {
+    const features = [];
+    
+    // Проверяем одиночные функции из slug'ов
+    if (featurePediatricRu || featurePediatricRo || cityFeaturePediatricRu || cityFeaturePediatricRo || districtFeaturePediatricRu || districtFeaturePediatricRo) {
+      features.push('pediatricDentistry');
+    }
+    if (featureParkingRu || featureParkingRo || cityFeatureParkingRu || cityFeatureParkingRo || districtFeatureParkingRu || districtFeatureParkingRo) {
+      features.push('parking');
+    }
+    if (featureSosRu || featureSosRo || cityFeatureSosRu || cityFeatureSosRo || districtFeatureSosRu || districtFeatureSosRo) {
+      features.push('sos');
+    }
+    if (featureWork24hRu || featureWork24hRo || cityFeatureWork24hRu || cityFeatureWork24hRo || districtFeatureWork24hRu || districtFeatureWork24hRo) {
+      features.push('work24h');
+    }
+    if (featureCreditRu || featureCreditRo || cityFeatureCreditRu || cityFeatureCreditRo || districtFeatureCreditRu || districtFeatureCreditRo) {
+      features.push('credit');
+    }
+    if (featureWeekendRu || featureWeekendRo || cityFeatureWeekendRu || cityFeatureWeekendRo || districtFeatureWeekendRu || districtFeatureWeekendRo) {
+      features.push('weekendWork');
+    }
+    
+    // Проверяем URL параметры для множественных функций
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFeatures = urlParams.getAll('features');
+    if (urlFeatures.length > 0) {
+      features.push(...urlFeatures);
+    }
+    
+    return [...new Set(features)]; // Убираем дубликаты
+  };
+
+  const activeFeatures = getActiveFeaturesFromUrl();
+  const activeFeature = activeFeatures.length > 0 ? activeFeatures[0] : null; // Для обратной совместимости
   
   useSEO(language); // Применяем глобальные SEO настройки только на главной странице
   
@@ -123,7 +152,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterValues>({
     city: '',
     districts: [],
-    features: activeFeature ? [activeFeature] : [],
+    features: activeFeatures,
     promotionalLabels: [],
     sort: 'dscore',
     verified: undefined
@@ -194,7 +223,7 @@ export default function Home() {
           districts: districtSlug && districts.length > 0 
             ? [districts.find(d => d[slugField] === districtSlug)?.id].filter(Boolean)
             : [],
-          features: activeFeature ? [activeFeature] : prev.features
+          features: activeFeatures.length > 0 ? activeFeatures : prev.features
         }));
       }
     } else if (!citySlug) {
@@ -203,24 +232,27 @@ export default function Home() {
         ...prev,
         city: '',
         districts: [],
-        features: activeFeature ? [activeFeature] : prev.features
+        features: activeFeatures.length > 0 ? activeFeatures : prev.features
       }));
     }
     
-    // Если есть активная функция, но она не установлена в фильтрах
+    // Если есть активные функции, но они не установлены в фильтрах
     // Проверяем, что это не результат ручного снятия галочки пользователем
-    if (activeFeature && !filters.features.includes(activeFeature) && !isManualFilterChange) {
-      setFilters(prev => ({
-        ...prev,
-        features: [activeFeature]
-      }));
+    if (activeFeatures.length > 0 && !isManualFilterChange) {
+      const missingFeatures = activeFeatures.filter(f => !filters.features.includes(f));
+      if (missingFeatures.length > 0) {
+        setFilters(prev => ({
+          ...prev,
+          features: [...new Set([...prev.features, ...activeFeatures])]
+        }));
+      }
     }
     
     // Сбрасываем флаг ручного изменения после обработки URL
     if (isManualFilterChange) {
       setIsManualFilterChange(false);
     }
-  }, [citySlug, districtSlug, cities, districts, language, activeFeature, filters.features, isManualFilterChange]);
+  }, [citySlug, districtSlug, cities, districts, language, activeFeatures, filters.features, isManualFilterChange]);
   
   // Build query parameters
   const buildQueryParams = useCallback(() => {
@@ -356,47 +388,81 @@ export default function Home() {
   }, [cities, districts, language, setLocation]);
 
   // Функция для навигации к URL функций/удобств
-  const navigateToFeature = useCallback((feature: string, cityId?: string, districtId?: string) => {
-    const featureSlugMap: Record<string, string> = {
-      'pediatricDentistry': 'pediatric-dentistry',
-      'parking': 'parking',
-      'sos': 'sos',
-      'work24h': 'work24h',
-      'credit': 'credit',
-      'weekendWork': 'weekend-work'
-    };
+  const navigateToFeature = useCallback((features: string[], cityId?: string, districtId?: string) => {
+    // Если выбрана только одна функция, используем красивые URL
+    if (features.length === 1) {
+      const featureSlugMap: Record<string, string> = {
+        'pediatricDentistry': 'pediatric-dentistry',
+        'parking': 'parking',
+        'sos': 'sos',
+        'work24h': 'work24h',
+        'credit': 'credit',
+        'weekendWork': 'weekend-work'
+      };
 
-    const featureSlug = featureSlugMap[feature];
-    if (!featureSlug) return;
+      const featureSlug = featureSlugMap[features[0]];
+      if (!featureSlug) return;
 
-    if (cityId) {
-      const safeCities = cities || [];
-      const safeDistricts = districts || [];
-      const selectedCity = safeCities.find(c => c.id === cityId);
-      
-      if (selectedCity) {
-        const citySlug = language === 'ro' ? selectedCity.slugRo : selectedCity.slugRu;
-        if (citySlug) {
-          if (districtId) {
-            // Город + район + функция
-            const selectedDistrict = safeDistricts.find(d => d.id === districtId);
-            if (selectedDistrict) {
-              const districtSlug = language === 'ro' ? selectedDistrict.slugRo : selectedDistrict.slugRu;
-              if (districtSlug) {
-                const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${districtSlug}/${featureSlug}`;
-                setLocation(url);
+      if (cityId) {
+        const safeCities = cities || [];
+        const safeDistricts = districts || [];
+        const selectedCity = safeCities.find(c => c.id === cityId);
+        
+        if (selectedCity) {
+          const citySlug = language === 'ro' ? selectedCity.slugRo : selectedCity.slugRu;
+          if (citySlug) {
+            if (districtId) {
+              // Город + район + функция
+              const selectedDistrict = safeDistricts.find(d => d.id === districtId);
+              if (selectedDistrict) {
+                const districtSlug = language === 'ro' ? selectedDistrict.slugRo : selectedDistrict.slugRu;
+                if (districtSlug) {
+                  const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${districtSlug}/${featureSlug}`;
+                  setLocation(url);
+                }
               }
+            } else {
+              // Город + функция
+              const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${featureSlug}`;
+              setLocation(url);
             }
-          } else {
-            // Город + функция
-            const url = `/${language === 'ro' ? 'ro/' : ''}city/${citySlug}/${featureSlug}`;
-            setLocation(url);
+          }
+        }
+      } else {
+        // Только функция
+        const url = `/${language === 'ro' ? 'ro/' : ''}${featureSlug}`;
+        setLocation(url);
+      }
+    } else if (features.length > 1) {
+      // Если выбрано несколько функций, используем параметры URL
+      const params = new URLSearchParams();
+      features.forEach(feature => params.append('features', feature));
+      
+      let baseUrl = `/${language === 'ro' ? 'ro/' : ''}`;
+      if (cityId) {
+        const safeCities = cities || [];
+        const safeDistricts = districts || [];
+        const selectedCity = safeCities.find(c => c.id === cityId);
+        
+        if (selectedCity) {
+          const citySlug = language === 'ro' ? selectedCity.slugRo : selectedCity.slugRu;
+          if (citySlug) {
+            if (districtId) {
+              const selectedDistrict = safeDistricts.find(d => d.id === districtId);
+              if (selectedDistrict) {
+                const districtSlug = language === 'ro' ? selectedDistrict.slugRo : selectedDistrict.slugRu;
+                if (districtSlug) {
+                  baseUrl += `city/${citySlug}/${districtSlug}`;
+                }
+              }
+            } else {
+              baseUrl += `city/${citySlug}`;
+            }
           }
         }
       }
-    } else {
-      // Только функция
-      const url = `/${language === 'ro' ? 'ro/' : ''}${featureSlug}`;
+      
+      const url = `${baseUrl}?${params.toString()}`;
       setLocation(url);
     }
   }, [cities, districts, language, setLocation]);
@@ -410,13 +476,14 @@ export default function Home() {
     const districtChanged = newFilters.districts.length !== filters.districts.length || 
                            newFilters.districts[0] !== filters.districts[0];
     const featuresChanged = newFilters.features.length !== filters.features.length || 
-                           newFilters.features[0] !== filters.features[0];
+                           !newFilters.features.every(f => filters.features.includes(f)) ||
+                           !filters.features.every(f => newFilters.features.includes(f));
     
     // Если пользователь выбрал "Все города" (city = ''), возвращаемся на главную
     if (cityChanged && !newFilters.city) {
       // Если есть активная функция, переходим на страницу функции без города
       if (newFilters.features.length > 0) {
-        navigateToFeature(newFilters.features[0]);
+        navigateToFeature(newFilters.features);
       } else {
         const homeUrl = language === 'ro' ? '/ro' : '/';
         setLocation(homeUrl);
@@ -432,7 +499,7 @@ export default function Home() {
       if (newFilters.features.length > 0) {
         // Выбрана новая функция - переходим на страницу функции
         const districtId = newFilters.districts.length > 0 ? newFilters.districts[0] : undefined;
-        navigateToFeature(newFilters.features[0], newFilters.city, districtId);
+        navigateToFeature(newFilters.features, newFilters.city, districtId);
         // Обновляем фильтры после навигации
         setTimeout(() => {
           setFilters(newFilters);
@@ -466,7 +533,7 @@ export default function Home() {
       if (newFilters.features.length > 0) {
         // Есть активная функция - переходим на страницу город+функция
         const districtId = newFilters.districts.length > 0 ? newFilters.districts[0] : undefined;
-        navigateToFeature(newFilters.features[0], newFilters.city, districtId);
+        navigateToFeature(newFilters.features, newFilters.city, districtId);
       } else {
         // Нет функции - переходим на страницу города
         const districtId = newFilters.districts.length > 0 ? newFilters.districts[0] : undefined;
@@ -490,7 +557,7 @@ export default function Home() {
         // Выбран новый район
         if (newFilters.features.length > 0) {
           // Есть функция - переходим на страницу район+функция
-          navigateToFeature(newFilters.features[0], newFilters.city, newFilters.districts[0]);
+          navigateToFeature(newFilters.features, newFilters.city, newFilters.districts[0]);
         } else {
           // Нет функции - переходим на страницу района
           navigateToLocation(newFilters.city, newFilters.districts[0]);
@@ -499,7 +566,7 @@ export default function Home() {
         // Район убран - переходим на страницу города или город+функция
         if (newFilters.features.length > 0) {
           // Есть функция - переходим на страницу город+функция
-          navigateToFeature(newFilters.features[0], newFilters.city);
+          navigateToFeature(newFilters.features, newFilters.city);
         } else {
           // Нет функции - переходим на страницу города
           navigateToLocation(newFilters.city);
@@ -686,28 +753,78 @@ export default function Home() {
       }
     };
 
-    const selectedFeature = activeFeature ? featureNames[activeFeature] : null;
-    const featureName = selectedFeature ? (language === 'ru' ? selectedFeature.ru : selectedFeature.ro) : '';
-    const featureTitle = selectedFeature ? (language === 'ru' ? selectedFeature.titleRu : selectedFeature.titleRo) : '';
+    // Обработка множественных функций для SEO
+    const getMultipleFeaturesTitle = (features: string[]) => {
+      if (features.length === 0) return { title: '', name: '' };
+      if (features.length === 1) {
+        const feature = featureNames[features[0]];
+        return {
+          title: language === 'ru' ? feature.titleRu : feature.titleRo,
+          name: language === 'ru' ? feature.ru : feature.ro
+        };
+      }
+      
+      // Для множественных функций создаем комбинированное название
+      const titles = features.map(f => featureNames[f] ? (language === 'ru' ? featureNames[f].titleRu : featureNames[f].titleRo) : '').filter(Boolean);
+      const names = features.map(f => featureNames[f] ? (language === 'ru' ? featureNames[f].ru : featureNames[f].ro) : '').filter(Boolean);
+      
+      if (language === 'ru') {
+        // Для русского: "Детские стоматологические клиники с парковкой"
+        const mainTitle = titles[0];
+        const additionalFeatures = titles.slice(1);
+        if (additionalFeatures.length > 0) {
+          const additional = additionalFeatures.map(t => t.toLowerCase().replace('стоматологические клиники', '').replace('стоматологии', '').trim()).join(' и ');
+          return {
+            title: `${mainTitle} с ${additional}`,
+            name: names.join(' и ')
+          };
+        }
+        return { title: mainTitle, name: names[0] };
+      } else {
+        // Для румынского: простое перечисление
+        return {
+          title: titles.join(' și '),
+          name: names.join(' și ')
+        };
+      }
+    };
+
+    const selectedFeatures = activeFeatures.length > 0 ? activeFeatures : (activeFeature ? [activeFeature] : []);
+    const featureInfo = getMultipleFeaturesTitle(selectedFeatures);
+    const featureTitle = featureInfo.title;
+    const featureName = featureInfo.name;
 
     // Генерируем canonical URL
     let canonical = `/${language === 'ro' ? 'ro/' : ''}`;
-    if (selectedCity && selectedDistrict && selectedFeature) {
-      canonical += `city/${citySlug}/${districtSlug}/${selectedFeature.slug}`;
-    } else if (selectedCity && selectedFeature) {
-      canonical += `city/${citySlug}/${selectedFeature.slug}`;
+    if (selectedFeatures.length === 1 && selectedCity && selectedDistrict) {
+      const feature = featureNames[selectedFeatures[0]];
+      canonical += `city/${citySlug}/${districtSlug}/${feature.slug}`;
+    } else if (selectedFeatures.length === 1 && selectedCity) {
+      const feature = featureNames[selectedFeatures[0]];
+      canonical += `city/${citySlug}/${feature.slug}`;
+    } else if (selectedFeatures.length === 1) {
+      const feature = featureNames[selectedFeatures[0]];
+      canonical += feature.slug;
+    } else if (selectedFeatures.length > 1) {
+      // Для множественных функций используем параметры
+      if (selectedCity && selectedDistrict) {
+        canonical += `city/${citySlug}/${districtSlug}`;
+      } else if (selectedCity) {
+        canonical += `city/${citySlug}`;
+      }
+      const params = new URLSearchParams();
+      selectedFeatures.forEach(feature => params.append('features', feature));
+      canonical += `?${params.toString()}`;
     } else if (selectedCity && selectedDistrict) {
       canonical += `city/${citySlug}/${districtSlug}`;
     } else if (selectedCity) {
       canonical += `city/${citySlug}`;
-    } else if (selectedFeature) {
-      canonical += selectedFeature.slug;
     } else {
       canonical = canonical.slice(0, -1) || '/'; // Remove trailing slash for home
     }
 
-    if (selectedFeature && selectedCity && selectedDistrict) {
-      // Страница функции + город + район
+    if (selectedFeatures.length > 0 && selectedCity && selectedDistrict) {
+      // Страница функций + город + район
       return {
         title: language === 'ru' 
           ? `${featureTitle} в ${cityName} на ${districtName} - Dent Moldova`
@@ -720,8 +837,8 @@ export default function Home() {
           : `${featureName.toLowerCase()} ${districtName} ${cityName}, stomatologie ${districtName}, ${featureName.toLowerCase()} ${cityName}`,
         canonical
       };
-    } else if (selectedFeature && selectedCity) {
-      // Страница функции + город
+    } else if (selectedFeatures.length > 0 && selectedCity) {
+      // Страница функций + город
       return {
         title: language === 'ru' 
           ? `${featureTitle} в ${cityName} - Dent Moldova`
@@ -734,8 +851,8 @@ export default function Home() {
           : `${featureName.toLowerCase()} ${cityName}, stomatologie ${cityName}, ${featureName.toLowerCase()}`,
         canonical
       };
-    } else if (selectedFeature) {
-      // Страница функции без города
+    } else if (selectedFeatures.length > 0) {
+      // Страница функций без города
       return {
         title: language === 'ru' 
           ? `${featureTitle} в Молдове - Dent Moldova`

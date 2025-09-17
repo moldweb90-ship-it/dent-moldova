@@ -593,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         nameRu: z.string().min(1, 'Название на русском обязательно'),
         nameRo: z.string().min(1, 'Название на румынском обязательно'),
         cityId: z.string().min(1, 'Город обязателен'),
-        districtId: z.string().optional().transform(val => val === 'null' || val === '' ? null : val),
+        districtId: z.string().optional().transform(val => val === 'null' || val === '' || val === 'no_districts' ? null : val),
         addressRu: z.string().optional(),
         addressRo: z.string().optional(),
         phone: z.string().optional(),
@@ -660,7 +660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Старые поля
         priceIndex: z.string().transform(val => parseInt(val) || 50),
         trustIndex: z.string().transform(val => parseInt(val) || 50),
-        
+        reviewsIndex: z.string().transform(val => parseInt(val) || 50),
         accessIndex: z.string().transform(val => parseInt(val) || 50),
         // SEO fields
         seoTitleRu: z.string().optional(),
@@ -839,7 +839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         nameRu: z.string().optional(),
         nameRo: z.string().optional(),
         cityId: z.string().optional(),
-        districtId: z.string().optional().transform(val => val === 'null' || val === '' ? null : val),
+        districtId: z.string().optional().transform(val => val === 'null' || val === '' || val === 'no_districts' ? null : val),
         addressRu: z.string().optional(),
         addressRo: z.string().optional(),
         phone: z.string().optional(),
