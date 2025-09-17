@@ -64,6 +64,47 @@ function Router() {
       <Route path="/ro/city/:citySlug" component={Home} />
       <Route path="/city/:citySlug/:districtSlug" component={Home} />
       <Route path="/city/:citySlug" component={Home} />
+      
+      {/* Feature-based routes - Romanian */}
+      <Route path="/ro/pediatric-dentistry" component={Home} />
+      <Route path="/ro/parking" component={Home} />
+      <Route path="/ro/sos" component={Home} />
+      <Route path="/ro/work24h" component={Home} />
+      <Route path="/ro/credit" component={Home} />
+      <Route path="/ro/weekend-work" component={Home} />
+      <Route path="/ro/city/:citySlug/pediatric-dentistry" component={Home} />
+      <Route path="/ro/city/:citySlug/parking" component={Home} />
+      <Route path="/ro/city/:citySlug/sos" component={Home} />
+      <Route path="/ro/city/:citySlug/work24h" component={Home} />
+      <Route path="/ro/city/:citySlug/credit" component={Home} />
+      <Route path="/ro/city/:citySlug/weekend-work" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/pediatric-dentistry" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/parking" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/sos" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/work24h" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/credit" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/weekend-work" component={Home} />
+      
+      {/* Feature-based routes - Russian */}
+      <Route path="/pediatric-dentistry" component={Home} />
+      <Route path="/parking" component={Home} />
+      <Route path="/sos" component={Home} />
+      <Route path="/work24h" component={Home} />
+      <Route path="/credit" component={Home} />
+      <Route path="/weekend-work" component={Home} />
+      <Route path="/city/:citySlug/pediatric-dentistry" component={Home} />
+      <Route path="/city/:citySlug/parking" component={Home} />
+      <Route path="/city/:citySlug/sos" component={Home} />
+      <Route path="/city/:citySlug/work24h" component={Home} />
+      <Route path="/city/:citySlug/credit" component={Home} />
+      <Route path="/city/:citySlug/weekend-work" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/pediatric-dentistry" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/parking" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/sos" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/work24h" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/credit" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/weekend-work" component={Home} />
+      
       <Route path="/" component={Home} />
       
       {/* Clinic Routes */}

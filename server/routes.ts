@@ -129,7 +129,80 @@ async function generateSitemap(baseUrl: string) {
     }
   }
 
-  // 4. Active clinic pages
+  // 4. Feature pages
+  const features = [
+    'pediatric-dentistry',
+    'parking', 
+    'sos',
+    'work24h',
+    'credit',
+    'weekend-work'
+  ];
+
+  for (const feature of features) {
+    // Russian version
+    urls.push({
+      loc: `${baseUrl}/${feature}`,
+      lastmod: new Date().toISOString(),
+      changefreq: 'weekly',
+      priority: '0.8'
+    });
+    
+    // Romanian version
+    urls.push({
+      loc: `${baseUrl}/ro/${feature}`,
+      lastmod: new Date().toISOString(),
+      changefreq: 'weekly',
+      priority: '0.8'
+    });
+    
+    // Feature + City combinations
+    for (const city of allCities) {
+      if (city.slugRu) {
+        urls.push({
+          loc: `${baseUrl}/city/${city.slugRu}/${feature}`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly',
+          priority: '0.7'
+        });
+      }
+      
+      if (city.slugRo) {
+        urls.push({
+          loc: `${baseUrl}/ro/city/${city.slugRo}/${feature}`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly',
+          priority: '0.7'
+        });
+      }
+    }
+    
+    // Feature + City + District combinations
+    for (const item of allDistricts) {
+      const district = item.districts;
+      const city = item.cities;
+      
+      if (district.slugRu && city?.slugRu) {
+        urls.push({
+          loc: `${baseUrl}/city/${city.slugRu}/${district.slugRu}/${feature}`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly',
+          priority: '0.6'
+        });
+      }
+      
+      if (district.slugRo && city?.slugRo) {
+        urls.push({
+          loc: `${baseUrl}/ro/city/${city.slugRo}/${district.slugRo}/${feature}`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly',
+          priority: '0.6'
+        });
+      }
+    }
+  }
+
+  // 5. Active clinic pages
   const activeClinics = await db.query.clinics.findMany({
     where: eq(clinics.verified, true),
     columns: {
@@ -144,7 +217,7 @@ async function generateSitemap(baseUrl: string) {
       loc: `${baseUrl}/clinic/${clinic.slug}`,
       lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
       changefreq: 'weekly',
-      priority: '0.7'
+      priority: '0.6'
     });
     
     // Romanian version
@@ -152,7 +225,7 @@ async function generateSitemap(baseUrl: string) {
       loc: `${baseUrl}/ro/clinic/${clinic.slug}`,
       lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
       changefreq: 'weekly',
-      priority: '0.7'
+      priority: '0.6'
     });
   }
   
@@ -173,6 +246,9 @@ ${urls.map(url => `  <url>
     mainPages: 4,
     cityPages: allCities.length * 2, // Russian + Romanian
     districtPages: allDistricts.length * 2, // Russian + Romanian
+    featurePages: features.length * 2, // Russian + Romanian
+    featureCityPages: features.length * allCities.length * 2, // Feature + City combinations
+    featureDistrictPages: features.length * allDistricts.length * 2, // Feature + District combinations
     clinicPages: activeClinics.length * 2, // Russian + Romanian
     lastUpdated: new Date().toISOString()
   };

@@ -15,54 +15,67 @@ export function LanguageToggle() {
   }, [params]); // Обновляем при изменении параметров wouter
 
   // Определяем текущий язык по URL
-  const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath === '/ro' ? 'ro' : 'ru';
+  const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath.startsWith('/ro') ? 'ro' : 'ru';
   console.log('🔄 LanguageToggle: Текущий путь:', currentPath, 'определенный язык:', currentLanguage);
 
   const handleLanguageChange = (newLanguage: 'ru' | 'ro') => {
-    const path = window.location.pathname; // Используем актуальный путь
+    const path = window.location.pathname;
     console.log('🔄 LanguageToggle: Переключение языка на', newLanguage, 'текущий путь:', path);
+    
+    let newPath = path;
     
     if (path.startsWith('/clinic/')) {
       // Для страниц клиник
       if (path.startsWith('/clinic/ro/')) {
-        // Сейчас румынский, переключаем на русский
         if (newLanguage === 'ru') {
           const slug = path.replace('/clinic/ro/', '');
-          const newPath = `/clinic/${slug}`;
-          console.log('🔄 LanguageToggle: Переключаем с румынского на русский:', newPath);
-          setLocation(newPath);
-          // Обновляем lang атрибут
-          document.documentElement.lang = newLanguage;
+          newPath = `/clinic/${slug}`;
         }
       } else {
-        // Сейчас русский, переключаем на румынский
         if (newLanguage === 'ro') {
           const slug = path.replace('/clinic/', '');
-          const newPath = `/clinic/ro/${slug}`;
-          console.log('🔄 LanguageToggle: Переключаем с русского на румынский:', newPath);
-          setLocation(newPath);
-          // Обновляем lang атрибут
-          document.documentElement.lang = newLanguage;
+          newPath = `/clinic/ro/${slug}`;
         }
       }
-    } else if (path === '/' || path === '/ro') {
-      // Для главной страницы
-      if (path === '/ro' && newLanguage === 'ru') {
-        // Сейчас румынская главная, переключаем на русскую
-        console.log('🔄 LanguageToggle: Переключаем с румынской главной на русскую: /');
-        setLocation('/');
-        // Обновляем lang атрибут
-        document.documentElement.lang = newLanguage;
-      } else if (path === '/' && newLanguage === 'ro') {
-        // Сейчас русская главная, переключаем на румынскую
-        console.log('🔄 LanguageToggle: Переключаем с русской главной на румынскую: /ro');
-        setLocation('/ro');
-        // Обновляем lang атрибут
-        document.documentElement.lang = newLanguage;
+    } else if (path.startsWith('/ro/')) {
+      // Румынские страницы - переключаем на русские
+      if (newLanguage === 'ru') {
+        if (path === '/ro') {
+          newPath = '/';
+        } else if (path.startsWith('/ro/city/')) {
+          // /ro/city/chisinau/sos -> /city/chisinau/sos
+          newPath = path.replace('/ro/', '/');
+        } else if (path.startsWith('/ro/')) {
+          // /ro/sos -> /sos
+          newPath = path.replace('/ro/', '/');
+        }
       }
     } else {
-      // Для других страниц пока оставляем как есть
-      console.log('🔄 LanguageToggle: Неподдерживаемая страница, переключение не поддерживается');
+      // Русские страницы - переключаем на румынские  
+      if (newLanguage === 'ro') {
+        if (path === '/') {
+          newPath = '/ro';
+        } else if (path.startsWith('/city/')) {
+          // /city/chisinau/sos -> /ro/city/chisinau/sos
+          newPath = '/ro' + path;
+        } else if (path.match(/^\/(pediatric-dentistry|parking|sos|work24h|credit|weekend-work)$/)) {
+          // /sos -> /ro/sos
+          newPath = '/ro' + path;
+        } else if (path.match(/^\/city\/[^\/]+\/[^\/]+\/(pediatric-dentistry|parking|sos|work24h|credit|weekend-work)$/)) {
+          // /city/chisinau/botanica/sos -> /ro/city/chisinau/botanica/sos
+          newPath = '/ro' + path;
+        }
+      }
+    }
+    
+    // Применяем изменения только если путь действительно изменился
+    if (newPath !== path) {
+      console.log('🔄 LanguageToggle: Переключаем путь:', path, '->', newPath);
+      setLocation(newPath);
+      document.documentElement.lang = newLanguage;
+    } else {
+      console.log('🔄 LanguageToggle: Путь не изменился, только обновляем язык');
+      document.documentElement.lang = newLanguage;
     }
   };
 
