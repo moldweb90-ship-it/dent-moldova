@@ -334,5 +334,8 @@ export const ro = {
   errorDesc: "Nu s-a putut trimite cererea. Încercați din nou.",
   // Availability filter
   availability: "Disponibilitate",
-  openNow: "Deschise acum"
+  openNow: "Deschise acum",
+  
+  // No clinics found message
+  noClinicsFound: "Nu au fost găsite clinici. Încercați să modificați parametrii de căutare."
 };

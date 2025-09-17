@@ -126,5 +126,6 @@
   "thursday": "Joi",
   "friday": "Vineri",
   "saturday": "Sâmbătă",
-  "sunday": "Duminică"
+  "sunday": "Duminică",
+  "noClinicsFound": "Nu au fost găsite clinici. Încercați să modificați parametrii de căutare."
 }

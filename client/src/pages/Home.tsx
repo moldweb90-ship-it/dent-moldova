@@ -1120,8 +1120,8 @@ export default function Home() {
               {searchQuery || Object.values(filters).some(v => 
                 Array.isArray(v) ? v.length > 0 : v !== false && v !== 'dscore' && !Array.isArray(v) && v !== 0 && v !== 100
               ) 
-                ? 'Клиники не найдены. Попробуйте изменить параметры поиска.'
-                : 'Загрузка клиник...'
+                ? t('noClinicsFound')
+                : t('loading')
               }
             </p>
           </div>

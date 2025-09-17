@@ -334,5 +334,8 @@ export const ru = {
   errorDesc: "Не удалось отправить заявку. Попробуйте еще раз.",
   // Availability filter
   availability: "Доступность",
-  openNow: "Открытые сейчас"
+  openNow: "Открытые сейчас",
+  
+  // No clinics found message
+  noClinicsFound: "Клиники не найдены. Попробуйте изменить параметры поиска."
 };

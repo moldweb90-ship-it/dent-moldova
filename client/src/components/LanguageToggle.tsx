@@ -1,26 +1,28 @@
 import { useTranslation } from '../lib/i18n';
-import { useLocation, useRoute } from 'wouter';
-import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useEffect } from 'react';
 
 export function LanguageToggle() {
-  const [, setLocation] = useLocation();
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentPath, setLocation] = useLocation();
   
-  // Слушаем изменения URL через wouter
-  const [, params] = useRoute('*');
-
-  // Обновляем путь при изменении URL
-  useEffect(() => {
-    setCurrentPath(window.location.pathname);
-  }, [params]); // Обновляем при изменении параметров wouter
+  // Получаем текущий путь напрямую из wouter
+  // currentPath автоматически обновляется при любых изменениях URL
 
   // Определяем текущий язык по URL
-  const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath.startsWith('/ro') ? 'ro' : 'ru';
+  const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath.startsWith('/ro/') || currentPath === '/ro' ? 'ro' : 'ru';
   console.log('🔄 LanguageToggle: Текущий путь:', currentPath, 'определенный язык:', currentLanguage);
 
   const handleLanguageChange = (newLanguage: 'ru' | 'ro') => {
-    const path = window.location.pathname;
-    console.log('🔄 LanguageToggle: Переключение языка на', newLanguage, 'текущий путь:', path);
+    // Не переключаем если уже на нужном языке
+    if (currentLanguage === newLanguage) {
+      console.log('🔄 LanguageToggle: Уже на языке', newLanguage);
+      return;
+    }
+
+    const fullPath = currentPath + window.location.search; // Включаем query parameters
+    const path = currentPath; // Путь без параметров
+    const queryString = window.location.search; // Параметры
+    console.log('🔄 LanguageToggle: Переключение языка на', newLanguage, 'путь:', path, 'параметры:', queryString);
     
     let newPath = path;
     
@@ -37,7 +39,7 @@ export function LanguageToggle() {
           newPath = `/clinic/ro/${slug}`;
         }
       }
-    } else if (path.startsWith('/ro/')) {
+    } else if (path.startsWith('/ro/') || path === '/ro') {
       // Румынские страницы - переключаем на русские
       if (newLanguage === 'ru') {
         if (path === '/ro') {
@@ -47,6 +49,7 @@ export function LanguageToggle() {
           newPath = path.replace('/ro/', '/');
         } else if (path.startsWith('/ro/')) {
           // /ro/sos -> /sos
+          // /ro/?features=parking&features=sos -> /?features=parking&features=sos
           newPath = path.replace('/ro/', '/');
         }
       }
@@ -64,14 +67,20 @@ export function LanguageToggle() {
         } else if (path.match(/^\/city\/[^\/]+\/[^\/]+\/(pediatric-dentistry|parking|sos|work24h|credit|weekend-work)$/)) {
           // /city/chisinau/botanica/sos -> /ro/city/chisinau/botanica/sos
           newPath = '/ro' + path;
+        } else {
+          // Для всех остальных страниц (включая с URL параметрами)
+          newPath = '/ro' + path;
         }
       }
     }
     
+    // Добавляем query string к новому пути
+    const finalPath = newPath + queryString;
+    
     // Применяем изменения только если путь действительно изменился
     if (newPath !== path) {
-      console.log('🔄 LanguageToggle: Переключаем путь:', path, '->', newPath);
-      setLocation(newPath);
+      console.log('🔄 LanguageToggle: Переключаем путь:', fullPath, '->', finalPath);
+      setLocation(finalPath);
       document.documentElement.lang = newLanguage;
     } else {
       console.log('🔄 LanguageToggle: Путь не изменился, только обновляем язык');
