@@ -114,7 +114,10 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-gray-200 z-[10001]">
+      <DialogContent 
+        className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-gray-200 z-[10001]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader className="border-b border-gray-200 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
