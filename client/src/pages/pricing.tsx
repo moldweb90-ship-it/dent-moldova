@@ -3,16 +3,23 @@ import { Check, ArrowRight, Star, Crown, Shield, ArrowLeft, Home, Plus, Filter, 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'wouter';
+import { Link, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { AddClinicModal } from '../components/AddClinicModal';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 export default function PricingPage() {
-  const { t } = useTranslation();
+  const [, paramsRo] = useRoute('/ro/pricing');
+  const isRomanian = !!paramsRo;
+  const { t, changeLanguage } = useTranslation();
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  // Синхронизируем язык в i18n системе с URL
+  useEffect(() => {
+    changeLanguage(isRomanian ? 'ro' : 'ru');
+  }, [isRomanian, changeLanguage]);
 
   // Fetch site settings for logo
   const { data: siteSettings, isLoading: settingsLoading } = useQuery({
@@ -216,6 +223,7 @@ export default function PricingPage() {
                   variant="outline"
                   size="lg"
                   className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 hover:border-blue-700 hover:text-blue-700 transition-all duration-200 group relative overflow-hidden"
+                  onClick={() => setClinicFormOpen(true)}
                 >
                   <span className="relative z-10 flex items-center">
                     {t('pricing.basic.button')} 
@@ -302,6 +310,7 @@ export default function PricingPage() {
                 <Button 
                   size="lg"
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 transition-all duration-200 group relative overflow-hidden shadow-lg hover:shadow-xl"
+                  onClick={() => setClinicFormOpen(true)}
                 >
                   <span className="relative z-10 flex items-center">
                     {t('pricing.verified.button')} 
@@ -376,6 +385,7 @@ export default function PricingPage() {
                   variant="outline"
                   size="lg"
                   className="w-full border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all duration-200 group relative overflow-hidden"
+                  onClick={() => setClinicFormOpen(true)}
                 >
                   <span className="relative z-10 flex items-center">
                     {t('pricing.premium.button')} 
@@ -399,6 +409,36 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
+      
+        {/* Footer */}
+        <footer className="bg-white border-t border-gray-200 mt-8 md:mt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-4 md:mb-0">
+                <p className="text-sm text-gray-600">© 2024 {t('appTitle')}. Все права защищены.</p>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="flex space-x-6 text-sm text-gray-600">
+                  <a 
+                    href={isRomanian ? '/ro/pricing' : '/pricing'} 
+                    className="hover:text-gray-900 transition-colors"
+                  >
+                    {t('pricing.title')}
+                  </a>
+                  <a
+                    href={isRomanian ? '/ro/privacy' : '/privacy'}
+                    className="hover:text-gray-900 transition-colors"
+                  >
+                    {isRomanian ? 'Politica de confidențialitate' : 'Политика приватности'}
+                  </a>
+                  <a href="#" className="hover:text-gray-900 transition-colors">
+                    {isRomanian ? 'Contacte' : 'Контакты'}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );

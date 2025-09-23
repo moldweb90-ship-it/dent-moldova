@@ -1241,8 +1241,18 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-6 text-sm text-gray-600">
-                <a href="/pricing" className="hover:text-gray-900 transition-colors">{t('pricing.title')}</a>
-                <a href="#" className="hover:text-gray-900 transition-colors">Политика приватности</a>
+                <a 
+                  href={language === 'ro' ? '/ro/pricing' : '/pricing'} 
+                  className="hover:text-gray-900 transition-colors"
+                >
+                  {t('pricing.title')}
+                </a>
+                <a
+                  href={language === 'ro' ? '/ro/privacy' : '/privacy'}
+                  className="hover:text-gray-900 transition-colors"
+                >
+                  {language === 'ro' ? 'Politica de confidențialitate' : 'Политика приватности'}
+                </a>
                 <a href="#" className="hover:text-gray-900 transition-colors">Контакты</a>
               </div>
               

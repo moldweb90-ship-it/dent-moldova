@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import ClinicPage from "@/pages/clinic/[slug]";
 import AdminPage from "@/pages/admin";
 import PricingPage from "@/pages/pricing";
+import PrivacyPolicyPage from "@/pages/privacy";
 import NotFound from "@/pages/not-found";
 
 // Глобальное состояние для телефонного модала
@@ -114,6 +115,9 @@ function Router() {
       {/* Other Routes */}
       <Route path="/admin" component={AdminPage} />
       <Route path="/pricing" component={PricingPage} />
+      <Route path="/ro/pricing" component={PricingPage} />
+      <Route path="/privacy" component={PrivacyPolicyPage} />
+      <Route path="/ro/privacy" component={PrivacyPolicyPage} />
       <Route component={NotFound} />
     </Switch>
   );

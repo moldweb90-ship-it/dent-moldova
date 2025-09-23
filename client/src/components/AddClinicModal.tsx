@@ -145,7 +145,10 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 p-0 border-0 rounded-lg">
+      <DialogContent 
+        className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 p-0 border-0 rounded-lg"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white relative overflow-hidden rounded-t-lg">
           <div className="p-4 sm:p-6">
             <DialogTitle className="text-xl sm:text-2xl font-bold text-white flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
