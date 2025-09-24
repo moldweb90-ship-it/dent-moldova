@@ -72,10 +72,14 @@ export function MobileFiltersModal({
 
   const toggleDistrict = (districtId: string) => {
     const current = filters.districts;
-    const updated = current.includes(districtId) 
-      ? current.filter(v => v !== districtId)
-      : [...current, districtId];
-    updateFilter('districts', updated);
+    // Если район уже выбран, снимаем его
+    if (current.includes(districtId)) {
+      const updated = current.filter(v => v !== districtId);
+      updateFilter('districts', updated);
+    } else {
+      // Если выбираем новый район, заменяем весь массив (только один район может быть выбран)
+      updateFilter('districts', [districtId]);
+    }
   };
 
   const toggleFeature = (feature: string) => {
@@ -106,7 +110,7 @@ export function MobileFiltersModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto p-0 mobile-filters-modal">
         <DialogHeader className="px-6 py-4 border-b border-gray-200">
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
             <Filter className="h-5 w-5 mr-2" />
@@ -194,7 +198,7 @@ export function MobileFiltersModal({
                       id={district.id}
                       checked={filters.districts.includes(district.id)}
                       onCheckedChange={() => toggleDistrict(district.id)}
-                      className="h-4 w-4"
+                      className="h-6 w-6 mobile-checkbox"
                     />
                     <label 
                       htmlFor={district.id} 

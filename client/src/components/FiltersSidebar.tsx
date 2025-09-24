@@ -74,10 +74,14 @@ export function FiltersSidebar({
 
   const toggleDistrict = (districtId: string) => {
     const current = filters.districts;
-    const updated = current.includes(districtId) 
-      ? current.filter(v => v !== districtId)
-      : [...current, districtId];
-    updateFilter('districts', updated);
+    // Если район уже выбран, снимаем его
+    if (current.includes(districtId)) {
+      const updated = current.filter(v => v !== districtId);
+      updateFilter('districts', updated);
+    } else {
+      // Если выбираем новый район, заменяем весь массив (только один район может быть выбран)
+      updateFilter('districts', [districtId]);
+    }
   };
 
   const toggleFeature = (feature: string) => {
@@ -164,7 +168,7 @@ export function FiltersSidebar({
                         id={district.id}
                         checked={filters.districts.includes(district.id)}
                         onCheckedChange={() => toggleDistrict(district.id)}
-                        className="h-4 w-4"
+                        className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
                       />
                       <label 
                         htmlFor={district.id} 

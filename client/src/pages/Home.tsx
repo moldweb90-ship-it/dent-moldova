@@ -146,8 +146,6 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   
   const [filters, setFilters] = useState<FilterValues>({
     city: '',
@@ -161,25 +159,6 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const limit = 50;
   const [isManualFilterChange, setIsManualFilterChange] = useState(false);
-
-  // Убираем отслеживание скролла для анимированного меню
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     const currentScrollY = window.scrollY;
-  //     const headerHeight = 64;
-  //     
-  //     if (currentScrollY > headerHeight) {
-  //       setIsHeaderVisible(true);
-  //     } else {
-  //       setIsHeaderVisible(false);
-  //     }
-  //     
-  //     setLastScrollY(currentScrollY);
-  //   };
-
-  //   window.addEventListener('scroll', handleScroll, { passive: true });
-  //   return () => window.removeEventListener('scroll', handleScroll);
-  // }, [lastScrollY]);
 
   // Fetch cities
   const { data: cities = [], isLoading: citiesLoading } = useQuery<any[]>({
@@ -957,9 +936,9 @@ export default function Home() {
           language={language}
         />
       )}
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}

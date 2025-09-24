@@ -295,10 +295,10 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
       <DialogContent 
-        className="mobile-form-container w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001] p-0"
+        className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto md:overflow-y-visible mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001] p-0 sm:p-6"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="pb-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-0 sm:-m-6 px-4 py-4 sm:p-6 rounded-t-3xl text-white relative overflow-hidden">
+        <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-0 sm:-m-6 px-3 pt-3 pb-2 sm:px-8 sm:py-7 rounded-t-3xl sm:rounded-t-lg text-white relative overflow-hidden">
           {/* Background pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
@@ -312,7 +312,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="mt-3 pt-4 px-3 pb-3 sm:mt-6 sm:pt-8 sm:px-8 sm:pb-8 space-y-4 sm:space-y-6">
           {/* Имя и Телефон в одной строке */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
@@ -508,7 +508,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
              </p>}
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white -m-3 sm:-m-6 p-3 sm:p-6 rounded-b-lg">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white -m-3 sm:m-0 p-3 sm:p-0 rounded-b-lg">
             <Button 
               type="button" 
               variant="outline" 

@@ -79,10 +79,10 @@
   @media (max-width: 640px) {
     .mobile-form-container {
       position: fixed;
-      top: 10vh;
+      top: 15vh;
       left: 50%;
       transform: translateX(-50%);
-      max-height: 80vh;
+      max-height: 75vh;
     }
   }
 }
@@ -90,7 +90,32 @@
 /* Landscape orientation fixes */
 @media (max-width: 640px) and (orientation: landscape) {
   .mobile-form-container {
-    max-height: 95vh;
-    top: 2.5vh;
+    max-height: 90vh;
+    top: 5vh;
+  }
+}
+
+/* iOS specific modal positioning for all modals */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 640px) {
+    /* Booking modal */
+    .mobile-form-container {
+      top: 12vh !important;
+      max-height: 78vh !important;
+    }
+    
+    /* Filters modal */
+    .mobile-filters-modal,
+    [data-radix-dialog-content].mobile-filters-modal {
+      top: 12vh !important;
+      max-height: 78vh !important;
+    }
+    
+    /* Clinic detail modal */
+    .clinic-detail-modal,
+    [data-radix-dialog-content].clinic-detail-modal {
+      top: 12vh !important;
+      max-height: 78vh !important;
+    }
   }
 }

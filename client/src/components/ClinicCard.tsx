@@ -2,7 +2,7 @@ import { ScoreBar } from './ScoreBar';
 import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Flame, Calendar, DollarSign, Shield, MapPin, Star, Gem, Sparkles } from 'lucide-react';
+import { Flame, Calendar, Tag, Shield, MapPin, Star, Gem, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { getMinPrice, formatPrice, type Currency } from '@/lib/currency';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
@@ -211,7 +211,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       high_rating: <Star className="h-3 w-3 text-yellow-400" />,
       popular: <Flame className="h-3 w-3 text-red-400" />,
       new: <Sparkles className="h-3 w-3 text-orange-400" />,
-      discount: <DollarSign className="h-3 w-3 text-pink-400" />
+      discount: <Tag className="h-3 w-3 text-pink-400" />
     };
     
     return icons[label] || <Sparkles className="h-3 w-3 text-gray-400" />;
@@ -224,7 +224,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       high_rating: <Star className="h-3 w-3 text-yellow-400" />,
       popular: <Flame className="h-3 w-3 text-red-400" />,
       new: <Sparkles className="h-3 w-3 text-orange-400" />,
-      discount: <DollarSign className="h-3 w-3 text-pink-400" />
+      discount: <Tag className="h-3 w-3 text-pink-400" />
     };
     
     return icons[label] || <Sparkles className="h-3 w-3 text-gray-400" />;
@@ -349,12 +349,12 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
             <div className="flex-shrink-0 ml-1 sm:ml-2">
               <div className="flex items-center">
                 <svg 
-                  className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 text-yellow-400 fill-current mr-0.5 sm:mr-1" 
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-yellow-400 fill-current mr-0.5 sm:mr-1" 
                   viewBox="0 0 24 24"
                 >
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span className="text-white font-bold text-xs sm:text-sm md:text-base drop-shadow-lg">
+                <span className="text-white font-bold text-base sm:text-base md:text-lg drop-shadow-lg">
                   {ratingData.averageRating.toFixed(2)}
                 </span>
               </div>
@@ -372,7 +372,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                 e.stopPropagation();
                 onBookClick(clinic);
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 px-1 sm:px-1 md:px-3 transition-all duration-200"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs sm:text-xs md:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4 transition-all duration-200"
               size="sm"
             >
               <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" />
@@ -382,10 +382,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
             <Button 
               onClick={handlePricesClick}
               variant="outline"
-              className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 px-1 sm:px-1 md:px-3"
+              className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs sm:text-xs md:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
               size="sm"
             >
-              <DollarSign className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-4 md:w-4 mr-0.5" />
+              <Tag className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-4 md:w-4 mr-1" />
               <span className="hidden sm:inline">{t('prices')}</span>
             </Button>
           </div>
@@ -425,7 +425,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                   </div>
                   <AnimatedStarRating
                     rating={realRatings?.qualityRating || 0}
-                    size="sm"
+                    size="md"
                     delay={100}
                   />
                 </div>
@@ -439,7 +439,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                   </div>
                   <AnimatedStarRating
                     rating={realRatings?.serviceRating || 0}
-                    size="sm"
+                    size="md"
                     delay={200}
                   />
                 </div>
@@ -455,7 +455,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                   </div>
                   <AnimatedStarRating
                     rating={realRatings?.priceRating || 0}
-                    size="sm"
+                    size="md"
                     delay={300}
                   />
                 </div>
@@ -469,7 +469,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                   </div>
                   <AnimatedStarRating
                     rating={realRatings?.comfortRating || 0}
-                    size="sm"
+                    size="md"
                     delay={400}
                   />
                 </div>

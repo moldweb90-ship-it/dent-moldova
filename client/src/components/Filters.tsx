@@ -51,10 +51,24 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
 
   const toggleArrayValue = (key: 'districts' | 'specializations' | 'languages', value: string) => {
     const current = filters[key];
-    const updated = current.includes(value) 
-      ? current.filter(v => v !== value)
-      : [...current, value];
-    updateFilter(key, updated);
+    
+    // Для районов используем логику "только один выбран"
+    if (key === 'districts') {
+      if (current.includes(value)) {
+        // Если район уже выбран, снимаем его
+        const updated = current.filter(v => v !== value);
+        updateFilter(key, updated);
+      } else {
+        // Если выбираем новый район, заменяем весь массив (только один район может быть выбран)
+        updateFilter(key, [value]);
+      }
+    } else {
+      // Для остальных фильтров используем стандартную логику множественного выбора
+      const updated = current.includes(value) 
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      updateFilter(key, updated);
+    }
   };
 
   const FiltersContent = () => (
@@ -87,6 +101,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
                 id={district.id}
                 checked={filters.districts.includes(district.id)}
                 onCheckedChange={() => toggleArrayValue('districts', district.id)}
+                className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
               />
               <label htmlFor={district.id} className="text-sm">
                 {language === 'ru' ? district.nameRu : district.nameRo}
@@ -106,6 +121,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
                 id={key}
                 checked={filters.specializations.includes(key)}
                 onCheckedChange={() => toggleArrayValue('specializations', key)}
+                className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
               />
               <label htmlFor={key} className="text-sm">
                 {value[language]}
@@ -125,6 +141,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
                 id={`lang-${key}`}
                 checked={filters.languages.includes(key)}
                 onCheckedChange={() => toggleArrayValue('languages', key)}
+                className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
               />
               <label htmlFor={`lang-${key}`} className="text-sm">
                 {value[language]}
@@ -140,6 +157,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
           id="verified"
           checked={filters.verified}
           onCheckedChange={(checked) => updateFilter('verified', checked)}
+          className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
         />
         <label htmlFor="verified" className="text-sm">{t('verified')}</label>
       </div>
@@ -150,6 +168,7 @@ export function Filters({ cities, districts, filters, onFiltersChange, onApply, 
           id="urgent"
           checked={filters.urgentToday}
           onCheckedChange={(checked) => updateFilter('urgentToday', checked)}
+          className="h-6 w-6 sm:h-4 sm:w-4 mobile-checkbox"
         />
         <label htmlFor="urgent" className="text-sm">{t('urgentToday')}</label>
       </div>
