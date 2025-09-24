@@ -622,6 +622,65 @@ export class DatabaseStorage implements IStorage {
       };
     });
 
+    // Filter by open now if requested (BEFORE sorting and pagination)
+    if (filters.openNow) {
+      console.log('🔍 Filtering by open now...');
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      console.log(`🔍 Current day: ${currentDay} (0=Sunday, 1=Monday, etc.), current time: ${currentTime}`);
+      
+      clinicsWithServices = clinicsWithServices.filter(clinic => {
+        // Find today's working hours
+        const todayHours = clinic.workingHours.find(wh => wh.dayOfWeek === currentDay);
+        
+        console.log(`🔍 Clinic ${clinic.nameRu}: todayHours:`, todayHours);
+        
+        if (!todayHours || !todayHours.isOpen) {
+          console.log(`🔍 Clinic ${clinic.nameRu}: closed today (no hours or isOpen=false)`);
+          return false; // Clinic is closed today
+        }
+        
+        if (todayHours.is24Hours) {
+          console.log(`🔍 Clinic ${clinic.nameRu}: open 24/7`);
+          return true; // Clinic is open 24/7
+        }
+        
+        if (todayHours.openTime && todayHours.closeTime) {
+          // Convert times to minutes for comparison
+          const timeToMinutes = (timeStr: string) => {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+          };
+          
+          const currentMinutes = timeToMinutes(currentTime);
+          const openMinutes = timeToMinutes(todayHours.openTime);
+          const closeMinutes = timeToMinutes(todayHours.closeTime);
+          
+          console.log(`🔍 Clinic ${clinic.nameRu}: current=${currentMinutes}, open=${openMinutes}, close=${closeMinutes}`);
+          
+          // Check if clinic is currently open
+          let isOpen = false;
+          if (closeMinutes > openMinutes) {
+            // Normal case: opening and closing on the same day
+            isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+          } else {
+            // Midnight crossing case (e.g., 22:00 - 06:00)
+            isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
+          }
+          
+          console.log(`🔍 Clinic ${clinic.nameRu}: isOpen=${isOpen}`);
+          return isOpen;
+        }
+        
+        console.log(`🔍 Clinic ${clinic.nameRu}: no time specified, assuming closed`);
+        return false; // No time specified, assume closed
+      });
+      
+      console.log(`🔍 After open now filter: ${clinicsWithServices.length} clinics`);
+    }
+
     // Sort in JavaScript to ensure verified clinics are always first
     console.log('🔍 Sorting in JavaScript to prioritize verified clinics...');
     clinicsWithServices = clinicsWithServices.sort((a, b) => {
@@ -706,71 +765,12 @@ export class DatabaseStorage implements IStorage {
       }
     });
 
+    // Get total count after all filtering (including openNow filter) but before pagination
+    const total = clinicsWithServices.length;
+
     // Apply pagination after sorting
     const offset = (page - 1) * limit;
     clinicsWithServices = clinicsWithServices.slice(offset, offset + limit);
-
-    // Filter by open now if requested
-    if (filters.openNow) {
-      console.log('🔍 Filtering by open now...');
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      
-      console.log(`🔍 Current day: ${currentDay} (0=Sunday, 1=Monday, etc.), current time: ${currentTime}`);
-      
-      clinicsWithServices = clinicsWithServices.filter(clinic => {
-        // Find today's working hours
-        const todayHours = clinic.workingHours.find(wh => wh.dayOfWeek === currentDay);
-        
-        console.log(`🔍 Clinic ${clinic.nameRu}: todayHours:`, todayHours);
-        
-        if (!todayHours || !todayHours.isOpen) {
-          console.log(`🔍 Clinic ${clinic.nameRu}: closed today (no hours or isOpen=false)`);
-          return false; // Clinic is closed today
-        }
-        
-        if (todayHours.is24Hours) {
-          console.log(`🔍 Clinic ${clinic.nameRu}: open 24/7`);
-          return true; // Clinic is open 24/7
-        }
-        
-        if (todayHours.openTime && todayHours.closeTime) {
-          // Convert times to minutes for comparison
-          const timeToMinutes = (timeStr: string) => {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
-          };
-          
-          const currentMinutes = timeToMinutes(currentTime);
-          const openMinutes = timeToMinutes(todayHours.openTime);
-          const closeMinutes = timeToMinutes(todayHours.closeTime);
-          
-          console.log(`🔍 Clinic ${clinic.nameRu}: current=${currentMinutes}, open=${openMinutes}, close=${closeMinutes}`);
-          
-          // Check if clinic is currently open
-          let isOpen = false;
-          if (closeMinutes > openMinutes) {
-            // Normal case: opening and closing on the same day
-            isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
-          } else {
-            // Midnight crossing case (e.g., 22:00 - 06:00)
-            isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
-          }
-          
-          console.log(`🔍 Clinic ${clinic.nameRu}: isOpen=${isOpen}`);
-          return isOpen;
-        }
-        
-        console.log(`🔍 Clinic ${clinic.nameRu}: no time specified, assuming closed`);
-        return false; // No time specified, assume closed
-      });
-      
-      console.log(`🔍 After open now filter: ${clinicsWithServices.length} clinics`);
-    }
-
-    // Get total count after all filtering
-    const total = allResults.length;
 
     // Отладка - проверим порядок клиник и их верификацию
     console.log('🔍 Clinics order after sorting:');
