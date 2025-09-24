@@ -263,19 +263,19 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
 
 
       {/* Always visible content */}
-      <div className={`absolute inset-0 flex flex-col justify-between text-white p-2 md:p-4 relative z-10 transition-opacity duration-300 ${
+      <div className={`absolute inset-0 flex flex-col justify-between text-white pl-2 pr-2 pt-2 sm:p-2 md:p-4 relative z-10 transition-opacity duration-300 ${
         isHovered ? 'opacity-30' : 'opacity-100'
       }`}>
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0 relative z-10">
             {/* Clinic name - always first and prominent */}
-            <h3 className="text-base md:text-xl font-extrabold leading-tight mb-2 relative z-10 break-words text-white drop-shadow-2xl">
+            <h3 className="text-sm sm:text-sm md:text-lg font-extrabold leading-tight mb-1 sm:mb-2 relative z-10 break-words text-white drop-shadow-2xl">
               {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
               {clinic.verified && (
                 <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
                   <svg 
-                    className="inline-block w-4 h-4 md:w-5 md:h-5 text-blue-400 cursor-help ml-1" 
+                    className="inline-block w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-blue-400 cursor-help ml-1" 
                     viewBox="0 0 24 24" 
                     fill="currentColor"
                   >
@@ -286,17 +286,17 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
             </h3>
             
             {/* City, District and Address - moved up */}
-            <div className="mb-2 space-y-1">
+            <div className="mb-1 sm:mb-2 space-y-0.5 sm:space-y-1">
               {/* City and District - first line */}
-              <p className="text-xs md:text-sm drop-shadow-md opacity-90">
+              <p className="text-xs sm:text-xs md:text-sm drop-shadow-md opacity-90">
                 {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
                 {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
               </p>
               
               {/* Address - second line */}
               {(language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)) && (
-                <p className="text-xs md:text-sm drop-shadow-md opacity-90 flex items-center">
-                  <MapPin className="h-3 w-3 mr-1" />
+                <p className="text-xs sm:text-xs md:text-sm drop-shadow-md opacity-90 flex items-center">
+                  <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                   <span className="truncate">
                     {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
                   </span>
@@ -305,7 +305,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
               
               {/* Working Hours - compact display */}
               {clinic.workingHours && clinic.workingHours.length > 0 && (
-                <div className="inline-block bg-black bg-opacity-40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                <div className="inline-block bg-black bg-opacity-40 backdrop-blur-sm rounded-full px-1 sm:px-1.5 py-0.5">
                   <WorkingHoursDisplay 
                     workingHours={clinic.workingHours} 
                     compact={true} 
@@ -319,10 +319,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
             </div>
             
             {/* Badges - moved down */}
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-0.5 sm:gap-1 flex-wrap">
               {clinic.recommended && (
-                <div className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 flex items-center gap-1">
-                  <Star className="h-3 w-3" />
+                <div className="bg-red-500 text-white px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
+                  <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   {language === 'ru' ? 'ТОП' : 'TOP'}
                 </div>
               )}
@@ -333,9 +333,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                   const icon = getPromotionalIconForLabel(label);
                   
                   return (
-                    <div key={index} className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 flex items-center gap-1 ${style} ${label === 'popular' ? 'animate-pulse' : ''}`}>
+                    <div key={index} className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold shadow-md flex-shrink-0 flex items-center gap-0.5 sm:gap-1 ${style} ${label === 'popular' ? 'animate-pulse' : ''}`}>
                       {icon}
-                      <span>{text}</span>
+                      <span className="hidden sm:inline">{text}</span>
                     </div>
                   );
                 })
@@ -346,15 +346,15 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
           
           {/* Star Rating - only show if has real rating */}
           {ratingData.hasRating && (
-            <div className="flex-shrink-0 ml-2">
+            <div className="flex-shrink-0 ml-1 sm:ml-2">
               <div className="flex items-center">
                 <svg 
-                  className="w-6 h-6 md:w-7 md:h-7 text-yellow-400 fill-current mr-1" 
+                  className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 text-yellow-400 fill-current mr-0.5 sm:mr-1" 
                   viewBox="0 0 24 24"
                 >
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">
+                <span className="text-white font-bold text-xs sm:text-sm md:text-base drop-shadow-lg">
                   {ratingData.averageRating.toFixed(2)}
                 </span>
               </div>
@@ -364,29 +364,29 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       </div>
 
       {/* Bottom section - Action Buttons - always visible at bottom */}
-      <div className={`absolute bottom-0 left-0 right-0 p-2 md:p-4 transition-opacity duration-300 z-20 ${isHovered ? 'opacity-70' : 'opacity-90'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 pl-2 pr-2 pb-2 sm:p-2 md:p-4 transition-opacity duration-300 z-20 ${isHovered ? 'opacity-70' : 'opacity-90'}`}>
         {clinic.verified ? (
-          <div className="flex space-x-1 md:space-x-2">
+          <div className="flex space-x-1 sm:space-x-1 md:space-x-2">
             <Button 
               onClick={(e) => {
                 e.stopPropagation();
                 onBookClick(clinic);
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs md:text-sm h-8 md:h-9 px-1 md:px-3 transition-all duration-200"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 px-1 sm:px-1 md:px-3 transition-all duration-200"
               size="sm"
             >
-              <Calendar className="h-3 w-3 mr-0.5" />
-              <span className="hidden lg:inline">{t('bookOneClick')}</span>
-              <span className="lg:hidden">{t('book')}</span>
+              <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" />
+              <span className="hidden sm:inline lg:inline">{t('bookOneClick')}</span>
+              <span className="sm:hidden">{t('book')}</span>
             </Button>
             <Button 
               onClick={handlePricesClick}
               variant="outline"
-              className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs md:text-sm h-8 md:h-9 px-1 md:px-3"
+              className="flex-1 border-2 border-white bg-white text-gray-900 hover:bg-gray-100 text-xs sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 px-1 sm:px-1 md:px-3"
               size="sm"
             >
-              <DollarSign className="h-2.5 w-2.5 md:h-4 md:w-4 mr-0.5" />
-              {t('prices')}
+              <DollarSign className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-4 md:w-4 mr-0.5" />
+              <span className="hidden sm:inline">{t('prices')}</span>
             </Button>
           </div>
         ) : (
@@ -399,10 +399,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
             </div>
             <Button 
               onClick={() => setShowVerificationModal(true)} 
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-sm text-xs md:text-sm h-8 md:h-9 px-1 md:px-3 transition-all duration-200" 
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-sm text-xs sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 px-1 sm:px-1 md:px-3 transition-all duration-200" 
               size="sm"
             >
-              <Shield className="h-3 w-3 md:h-4 md:w-4 mr-0.5" />
+              <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 mr-0.5" />
               {t('verify')}
             </Button>
           </div>

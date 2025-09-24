@@ -1,0 +1,96 @@
+/* Mobile Forms Optimization */
+
+/* Global mobile fixes */
+@media (max-width: 640px) {
+  body {
+    overflow-x: hidden;
+    position: relative;
+  }
+  
+  html {
+    overflow-x: hidden;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 640px) {
+  .mobile-form-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure form elements don't exceed viewport */
+  .mobile-form-container * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Fix iOS viewport issues */
+  .mobile-form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on input focus (iOS) */
+  .mobile-form-container input,
+  .mobile-form-container select,
+  .mobile-form-container textarea {
+    font-size: 16px;
+  }
+  
+  /* Better touch targets */
+  .mobile-form-container button,
+  .mobile-form-container input,
+  .mobile-form-container select {
+    min-height: 44px;
+  }
+  
+  /* Fix for Android keyboard */
+  .mobile-form-container {
+    position: fixed;
+    top: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    max-height: 90vh;
+  }
+}
+
+/* Samsung and Android specific fixes */
+@media (max-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
+  .mobile-form-container {
+    width: 95vw;
+    max-width: 95vw;
+  }
+  
+  /* Prevent Samsung browser horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 640px) {
+    .mobile-form-container {
+      position: fixed;
+      top: 10vh;
+      left: 50%;
+      transform: translateX(-50%);
+      max-height: 80vh;
+    }
+  }
+}
+
+/* Landscape orientation fixes */
+@media (max-width: 640px) and (orientation: landscape) {
+  .mobile-form-container {
+    max-height: 95vh;
+    top: 2.5vh;
+  }
+}

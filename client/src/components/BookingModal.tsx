@@ -295,16 +295,16 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
       <DialogContent 
-        className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001]"
+        className="mobile-form-container w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001] p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="pb-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-6 p-6 rounded-t-lg text-white relative overflow-hidden">
+        <DialogHeader className="pb-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-0 sm:-m-6 px-4 py-4 sm:p-6 rounded-t-3xl text-white relative overflow-hidden">
           {/* Background pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
           
-          <DialogTitle className="text-xl sm:text-2xl font-bold text-white flex items-center relative z-10">
+          <DialogTitle className="text-lg sm:text-2xl font-bold text-white flex items-center relative z-10">
             <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 border border-white/30">
                               <Calendar className="h-4 w-4 text-white" />
             </div>
@@ -312,9 +312,9 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Имя и Телефон в одной строке */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 flex items-center">
                 <span className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-2">
@@ -357,7 +357,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
           </div>
 
           {/* Email и Способ связи в одной строке */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center">
                 <span className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center mr-2">
@@ -429,7 +429,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
           </div>
 
           {/* Дата и Время в одной строке */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="date" className="text-sm font-semibold text-gray-700 flex items-center">
                 <span className="w-5 h-5 bg-pink-100 rounded-full flex items-center justify-center mr-2">
@@ -508,7 +508,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
              </p>}
           </div>
 
-          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white -m-6 p-6 rounded-b-lg">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white -m-3 sm:-m-6 p-3 sm:p-6 rounded-b-lg">
             <Button 
               type="button" 
               variant="outline" 
@@ -520,7 +520,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:via-gray-500 disabled:to-gray-600 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:via-gray-500 disabled:to-gray-600 text-white font-bold py-3 sm:py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
                 <div className="flex items-center">

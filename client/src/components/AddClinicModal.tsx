@@ -146,7 +146,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 p-0 border-0 rounded-lg"
+        className="mobile-form-container w-[95vw] max-w-3xl max-h-[85vh] overflow-y-auto mx-auto bg-gradient-to-br from-white to-gray-50 p-0 border-0 rounded-lg"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white relative overflow-hidden rounded-t-lg">
@@ -160,7 +160,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-6">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 shadow-sm">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -170,7 +170,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="clinicName" className="text-sm font-semibold text-gray-700 flex items-center">
                 <Building2 className="h-4 w-4 mr-2 text-blue-600" />
@@ -205,7 +205,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-semibold text-gray-700 flex items-center">
                 <MapPin className="h-4 w-4 mr-2 text-purple-600" />
@@ -237,7 +237,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="contactEmail" className="text-sm font-semibold text-gray-700 flex items-center">
                 <Mail className="h-4 w-4 mr-2 text-orange-600" />
@@ -288,7 +288,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
             {errors.description && <p className="text-red-500 text-sm flex items-center"><span className="mr-1">⚠️</span>{errors.description}</p>}
           </div>
 
-          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
             <Button 
               type="button" 
               variant="outline" 
@@ -300,7 +300,7 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
             <Button 
               type="submit" 
               disabled={loading}
-              className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3 text-base transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed flex items-center space-x-2 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3 text-base transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed flex items-center space-x-2 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
                 <>

@@ -69,14 +69,14 @@ export function ClinicGrid({
 
   // Определяем количество колонок в зависимости от состояния фильтров
   const gridCols = filtersVisible 
-    ? 'grid-cols-2 md:grid-cols-3' // 3 колонки когда фильтры включены
-    : 'grid-cols-2 md:grid-cols-4'; // 4 колонки когда фильтры скрыты
+    ? 'grid-cols-2 md:grid-cols-3' // 2 на мобилах, 3 на больших
+    : 'grid-cols-2 md:grid-cols-4'; // 2 на мобилах, 4 когда фильтры скрыты
 
   return (
     <div className="space-y-8">
 
       {/* Grid */}
-      <div className={`grid ${gridCols} gap-4 md:gap-6`}>
+      <div className={`grid ${gridCols} gap-2 xs:gap-3 sm:gap-4 md:gap-6`}>
         {clinics.map((clinic, index) => {
           // console.log('🔍 ClinicGrid clinic:', {
           //   id: clinic.id,
