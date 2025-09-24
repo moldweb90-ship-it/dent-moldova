@@ -624,44 +624,25 @@ export class DatabaseStorage implements IStorage {
 
     // Filter by open now if requested (BEFORE sorting and pagination)
     if (filters.openNow) {
-      console.log('🔍 ===== OPEN NOW FILTER START =====');
-      console.log(`🔍 Total clinics before open now filter: ${clinicsWithServices.length}`);
-      
       const now = new Date();
       const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      
-      console.log(`🔍 Current day: ${currentDay} (0=Sunday, 1=Monday, etc.), current time: ${currentTime}`);
-      console.log(`🔍 Current date object:`, now);
-      console.log(`🔍 Current timezone offset:`, now.getTimezoneOffset());
       
       clinicsWithServices = clinicsWithServices.filter(clinic => {
         // Find ALL working hours for today (there might be duplicates)
         const todayHoursList = clinic.workingHours.filter(wh => wh.dayOfWeek === currentDay);
         
-        console.log(`🔍 OPEN NOW FILTER - Clinic ${clinic.nameRu}:`);
-        console.log(`  - Current day: ${currentDay} (0=Sunday, 1=Monday, etc.)`);
-        console.log(`  - Current time: ${currentTime}`);
-        console.log(`  - Today's hours count: ${todayHoursList.length}`);
-        console.log(`  - Today's hours:`, todayHoursList);
-        console.log(`  - All working hours:`, clinic.workingHours);
-        console.log(`  - Clinic ID: ${clinic.id}`);
-        console.log(`  - Clinic verified: ${clinic.verified}`);
-        
         if (todayHoursList.length === 0) {
-          console.log(`  ❌ RESULT: CLOSED - no hours for today`);
           return false; // No working hours for today
         }
         
         // Check if clinic is open at current time
         const isCurrentlyOpen = todayHoursList.some(todayHours => {
           if (!todayHours.isOpen) {
-            console.log(`    - Day closed: isOpen=false`);
             return false;
           }
           
           if (todayHours.is24Hours) {
-            console.log(`    - 24/7 open`);
             return true;
           }
           
@@ -676,79 +657,26 @@ export class DatabaseStorage implements IStorage {
             const openMinutes = timeToMinutes(todayHours.openTime);
             const closeMinutes = timeToMinutes(todayHours.closeTime);
             
-            console.log(`    - Time check: ${todayHours.openTime}-${todayHours.closeTime} (current: ${currentTime})`);
-            console.log(`    - Minutes: open=${openMinutes}, close=${closeMinutes}, current=${currentMinutes}`);
-            
             // Check if clinic is currently open
             let isOpen = false;
             if (closeMinutes > openMinutes) {
               // Normal case: opening and closing on the same day
               isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
-              console.log(`    - Normal hours: ${currentMinutes} >= ${openMinutes} && ${currentMinutes} <= ${closeMinutes} = ${isOpen}`);
             } else {
               // Midnight crossing case (e.g., 22:00 - 06:00)
               isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
-              console.log(`    - Midnight crossing: ${currentMinutes} >= ${openMinutes} || ${currentMinutes} <= ${closeMinutes} = ${isOpen}`);
             }
             
             return isOpen;
           }
           
-          console.log(`    - No time specified, assuming closed`);
           return false;
         });
         
-        console.log(`  ${isCurrentlyOpen ? '✅' : '❌'} RESULT: ${isCurrentlyOpen ? 'OPEN' : 'CLOSED'}`);
         return isCurrentlyOpen;
       });
-      
-      console.log(`🔍 Total clinics after open now filter: ${clinicsWithServices.length}`);
-      console.log('🔍 ===== OPEN NOW FILTER END =====');
     }
 
-    // Filter by still open if requested (BEFORE sorting and pagination)
-    if (filters.stillOpen) {
-      console.log('🔍 ===== STILL OPEN FILTER START =====');
-      console.log(`🔍 Total clinics before still open filter: ${clinicsWithServices.length}`);
-      
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      console.log(`🔍 Current day: ${currentDay} (0=Sunday, 1=Monday, etc.)`);
-      
-      clinicsWithServices = clinicsWithServices.filter(clinic => {
-        // Find today's working hours
-        const todayHours = clinic.workingHours.find(wh => wh.dayOfWeek === currentDay);
-        
-        console.log(`🔍 STILL OPEN FILTER - Clinic ${clinic.nameRu}:`);
-        console.log(`  - Today's hours:`, todayHours);
-        console.log(`  - All working hours:`, clinic.workingHours);
-        
-        // Клиника должна работать сегодня (иметь рабочие часы и быть открытой)
-        if (!todayHours || !todayHours.isOpen) {
-          console.log(`  ❌ RESULT: CLOSED - no hours or isOpen=false`);
-          return false; // Clinic is closed today
-        }
-        
-        // Если клиника работает 24/7 - она подходит
-        if (todayHours.is24Hours) {
-          console.log(`  ✅ RESULT: OPEN 24/7`);
-          return true;
-        }
-        
-        // Если есть время открытия и закрытия - клиника подходит
-        // (не важно, открыта ли она сейчас, главное что работает сегодня)
-        if (todayHours.openTime && todayHours.closeTime) {
-          console.log(`  ✅ RESULT: HAS WORKING HOURS TODAY`);
-          return true;
-        }
-        
-        console.log(`  ❌ RESULT: NO WORKING HOURS SPECIFIED`);
-        return false; // No time specified, assume closed
-      });
-      
-      console.log(`🔍 Total clinics after still open filter: ${clinicsWithServices.length}`);
-      console.log('🔍 ===== STILL OPEN FILTER END =====');
-    }
 
     // Sort in JavaScript to ensure verified clinics are always first
     clinicsWithServices = clinicsWithServices.sort((a, b) => {

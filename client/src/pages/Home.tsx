@@ -164,7 +164,6 @@ export default function Home() {
     sort: 'dscore',
     verified: undefined,
     openNow: isOpenNowActive ? true : undefined,
-    stillOpen: undefined
   });
 
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
@@ -293,9 +292,6 @@ export default function Home() {
     }
     
     // ФИЛЬТР "ЕЩЕ ОТКРЫТЫ"
-    if (filters.stillOpen) {
-      params.set('stillOpen', 'true');
-    }
     
     params.set('sort', filters.sort);
     params.set('page', page.toString());
@@ -690,7 +686,6 @@ export default function Home() {
       sort: 'dscore',
       verified: undefined,
       openNow: undefined,
-      stillOpen: undefined
     });
     setSearchQuery('');
     setPage(1);

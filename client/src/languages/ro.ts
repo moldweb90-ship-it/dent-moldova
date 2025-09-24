@@ -335,7 +335,6 @@ export const ro = {
   // Availability filter
   availability: "Disponibilitate",
   openNow: "Deschise acum",
-  stillOpen: "Încă deschise",
   
   // No clinics found message
   noClinicsFound: "Nu au fost găsite clinici. Încercați să modificați parametrii de căutare."

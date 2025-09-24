@@ -1974,7 +1974,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ),
         verified: z.string().optional().transform(val => val === 'true'),
         openNow: z.string().optional().transform(val => val === 'true'),
-        stillOpen: z.string().optional().transform(val => val === 'true'),
         urgentToday: z.string().optional().transform(val => val === 'true'),
         priceMin: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         priceMax: z.string().optional().transform(val => val ? parseInt(val) : undefined),
