@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
@@ -163,7 +163,8 @@ export default function Home() {
     promotionalLabels: [],
     sort: 'dscore',
     verified: undefined,
-    openNow: isOpenNowActive ? true : undefined
+    openNow: isOpenNowActive ? true : undefined,
+    stillOpen: undefined
   });
 
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
@@ -255,7 +256,6 @@ export default function Home() {
     // Этот эффект срабатывает при изменении filters.openNow или filters.verified
     // и принудительно обновляет запрос к API
     if (filters.openNow !== undefined || filters.verified !== undefined) {
-      console.log('🔍 Filters changed - openNow:', filters.openNow, 'verified:', filters.verified);
       // Принудительно обновляем запрос, изменяя ключ запроса
       setPage(1);
       
@@ -263,7 +263,6 @@ export default function Home() {
       if (window.queryClient) {
         window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
         window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
-        console.log('🔍 Cache invalidated and removed for clinics');
       }
     }
   }, [filters.openNow, filters.verified]);
@@ -293,6 +292,11 @@ export default function Home() {
       params.set('openNow', 'true');
     }
     
+    // ФИЛЬТР "ЕЩЕ ОТКРЫТЫ"
+    if (filters.stillOpen) {
+      params.set('stillOpen', 'true');
+    }
+    
     params.set('sort', filters.sort);
     params.set('page', page.toString());
     params.set('limit', limit.toString());
@@ -300,15 +304,6 @@ export default function Home() {
     
     const queryString = params.toString();
     
-    // ВРЕМЕННЫЕ ЛОГИ ДЛЯ ОТЛАДКИ
-    if (filters.openNow || isOpenNowActive) {
-      console.log('🔍 ===== FRONTEND DEBUG START =====');
-      console.log('🔍 Frontend query params:', queryString);
-      console.log('🔍 Frontend filters:', filters);
-      console.log('🔍 isOpenNowActive:', isOpenNowActive);
-      console.log('🔍 Current URL:', window.location.pathname);
-      console.log('🔍 ===== FRONTEND DEBUG END =====');
-    }
     
     return queryString;
   }, [searchQuery, filters, page, language, isOpenNowActive]);
@@ -322,8 +317,6 @@ export default function Home() {
       const response = await fetch(`/api/clinics?${buildQueryParams()}`);
       if (!response.ok) throw new Error('Failed to fetch clinics');
       const data = await response.json();
-      console.log('🔍 Clinics data received:', data.clinics.length, 'clinics');
-      // console.log('🔍 First clinic sample:', data.clinics[0]);
       return data;
     },
     staleTime: 0, // No stale time - always fetch fresh data
@@ -522,9 +515,6 @@ export default function Home() {
   }, [cities, districts, language, setLocation]);
 
   const handleFiltersChange = useCallback((newFilters: FilterValues) => {
-    console.log('🔍 handleFiltersChange:', newFilters);
-    console.log('🔍 openNow filter changed:', newFilters.openNow);
-    console.log('🔍 Current filters:', filters);
     setIsManualFilterChange(true); // Отмечаем как ручное изменение
     
     // Проверяем, изменился ли город, район или функции для навигации
@@ -542,7 +532,6 @@ export default function Home() {
     const onlyFilterChanged = !cityChanged && !districtChanged && !featuresChanged && !openNowChanged;
     
     if (onlyFilterChanged) {
-      console.log('🔍 Only filter changed, updating filters directly');
       setFilters(newFilters);
       setPage(1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -551,13 +540,10 @@ export default function Home() {
     
     // Если изменился только фильтр openNow
     if (openNowChanged && !cityChanged && !districtChanged && !featuresChanged) {
-      console.log('🔍 OpenNow filter changed, navigating to URL');
-      
       // Принудительно очищаем кэш перед навигацией
       if (window.queryClient) {
         window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
         window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
-        console.log('🔍 Cache cleared before openNow navigation');
       }
       
       if (newFilters.openNow) {
@@ -703,7 +689,8 @@ export default function Home() {
       promotionalLabels: [],
       sort: 'dscore',
       verified: undefined,
-      openNow: undefined
+      openNow: undefined,
+      stillOpen: undefined
     });
     setSearchQuery('');
     setPage(1);
@@ -749,7 +736,7 @@ export default function Home() {
   }, []);
 
   // Генерируем SEO данные в зависимости от выбранной локации и функций
-  const generateSEOData = () => {
+  const generateSEOData = useCallback(() => {
     const safeCities = cities || [];
     const safeDistricts = districts || [];
     
@@ -1122,9 +1109,9 @@ export default function Home() {
       // Главная страница - НЕ генерируем SEO данные, используем настройки из админки
       return null; // Возвращаем null чтобы использовались настройки из useSEO
     }
-  };
+  }, [cities, districts, citySlug, districtSlug, language, activeFeatures, isOpenNowActive]);
 
-  const seoData = generateSEOData();
+  const seoData = useMemo(() => generateSEOData(), [generateSEOData]);
   
   // Всегда вызываем useSEO для правильной работы хуков
   const seoSettings = useSEO(language);

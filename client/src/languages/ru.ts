@@ -335,6 +335,7 @@ export const ru = {
   // Availability filter
   availability: "Доступность",
   openNow: "Открытые сейчас",
+  stillOpen: "Еще открыты",
   
   // No clinics found message
   noClinicsFound: "Клиники не найдены. Попробуйте изменить параметры поиска."

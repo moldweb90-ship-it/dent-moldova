@@ -31,6 +31,7 @@ export interface FilterValues {
   sort: 'dscore' | 'price' | 'popularity' | 'reviews';
   verified?: boolean;
   openNow?: boolean;
+  stillOpen?: boolean;
 }
 
 interface MobileFiltersModalProps {
@@ -82,11 +83,7 @@ export function MobileFiltersModal({
   }, [open]);
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
-    console.log('🔍 Mobile updateFilter:', key, value);
-    console.log('🔍 Current filters before update:', filters);
-    const newFilters = { ...filters, [key]: value };
-    console.log('🔍 New filters after update:', newFilters);
-    onFiltersChange(newFilters);
+    onFiltersChange({ ...filters, [key]: value });
   };
 
   const toggleDistrict = (districtId: string) => {
@@ -110,12 +107,10 @@ export function MobileFiltersModal({
   };
 
   const togglePromotionalLabel = (label: string) => {
-    console.log('🔍 Mobile togglePromotionalLabel:', label);
     const current = filters.promotionalLabels;
     const updated = current.includes(label) 
       ? current.filter(v => v !== label)
       : [...current, label];
-    console.log('🔍 Mobile Updated promotionalLabels:', updated);
     updateFilter('promotionalLabels', updated);
   };
 
@@ -266,6 +261,23 @@ export function MobileFiltersModal({
                 >
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   {t('openNow')}
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="stillOpen"
+                  checked={filters.stillOpen || false}
+                  onCheckedChange={(checked) => {
+                    updateFilter('stillOpen', checked);
+                  }}
+                  className="h-4 w-4"
+                />
+                <label 
+                  htmlFor="stillOpen" 
+                  className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors flex items-center gap-2"
+                >
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  {t('stillOpen')}
                 </label>
               </div>
             </div>
@@ -513,7 +525,8 @@ export function MobileFiltersModal({
                   promotionalLabels: [],
                   sort: 'dscore',
                   verified: true,
-                  openNow: undefined
+                  openNow: undefined,
+                  stillOpen: undefined
                 });
                 onApply();
                 onClose();

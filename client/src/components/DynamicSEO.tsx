@@ -29,31 +29,7 @@ export function DynamicSEO({
   schemaData,
   language
 }: DynamicSEOProps) {
-  console.log('🔧 DynamicSEO: Компонент рендерится с параметрами:', {
-    language,
-    title,
-    description,
-    keywords,
-    h1,
-    ogTitle,
-    ogDescription
-  });
-
   useEffect(() => {
-    console.log('🔧 DynamicSEO: Обновляем мета-теги', {
-      language,
-      title,
-      description,
-      keywords,
-      h1,
-      ogTitle,
-      ogDescription,
-      ogImage,
-      canonical,
-      robots,
-      schemaType,
-      schemaData
-    });
 
     // Принудительно очищаем старые мета-теги
     const oldMetas = document.querySelectorAll('meta[name="description"], meta[name="keywords"], meta[name="robots"], meta[property^="og:"]');
@@ -68,7 +44,6 @@ export function DynamicSEO({
     // Update document title immediately and force it
     if (title) {
       document.title = title;
-      console.log('✅ DynamicSEO: Установлен title:', title);
       
       // Также обновляем title тег в head если он есть
       const titleElement = document.querySelector('title');
@@ -98,18 +73,15 @@ export function DynamicSEO({
     // Update meta description
     if (description) {
       updateMetaTag('description', description);
-      console.log('✅ DynamicSEO: Установлен description:', description);
     }
 
     // Update keywords
     if (keywords) {
       updateMetaTag('keywords', keywords);
-      console.log('✅ DynamicSEO: Установлены keywords:', keywords);
     }
 
     // Update robots
     updateMetaTag('robots', robots);
-    console.log('✅ DynamicSEO: Установлен robots:', robots);
 
     // Update canonical URL
     if (canonical) {
@@ -125,15 +97,12 @@ export function DynamicSEO({
     // Update Open Graph tags
     if (ogTitle) {
       updateMetaTag('og:title', ogTitle, 'og:title');
-      console.log('✅ DynamicSEO: Установлен og:title:', ogTitle);
     }
     if (ogDescription) {
       updateMetaTag('og:description', ogDescription, 'og:description');
-      console.log('✅ DynamicSEO: Установлен og:description:', ogDescription);
     }
     if (ogImage) {
       updateMetaTag('og:image', ogImage, 'og:image');
-      console.log('✅ DynamicSEO: Установлен og:image:', ogImage);
     }
 
     // Set default OG tags
@@ -171,7 +140,7 @@ export function DynamicSEO({
         }
       });
     };
-  }, [title, description, keywords, h1, ogTitle, ogDescription, ogImage, canonical, robots, schemaType, schemaData, language]);
+  }, [title, description, keywords, ogTitle, ogDescription, ogImage, canonical, robots, schemaType, schemaData]);
 
   return null;
 }

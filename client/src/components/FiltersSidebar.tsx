@@ -29,6 +29,7 @@ export interface FilterValues {
   sort: 'dscore' | 'price' | 'popularity' | 'reviews';
   verified?: boolean;
   openNow?: boolean;
+  stillOpen?: boolean;
 }
 
 interface FiltersSidebarProps {
@@ -190,18 +191,34 @@ export function FiltersSidebar({
                 id="openNow"
                 checked={filters.openNow || false}
                 onCheckedChange={(checked) => {
-                  console.log('🔍 Desktop openNow checkbox changed:', checked);
                   updateFilter('openNow', checked);
                 }}
                 className="h-4 w-4"
               />
-                              <label 
-                  htmlFor="openNow" 
-                  className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors flex items-center gap-2"
-                >
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  {t('openNow')}
-                </label>
+              <label 
+                htmlFor="openNow" 
+                className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors flex items-center gap-2"
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                {t('openNow')}
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="stillOpen"
+                checked={filters.stillOpen || false}
+                onCheckedChange={(checked) => {
+                  updateFilter('stillOpen', checked);
+                }}
+                className="h-4 w-4"
+              />
+              <label 
+                htmlFor="stillOpen" 
+                className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors flex items-center gap-2"
+              >
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                {t('stillOpen')}
+              </label>
             </div>
           </div>
         </div>

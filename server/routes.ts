@@ -1974,6 +1974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ),
         verified: z.string().optional().transform(val => val === 'true'),
         openNow: z.string().optional().transform(val => val === 'true'),
+        stillOpen: z.string().optional().transform(val => val === 'true'),
         urgentToday: z.string().optional().transform(val => val === 'true'),
         priceMin: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         priceMax: z.string().optional().transform(val => val ? parseInt(val) : undefined),
@@ -1983,15 +1984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         language: z.string().optional().default('ru'),
       });
 
-      console.log('🔍 ===== ROUTES DEBUG START =====');
-      console.log('🔍 Raw req.query:', req.query);
-      console.log('🔍 req.query.openNow:', req.query.openNow);
-      console.log('🔍 req.query.openNow type:', typeof req.query.openNow);
-      
       const filters = querySchema.parse(req.query);
-      console.log('🔍 Parsed filters:', filters);
-      console.log('🔍 API /api/clinics openNow filter:', filters.openNow);
-      console.log('🔍 ===== ROUTES DEBUG END =====');
       const result = await storage.getClinics(filters);
       console.log(`📊 API /api/clinics result: ${result.clinics.length} clinics`);
       
