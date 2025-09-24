@@ -632,6 +632,8 @@ export class DatabaseStorage implements IStorage {
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       
       console.log(`🔍 Current day: ${currentDay} (0=Sunday, 1=Monday, etc.), current time: ${currentTime}`);
+      console.log(`🔍 Current date object:`, now);
+      console.log(`🔍 Current timezone offset:`, now.getTimezoneOffset());
       
       clinicsWithServices = clinicsWithServices.filter(clinic => {
         // Find today's working hours
@@ -642,6 +644,8 @@ export class DatabaseStorage implements IStorage {
         console.log(`  - Current time: ${currentTime}`);
         console.log(`  - Today's hours:`, todayHours);
         console.log(`  - All working hours:`, clinic.workingHours);
+        console.log(`  - Clinic ID: ${clinic.id}`);
+        console.log(`  - Clinic verified: ${clinic.verified}`);
         
         if (!todayHours || !todayHours.isOpen) {
           console.log(`  ❌ RESULT: CLOSED - no hours or isOpen=false`);
