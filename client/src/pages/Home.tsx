@@ -307,13 +307,15 @@ export default function Home() {
     
     const queryString = params.toString();
     
-    // МАКСИМАЛЬНЫЕ ЛОГИ ДЛЯ ОТЛАДКИ
-    console.log('🔍 ===== FRONTEND DEBUG START =====');
-    console.log('🔍 Frontend query params:', queryString);
-    console.log('🔍 Frontend filters:', filters);
-    console.log('🔍 isOpenNowActive:', isOpenNowActive);
-    console.log('🔍 Current URL:', window.location.pathname);
-    console.log('🔍 ===== FRONTEND DEBUG END =====');
+    // МАКСИМАЛЬНЫЕ ЛОГИ ДЛЯ ОТЛАДКИ - ТОЛЬКО ДЛЯ OPENNOW
+    if (filters.openNow || isOpenNowActive) {
+      console.log('🔍 ===== FRONTEND DEBUG START =====');
+      console.log('🔍 Frontend query params:', queryString);
+      console.log('🔍 Frontend filters:', filters);
+      console.log('🔍 isOpenNowActive:', isOpenNowActive);
+      console.log('🔍 Current URL:', window.location.pathname);
+      console.log('🔍 ===== FRONTEND DEBUG END =====');
+    }
     
     return queryString;
   }, [searchQuery, filters, page, language, isOpenNowActive]);
