@@ -238,8 +238,8 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-y-auto z-[9999] clinic-detail-modal">
-        <DialogHeader className="border-b border-gray-200 pb-4">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-y-auto z-[9999] clinic-detail-modal">
+        <DialogHeader className="border-b border-gray-200 pb-4 pt-safe">
           {/* Two column layout - Desktop */}
           <div className="hidden sm:flex items-start justify-between gap-6 mb-4">
             {/* Left column - Clinic info */}
@@ -414,7 +414,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
 
         </DialogHeader>
 
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6 pb-safe">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Left Content */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
