@@ -254,7 +254,10 @@ export function MobileFiltersModal({
                   checked={filters.openNow || false}
                   onCheckedChange={(checked) => {
                     console.log('🔍 Mobile openNow checkbox changed:', checked);
+                    console.log('🔍 Current filters before change:', filters);
+                    console.log('🔍 Current URL before change:', window.location.pathname);
                     updateFilter('openNow', checked);
+                    console.log('🔍 After updateFilter call');
                   }}
                   className="h-4 w-4"
                 />

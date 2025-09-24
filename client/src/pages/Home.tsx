@@ -298,6 +298,8 @@ export default function Home() {
     console.log('🔍 Cities available:', cities.length);
     console.log('🔍 Districts available:', districts.length);
     console.log('🔍 openNow filter value:', filters.openNow);
+    console.log('🔍 isOpenNowActive:', isOpenNowActive);
+    console.log('🔍 Current URL:', window.location.pathname);
     
     return queryString;
   }, [searchQuery, filters, page, language, cities.length, districts.length]);
@@ -330,10 +332,12 @@ export default function Home() {
         clinicsCount: clinicsData.clinics.length,
         openNowFilter: filters.openNow,
         queryString: buildQueryParams(),
+        currentUrl: window.location.pathname,
+        isOpenNowActive: isOpenNowActive,
         clinics: clinicsData.clinics.map(c => ({ name: c.nameRu, verified: c.verified }))
       });
     }
-  }, [clinicsData, filters.openNow]);
+  }, [clinicsData, filters.openNow, isOpenNowActive]);
 
   // Fetch clinic detail
   const { data: clinicDetail, error: clinicDetailError } = useQuery({
