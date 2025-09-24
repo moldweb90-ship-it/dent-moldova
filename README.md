@@ -92,6 +92,8 @@ npm run dev
 
 Automatic deployment to VPS via GitHub Actions is configured.
 
+Last updated: $(date)
+
 Каждая клиника имеет:
 - Основную информацию (название, адрес, контакты)
 - Рейтинги (цена, доверие, отзывы, доступность)
