@@ -927,9 +927,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           return val;
         }),
-        // Google рейтинг
-        googleRating: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-        googleReviewsCount: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         // Опыт врачей
         doctorExperience: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         hasLicenses: z.string().optional().transform(val => val === 'true'),
@@ -957,9 +954,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         work24h: z.string().optional().transform(val => val === 'true'),
         credit: z.string().optional().transform(val => val === 'true'),
         sosEnabled: z.string().optional().transform(val => val === 'true'),
-        // Google рейтинг
-        googleRating: z.string().optional().transform(val => val ? parseFloat(val) : null),
-        googleReviewsCount: z.string().optional().transform(val => val ? parseInt(val) : null),
         // Старые поля
         priceIndex: z.string().optional().transform(val => val ? parseInt(val) : undefined),
         trustIndex: z.string().optional().transform(val => val ? parseInt(val) : undefined),
