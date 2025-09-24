@@ -76,7 +76,7 @@ body.modal-open {
     }
   }
 
-  /* Mobile modal improvements - 70% height with 15% margins */
+  /* Mobile modal improvements - 90% height with 5% margins */
   @media (max-width: 768px) {
     .mobile-filters-modal,
     .clinic-detail-modal,
@@ -84,8 +84,8 @@ body.modal-open {
     [data-radix-dialog-content] {
       margin: 0 !important;
       max-width: calc(100vw - 2rem) !important;
-      max-height: 70vh !important;
-      height: 70vh !important;
+      max-height: 90vh !important;
+      height: 90vh !important;
       width: calc(100vw - 2rem) !important;
       left: 50% !important;
       top: 50% !important;

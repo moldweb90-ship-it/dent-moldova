@@ -308,7 +308,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl h-[70vh] max-h-[70vh] overflow-hidden p-0 booking-modal">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden p-0 booking-modal">
         <DialogHeader className="px-6 py-4 border-b border-gray-200">
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
