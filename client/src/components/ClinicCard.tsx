@@ -270,7 +270,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0 relative z-10">
             {/* Clinic name - always first and prominent */}
-            <h3 className="text-sm sm:text-sm md:text-lg font-extrabold leading-tight mb-1 sm:mb-2 relative z-10 break-words text-white drop-shadow-2xl">
+            <h3 className="text-[1.1rem] sm:text-sm md:text-lg font-extrabold leading-tight mb-1 sm:mb-2 relative z-10 break-words text-white drop-shadow-2xl">
               {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
               {clinic.verified && (
                 <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
