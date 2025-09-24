@@ -255,7 +255,8 @@ export default function Home() {
       // Принудительно инвалидируем кэш для клиник
       if (window.queryClient) {
         window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
-        console.log('🔍 Cache invalidated for clinics');
+        window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
+        console.log('🔍 Cache invalidated and removed for clinics');
       }
     }
   }, [filters.openNow, filters.verified]);
@@ -315,8 +316,10 @@ export default function Home() {
       // console.log('🔍 First clinic sample:', data.clinics[0]);
       return data;
     },
-    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
-    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    staleTime: 0, // No stale time - always fetch fresh data
+    cacheTime: 0, // No cache time - don't cache at all
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 
   // Debug: Log clinics data when it changes
@@ -550,6 +553,14 @@ export default function Home() {
     // Если изменился только фильтр openNow
     if (openNowChanged && !cityChanged && !districtChanged && !featuresChanged) {
       console.log('🔍 OpenNow filter changed, navigating to URL');
+      
+      // Принудительно очищаем кэш перед навигацией
+      if (window.queryClient) {
+        window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
+        window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
+        console.log('🔍 Cache cleared before openNow navigation');
+      }
+      
       if (newFilters.openNow) {
         // Включаем фильтр "Открыты сейчас" - переходим на URL
         navigateToOpenNow(newFilters.city, newFilters.districts[0]);
