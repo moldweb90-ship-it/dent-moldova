@@ -13,4 +13,3 @@ services:
     restart: always
     volumes:
       - ./img:/app/img
-      - ./public:/app/public
