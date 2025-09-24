@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 
 (async () => {
   // Выполняем миграции при запуске (только в продакшене)
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !process.env.SKIP_MIGRATIONS) {
     try {
       log('🔄 Applying database migrations...');
       await execAsync('npm run db:push');

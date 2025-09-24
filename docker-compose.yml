@@ -9,6 +9,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: production
+      SKIP_MIGRATIONS: "true"
     restart: always
     volumes:
       - ./img:/app/img
