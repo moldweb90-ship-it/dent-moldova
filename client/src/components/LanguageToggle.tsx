@@ -10,19 +10,19 @@ export function LanguageToggle() {
 
   // Определяем текущий язык по URL
   const currentLanguage = currentPath.startsWith('/clinic/ro/') || currentPath.startsWith('/ro/') || currentPath === '/ro' ? 'ro' : 'ru';
-  console.log('🔄 LanguageToggle: Текущий путь:', currentPath, 'определенный язык:', currentLanguage);
+  // Debug logging removed to prevent infinite loop
 
   const handleLanguageChange = (newLanguage: 'ru' | 'ro') => {
     // Не переключаем если уже на нужном языке
     if (currentLanguage === newLanguage) {
-      console.log('🔄 LanguageToggle: Уже на языке', newLanguage);
+      // Already on the correct language
       return;
     }
 
     const fullPath = currentPath + window.location.search; // Включаем query parameters
     const path = currentPath; // Путь без параметров
     const queryString = window.location.search; // Параметры
-    console.log('🔄 LanguageToggle: Переключение языка на', newLanguage, 'путь:', path, 'параметры:', queryString);
+    // Language switching logic
     
     let newPath = path;
     
@@ -79,11 +79,11 @@ export function LanguageToggle() {
     
     // Применяем изменения только если путь действительно изменился
     if (newPath !== path) {
-      console.log('🔄 LanguageToggle: Переключаем путь:', fullPath, '->', finalPath);
+      // Path changed, navigating
       setLocation(finalPath);
       document.documentElement.lang = newLanguage;
     } else {
-      console.log('🔄 LanguageToggle: Путь не изменился, только обновляем язык');
+      // Path unchanged, only updating language
       document.documentElement.lang = newLanguage;
     }
   };

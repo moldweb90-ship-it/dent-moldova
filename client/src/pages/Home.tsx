@@ -169,7 +169,6 @@ export default function Home() {
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
   useEffect(() => {
     if (isOpenNowActive && !filters.openNow) {
-      console.log('🔍 FORCING openNow filter activation from URL');
       setFilters(prev => ({ ...prev, openNow: true }));
     }
   }, [isOpenNowActive, filters.openNow]);
@@ -287,13 +286,11 @@ export default function Home() {
     
     if (filters.verified !== undefined) {
       params.set('verified', filters.verified.toString());
-      console.log('🔍 Setting verified filter:', filters.verified);
     }
     
     // ПРИНУДИТЕЛЬНАЯ АКТИВАЦИЯ ФИЛЬТРА "ОТКРЫТЫ СЕЙЧАС" ДЛЯ ТЕСТИРОВАНИЯ
     if (isOpenNowActive || filters.openNow) {
       params.set('openNow', 'true');
-      console.log('🔍 FORCING openNow=true for testing - isOpenNowActive:', isOpenNowActive, 'filters.openNow:', filters.openNow);
     }
     
     params.set('sort', filters.sort);
@@ -302,20 +299,11 @@ export default function Home() {
     params.set('language', language);
     
     const queryString = params.toString();
-    console.log('🔍 Frontend query params:', queryString);
-    console.log('🔍 Frontend filters:', filters);
-    console.log('🔍 Cities available:', cities.length);
-    console.log('🔍 Districts available:', districts.length);
-    console.log('🔍 openNow filter value:', filters.openNow);
-    console.log('🔍 isOpenNowActive:', isOpenNowActive);
-    console.log('🔍 Current URL:', window.location.pathname);
-    
     return queryString;
-  }, [searchQuery, filters, page, language, cities.length, districts.length]);
+  }, [searchQuery, filters, page, language, isOpenNowActive]);
 
   // Fetch clinics
   const queryKey = ['/api/clinics', buildQueryParams(), language];
-  console.log('🔍 Query key:', queryKey);
   
   const { data: clinicsData, isLoading, isFetching } = useQuery({
     queryKey,
@@ -333,20 +321,7 @@ export default function Home() {
     refetchOnMount: true, // Always refetch on mount
   });
 
-  // Debug: Log clinics data when it changes
-  useEffect(() => {
-    if (clinicsData) {
-      console.log('🔍 Frontend received clinics data:', {
-        total: clinicsData.total,
-        clinicsCount: clinicsData.clinics.length,
-        openNowFilter: filters.openNow,
-        queryString: buildQueryParams(),
-        currentUrl: window.location.pathname,
-        isOpenNowActive: isOpenNowActive,
-        clinics: clinicsData.clinics.map(c => ({ name: c.nameRu, verified: c.verified }))
-      });
-    }
-  }, [clinicsData, filters.openNow, isOpenNowActive]);
+  // Debug logging removed to prevent infinite loop
 
   // Fetch clinic detail
   const { data: clinicDetail, error: clinicDetailError } = useQuery({

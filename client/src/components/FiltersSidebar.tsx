@@ -54,14 +54,7 @@ export function FiltersSidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  // Debug logging
-  console.log('🔍 FiltersSidebar props:', {
-    citiesCount: cities?.length,
-    districtsCount: districts?.length,
-    filters,
-    cities: cities?.slice(0, 3), // Show first 3 cities
-    districts: districts?.slice(0, 3) // Show first 3 districts
-  });
+  // Debug logging removed to prevent infinite loop
 
   useEffect(() => {
     onSearch(debouncedQuery);
