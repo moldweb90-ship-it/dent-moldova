@@ -4,6 +4,10 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seoMiddleware } from "./seoMiddleware";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 const app = express();
 app.use(express.json());
@@ -51,6 +55,22 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Выполняем миграции при запуске (только в продакшене)
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      log('🔄 Applying database migrations...');
+      await execAsync('npm run db:push');
+      log('✅ Database migrations applied successfully');
+      
+      log('🌱 Seeding database...');
+      await execAsync('npx tsx server/seed.ts');
+      log('✅ Database seeded successfully');
+    } catch (error) {
+      log('❌ Error during database setup:', error);
+      // Не останавливаем приложение, продолжаем работу
+    }
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
