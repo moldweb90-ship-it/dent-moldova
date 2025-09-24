@@ -88,6 +88,10 @@ npm run dev
 - Бельцы: 3 клиники  
 - Другие города: 5 клиник
 
+## Deployment
+
+Automatic deployment to VPS via GitHub Actions is configured.
+
 Каждая клиника имеет:
 - Основную информацию (название, адрес, контакты)
 - Рейтинги (цена, доверие, отзывы, доступность)
