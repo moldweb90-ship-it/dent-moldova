@@ -624,6 +624,8 @@ export class DatabaseStorage implements IStorage {
 
     // Filter by open now if requested (BEFORE sorting and pagination)
     if (filters.openNow) {
+      console.log('🔍 ===== OPEN NOW FILTER START =====');
+      console.log(`🔍 Total clinics before open now filter: ${clinicsWithServices.length}`);
       console.log('🔍 Filtering by open now...');
       const now = new Date();
       const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
@@ -635,15 +637,19 @@ export class DatabaseStorage implements IStorage {
         // Find today's working hours
         const todayHours = clinic.workingHours.find(wh => wh.dayOfWeek === currentDay);
         
-        console.log(`🔍 Clinic ${clinic.nameRu}: todayHours:`, todayHours);
+        console.log(`🔍 OPEN NOW FILTER - Clinic ${clinic.nameRu}:`);
+        console.log(`  - Current day: ${currentDay} (0=Sunday, 1=Monday, etc.)`);
+        console.log(`  - Current time: ${currentTime}`);
+        console.log(`  - Today's hours:`, todayHours);
+        console.log(`  - All working hours:`, clinic.workingHours);
         
         if (!todayHours || !todayHours.isOpen) {
-          console.log(`🔍 Clinic ${clinic.nameRu}: closed today (no hours or isOpen=false)`);
+          console.log(`  ❌ RESULT: CLOSED - no hours or isOpen=false`);
           return false; // Clinic is closed today
         }
         
         if (todayHours.is24Hours) {
-          console.log(`🔍 Clinic ${clinic.nameRu}: open 24/7`);
+          console.log(`  ✅ RESULT: OPEN 24/7`);
           return true; // Clinic is open 24/7
         }
         
@@ -658,27 +664,30 @@ export class DatabaseStorage implements IStorage {
           const openMinutes = timeToMinutes(todayHours.openTime);
           const closeMinutes = timeToMinutes(todayHours.closeTime);
           
-          console.log(`🔍 Clinic ${clinic.nameRu}: current=${currentMinutes}, open=${openMinutes}, close=${closeMinutes}`);
+          console.log(`  - Time comparison: current=${currentMinutes}min (${currentTime}), open=${openMinutes}min (${todayHours.openTime}), close=${closeMinutes}min (${todayHours.closeTime})`);
           
           // Check if clinic is currently open
           let isOpen = false;
           if (closeMinutes > openMinutes) {
             // Normal case: opening and closing on the same day
             isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+            console.log(`  - Normal hours: ${currentMinutes} >= ${openMinutes} && ${currentMinutes} <= ${closeMinutes} = ${isOpen}`);
           } else {
             // Midnight crossing case (e.g., 22:00 - 06:00)
             isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
+            console.log(`  - Midnight crossing: ${currentMinutes} >= ${openMinutes} || ${currentMinutes} <= ${closeMinutes} = ${isOpen}`);
           }
           
-          console.log(`🔍 Clinic ${clinic.nameRu}: isOpen=${isOpen}`);
+          console.log(`  ${isOpen ? '✅' : '❌'} RESULT: ${isOpen ? 'OPEN' : 'CLOSED'}`);
           return isOpen;
         }
         
-        console.log(`🔍 Clinic ${clinic.nameRu}: no time specified, assuming closed`);
+        console.log(`  ❌ RESULT: CLOSED - no time specified, assuming closed`);
         return false; // No time specified, assume closed
       });
       
       console.log(`🔍 After open now filter: ${clinicsWithServices.length} clinics`);
+      console.log('🔍 ===== OPEN NOW FILTER END =====');
     }
 
     // Sort in JavaScript to ensure verified clinics are always first

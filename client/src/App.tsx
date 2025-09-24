@@ -53,6 +53,7 @@ export const closePhoneModal = () => {
 declare global {
   interface Window {
     phoneModalUpdate?: () => void;
+    queryClient?: any;
   }
 }
 
@@ -144,6 +145,9 @@ function App() {
       onClose: globalPhoneModalState.onClose
     });
   };
+
+  // Устанавливаем queryClient в глобальную область для доступа из компонентов
+  window.queryClient = queryClient;
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -251,6 +251,12 @@ export default function Home() {
       console.log('🔍 Filters changed - openNow:', filters.openNow, 'verified:', filters.verified);
       // Принудительно обновляем запрос, изменяя ключ запроса
       setPage(1);
+      
+      // Принудительно инвалидируем кэш для клиник
+      if (window.queryClient) {
+        window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
+        console.log('🔍 Cache invalidated for clinics');
+      }
     }
   }, [filters.openNow, filters.verified]);
   
@@ -312,6 +318,19 @@ export default function Home() {
     staleTime: 2 * 60 * 1000, // Cache for 2 minutes
     cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
+
+  // Debug: Log clinics data when it changes
+  useEffect(() => {
+    if (clinicsData) {
+      console.log('🔍 Frontend received clinics data:', {
+        total: clinicsData.total,
+        clinicsCount: clinicsData.clinics.length,
+        openNowFilter: filters.openNow,
+        queryString: buildQueryParams(),
+        clinics: clinicsData.clinics.map(c => ({ name: c.nameRu, verified: c.verified }))
+      });
+    }
+  }, [clinicsData, filters.openNow]);
 
   // Fetch clinic detail
   const { data: clinicDetail, error: clinicDetailError } = useQuery({
