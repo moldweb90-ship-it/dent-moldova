@@ -125,7 +125,7 @@ export function MobileFiltersModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md h-[90vh] max-h-[90vh] overflow-hidden p-0 mobile-filters-modal">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md h-[85vh] max-h-[85vh] overflow-hidden p-0 mobile-filters-modal">
         <DialogHeader className="px-6 py-4 border-b border-gray-200">
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
             <Filter className="h-5 w-5 mr-2" />
