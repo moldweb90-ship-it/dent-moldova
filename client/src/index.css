@@ -1,9 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import './styles/mobile-forms.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Font loading optimization */
+@font-face {
+  font-family: 'Raleway';
+  font-display: swap;
+}
+
+/* Apply Raleway as default font */
+body {
+  font-family: 'Raleway', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 
 @layer utilities {
   .scrollbar-hide {
@@ -61,6 +71,7 @@
   @media (max-width: 768px) {
     .mobile-filters-modal,
     .clinic-detail-modal,
+    .booking-modal,
     [data-radix-dialog-content] {
       margin: 0 !important;
       max-width: calc(100vw - 2rem) !important;
@@ -74,31 +85,11 @@
     }
     
     /* Prevent horizontal scroll on mobile */
-    .clinic-detail-modal {
+    .clinic-detail-modal,
+    .booking-modal {
       overflow-x: hidden !important;
     }
     
-    /* Ensure booking modal header is visible */
-    [data-radix-dialog-content] .bg-gradient-to-br {
-      min-height: 5rem !important;
-      padding: 1rem !important;
-    }
-    
-    [data-radix-dialog-content] h2 {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      color: white !important;
-      font-size: 1.25rem !important;
-      font-weight: bold !important;
-      z-index: 20 !important;
-      position: relative !important;
-    }
-    
-    [data-radix-dialog-content] h2 span {
-      display: block !important;
-      visibility: visible !important;
-    }
     
     /* Ensure proper spacing */
     [data-radix-dialog-content] {

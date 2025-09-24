@@ -71,7 +71,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
+        sans: ["Raleway", "var(--font-sans)", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
       },
