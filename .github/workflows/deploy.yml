@@ -1,0 +1,36 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd /var/www/clinici.md &&
+            git pull origin main &&
+            echo 'DATABASE_URL=${DATABASE_URL}' > .env &&
+            docker-compose down || true &&
+            docker-compose up -d --build --remove-orphans
+          "

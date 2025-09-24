@@ -1,34 +1,15 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: clinici_postgres
-    environment:
-      POSTGRES_DB: clinici_db
-      POSTGRES_USER: clinici_user
-      POSTGRES_PASSWORD: clinici_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
   app:
     build: .
-    container_name: clinici_app
+    container_name: clinici_md_app
     ports:
       - "5000:5000"
     environment:
-      DATABASE_URL: postgresql://clinici_user:clinici_password@postgres:5432/clinici_db
-      PORT: 5000
-      NODE_ENV: development
-    depends_on:
-      - postgres
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: production
+    restart: always
     volumes:
-      - .:/app
-      - /app/node_modules
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
+      - ./img:/app/img
+      - ./public:/app/public
