@@ -1,4 +1,7 @@
-import "dotenv/config";
+// Load .env only in development to avoid bundling dotenv in production
+if (process.env.NODE_ENV !== 'production') {
+  await import('dotenv/config');
+}
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import { registerRoutes } from "./routes";
