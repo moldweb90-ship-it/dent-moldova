@@ -232,6 +232,17 @@ export default function Home() {
       setIsManualFilterChange(false);
     }
   }, [citySlug, districtSlug, cities, districts, language, activeFeatures, filters.features, isManualFilterChange]);
+
+  // Отдельный useEffect для обработки изменений фильтров openNow и verified
+  useEffect(() => {
+    // Этот эффект срабатывает при изменении filters.openNow или filters.verified
+    // и принудительно обновляет запрос к API
+    if (filters.openNow !== undefined || filters.verified !== undefined) {
+      console.log('🔍 Filters changed - openNow:', filters.openNow, 'verified:', filters.verified);
+      // Принудительно обновляем запрос, изменяя ключ запроса
+      setPage(1);
+    }
+  }, [filters.openNow, filters.verified]);
   
   // Build query parameters
   const buildQueryParams = useCallback(() => {
@@ -251,6 +262,7 @@ export default function Home() {
     
     if (filters.verified !== undefined) {
       params.set('verified', filters.verified.toString());
+      console.log('🔍 Setting verified filter:', filters.verified);
     }
     
     if (filters.openNow !== undefined) {

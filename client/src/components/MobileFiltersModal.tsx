@@ -82,6 +82,7 @@ export function MobileFiltersModal({
   }, [open]);
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
+    console.log('🔍 Mobile updateFilter:', key, value);
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -106,10 +107,12 @@ export function MobileFiltersModal({
   };
 
   const togglePromotionalLabel = (label: string) => {
+    console.log('🔍 Mobile togglePromotionalLabel:', label);
     const current = filters.promotionalLabels;
     const updated = current.includes(label) 
       ? current.filter(v => v !== label)
       : [...current, label];
+    console.log('🔍 Mobile Updated promotionalLabels:', updated);
     updateFilter('promotionalLabels', updated);
   };
 
