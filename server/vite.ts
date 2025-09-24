@@ -720,10 +720,33 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Serve hashed build assets with correct MIME types and long cache
+  const assetsPath = path.resolve(distPath, "assets");
+  if (fs.existsSync(assetsPath)) {
+    app.use(
+      "/assets",
+      express.static(assetsPath, {
+        maxAge: "1y",
+        immutable: true,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith(".js")) res.type("application/javascript");
+          else if (filePath.endsWith(".css")) res.type("text/css");
+        },
+      }),
+    );
+  }
+
+  // Serve other static files (images, icons, etc.)
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
+  // Fallback only for non-asset requests
   app.use("*", async (req, res) => {
+    const url = req.originalUrl || "";
+    if (url.startsWith("/assets/")) {
+      // Let express.static handle assets
+      return res.status(404).end();
+    }
     try {
       const indexPath = path.resolve(distPath, "index.html");
       let template = await fs.promises.readFile(indexPath, "utf-8");
