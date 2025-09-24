@@ -168,16 +168,9 @@ export default function Home() {
 
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
   useEffect(() => {
-    console.log('🔍 ===== URL FILTER ACTIVATION =====');
-    console.log('🔍 isOpenNowActive:', isOpenNowActive);
-    console.log('🔍 filters.openNow:', filters.openNow);
-    console.log('🔍 Current URL:', window.location.pathname);
-    
     if (isOpenNowActive && !filters.openNow) {
-      console.log('🔍 FORCING openNow filter activation from URL');
       setFilters(prev => ({ ...prev, openNow: true }));
     }
-    console.log('🔍 ===== URL FILTER ACTIVATION END =====');
   }, [isOpenNowActive, filters.openNow]);
   
   const [page, setPage] = useState(1);
@@ -307,7 +300,7 @@ export default function Home() {
     
     const queryString = params.toString();
     
-    // МАКСИМАЛЬНЫЕ ЛОГИ ДЛЯ ОТЛАДКИ - ТОЛЬКО ДЛЯ OPENNOW
+    // ВРЕМЕННЫЕ ЛОГИ ДЛЯ ОТЛАДКИ
     if (filters.openNow || isOpenNowActive) {
       console.log('🔍 ===== FRONTEND DEBUG START =====');
       console.log('🔍 Frontend query params:', queryString);
@@ -339,22 +332,7 @@ export default function Home() {
     refetchOnMount: true, // Always refetch on mount
   });
 
-  // МАКСИМАЛЬНЫЕ ЛОГИ ДЛЯ ОТЛАДКИ
-  useEffect(() => {
-    if (clinicsData) {
-      console.log('🔍 ===== CLINICS DATA RECEIVED =====');
-      console.log('🔍 Total clinics:', clinicsData.total);
-      console.log('🔍 Clinics count:', clinicsData.clinics.length);
-      console.log('🔍 openNow filter:', filters.openNow);
-      console.log('🔍 isOpenNowActive:', isOpenNowActive);
-      console.log('🔍 Clinics list:', clinicsData.clinics.map(c => ({ 
-        name: c.nameRu, 
-        verified: c.verified,
-        workingHours: c.workingHours?.length || 0
-      })));
-      console.log('🔍 ===== CLINICS DATA END =====');
-    }
-  }, [clinicsData, filters.openNow, isOpenNowActive]);
+  // Логи убраны для предотвращения бесконечного цикла
 
   // Fetch clinic detail
   const { data: clinicDetail, error: clinicDetailError } = useQuery({

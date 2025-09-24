@@ -83,7 +83,10 @@ export function MobileFiltersModal({
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
     console.log('🔍 Mobile updateFilter:', key, value);
-    onFiltersChange({ ...filters, [key]: value });
+    console.log('🔍 Current filters before update:', filters);
+    const newFilters = { ...filters, [key]: value };
+    console.log('🔍 New filters after update:', newFilters);
+    onFiltersChange(newFilters);
   };
 
   const toggleDistrict = (districtId: string) => {
@@ -253,13 +256,7 @@ export function MobileFiltersModal({
                   id="openNow"
                   checked={filters.openNow || false}
                   onCheckedChange={(checked) => {
-                    console.log('🔍 ===== MOBILE OPENNOW CHECKBOX =====');
-                    console.log('🔍 Mobile openNow checkbox changed:', checked);
-                    console.log('🔍 Current filters before change:', filters);
-                    console.log('🔍 Current URL before change:', window.location.pathname);
                     updateFilter('openNow', checked);
-                    console.log('🔍 After updateFilter call');
-                    console.log('🔍 ===== MOBILE OPENNOW CHECKBOX END =====');
                   }}
                   className="h-4 w-4"
                 />
