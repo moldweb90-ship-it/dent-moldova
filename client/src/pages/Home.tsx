@@ -165,6 +165,14 @@ export default function Home() {
     verified: undefined,
     openNow: isOpenNowActive ? true : undefined
   });
+
+  // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
+  useEffect(() => {
+    if (isOpenNowActive && !filters.openNow) {
+      console.log('🔍 FORCING openNow filter activation from URL');
+      setFilters(prev => ({ ...prev, openNow: true }));
+    }
+  }, [isOpenNowActive, filters.openNow]);
   
   const [page, setPage] = useState(1);
   const limit = 50;
@@ -282,9 +290,10 @@ export default function Home() {
       console.log('🔍 Setting verified filter:', filters.verified);
     }
     
-    if (filters.openNow !== undefined) {
-      params.set('openNow', filters.openNow.toString());
-      console.log('🔍 Setting openNow filter:', filters.openNow);
+    // ПРИНУДИТЕЛЬНАЯ АКТИВАЦИЯ ФИЛЬТРА "ОТКРЫТЫ СЕЙЧАС" ДЛЯ ТЕСТИРОВАНИЯ
+    if (isOpenNowActive || filters.openNow) {
+      params.set('openNow', 'true');
+      console.log('🔍 FORCING openNow=true for testing - isOpenNowActive:', isOpenNowActive, 'filters.openNow:', filters.openNow);
     }
     
     params.set('sort', filters.sort);
