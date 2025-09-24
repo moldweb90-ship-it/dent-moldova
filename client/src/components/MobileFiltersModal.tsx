@@ -252,7 +252,10 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="openNow"
                   checked={filters.openNow || false}
-                  onCheckedChange={(checked) => updateFilter('openNow', checked)}
+                  onCheckedChange={(checked) => {
+                    console.log('🔍 Mobile openNow checkbox changed:', checked);
+                    updateFilter('openNow', checked);
+                  }}
                   className="h-4 w-4"
                 />
                 <label 
