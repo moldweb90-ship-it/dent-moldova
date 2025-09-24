@@ -85,6 +85,9 @@ function Router() {
       <Route path="/ro/city/:citySlug/:districtSlug/work24h" component={Home} />
       <Route path="/ro/city/:citySlug/:districtSlug/credit" component={Home} />
       <Route path="/ro/city/:citySlug/:districtSlug/weekend-work" component={Home} />
+      <Route path="/ro/open-now" component={Home} />
+      <Route path="/ro/city/:citySlug/open-now" component={Home} />
+      <Route path="/ro/city/:citySlug/:districtSlug/open-now" component={Home} />
       
       {/* Feature-based routes - Russian */}
       <Route path="/pediatric-dentistry" component={Home} />
@@ -105,6 +108,9 @@ function Router() {
       <Route path="/city/:citySlug/:districtSlug/work24h" component={Home} />
       <Route path="/city/:citySlug/:districtSlug/credit" component={Home} />
       <Route path="/city/:citySlug/:districtSlug/weekend-work" component={Home} />
+      <Route path="/open-now" component={Home} />
+      <Route path="/city/:citySlug/open-now" component={Home} />
+      <Route path="/city/:citySlug/:districtSlug/open-now" component={Home} />
       
       <Route path="/" component={Home} />
       

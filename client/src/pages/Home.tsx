@@ -49,6 +49,9 @@ export default function Home() {
   const [, districtFeatureWork24hRo] = useRoute<{ citySlug: string; districtSlug: string }>('/ro/city/:citySlug/:districtSlug/work24h');
   const [, districtFeatureCreditRo] = useRoute<{ citySlug: string; districtSlug: string }>('/ro/city/:citySlug/:districtSlug/credit');
   const [, districtFeatureWeekendRo] = useRoute<{ citySlug: string; districtSlug: string }>('/ro/city/:citySlug/:districtSlug/weekend-work');
+  const [, featureOpenNowRo] = useRoute('/ro/open-now');
+  const [, cityFeatureOpenNowRo] = useRoute<{ citySlug: string }>('/ro/city/:citySlug/open-now');
+  const [, districtFeatureOpenNowRo] = useRoute<{ citySlug: string; districtSlug: string }>('/ro/city/:citySlug/:districtSlug/open-now');
   
   // Feature-based routes - Russian
   const [, featurePediatricRu] = useRoute('/pediatric-dentistry');
@@ -69,28 +72,31 @@ export default function Home() {
   const [, districtFeatureWork24hRu] = useRoute<{ citySlug: string; districtSlug: string }>('/city/:citySlug/:districtSlug/work24h');
   const [, districtFeatureCreditRu] = useRoute<{ citySlug: string; districtSlug: string }>('/city/:citySlug/:districtSlug/credit');
   const [, districtFeatureWeekendRu] = useRoute<{ citySlug: string; districtSlug: string }>('/city/:citySlug/:districtSlug/weekend-work');
+  const [, featureOpenNowRu] = useRoute('/open-now');
+  const [, cityFeatureOpenNowRu] = useRoute<{ citySlug: string }>('/city/:citySlug/open-now');
+  const [, districtFeatureOpenNowRu] = useRoute<{ citySlug: string; districtSlug: string }>('/city/:citySlug/:districtSlug/open-now');
   
   const isRomanian = !!(paramsRo || cityParamsRo || districtParamsRo || 
-                       featurePediatricRo || featureParkingRo || featureSosRo || featureWork24hRo || featureCreditRo || featureWeekendRo ||
-                       cityFeaturePediatricRo || cityFeatureParkingRo || cityFeatureSosRo || cityFeatureWork24hRo || cityFeatureCreditRo || cityFeatureWeekendRo ||
-                       districtFeaturePediatricRo || districtFeatureParkingRo || districtFeatureSosRo || districtFeatureWork24hRo || districtFeatureCreditRo || districtFeatureWeekendRo);
+                       featurePediatricRo || featureParkingRo || featureSosRo || featureWork24hRo || featureCreditRo || featureWeekendRo || featureOpenNowRo ||
+                       cityFeaturePediatricRo || cityFeatureParkingRo || cityFeatureSosRo || cityFeatureWork24hRo || cityFeatureCreditRo || cityFeatureWeekendRo || cityFeatureOpenNowRo ||
+                       districtFeaturePediatricRo || districtFeatureParkingRo || districtFeatureSosRo || districtFeatureWork24hRo || districtFeatureCreditRo || districtFeatureWeekendRo || districtFeatureOpenNowRo);
   const language = isRomanian ? 'ro' : 'ru';
   
   // Определяем slug из URL
   const citySlug = cityParamsRu?.citySlug || cityParamsRo?.citySlug || districtParamsRu?.citySlug || districtParamsRo?.citySlug ||
                    cityFeaturePediatricRu?.citySlug || cityFeatureParkingRu?.citySlug || cityFeatureSosRu?.citySlug || 
-                   cityFeatureWork24hRu?.citySlug || cityFeatureCreditRu?.citySlug || cityFeatureWeekendRu?.citySlug ||
+                   cityFeatureWork24hRu?.citySlug || cityFeatureCreditRu?.citySlug || cityFeatureWeekendRu?.citySlug || cityFeatureOpenNowRu?.citySlug ||
                    cityFeaturePediatricRo?.citySlug || cityFeatureParkingRo?.citySlug || cityFeatureSosRo?.citySlug || 
-                   cityFeatureWork24hRo?.citySlug || cityFeatureCreditRo?.citySlug || cityFeatureWeekendRo?.citySlug ||
+                   cityFeatureWork24hRo?.citySlug || cityFeatureCreditRo?.citySlug || cityFeatureWeekendRo?.citySlug || cityFeatureOpenNowRo?.citySlug ||
                    districtFeaturePediatricRu?.citySlug || districtFeatureParkingRu?.citySlug || districtFeatureSosRu?.citySlug ||
-                   districtFeatureWork24hRu?.citySlug || districtFeatureCreditRu?.citySlug || districtFeatureWeekendRu?.citySlug ||
+                   districtFeatureWork24hRu?.citySlug || districtFeatureCreditRu?.citySlug || districtFeatureWeekendRu?.citySlug || districtFeatureOpenNowRu?.citySlug ||
                    districtFeaturePediatricRo?.citySlug || districtFeatureParkingRo?.citySlug || districtFeatureSosRo?.citySlug ||
-                   districtFeatureWork24hRo?.citySlug || districtFeatureCreditRo?.citySlug || districtFeatureWeekendRo?.citySlug;
+                   districtFeatureWork24hRo?.citySlug || districtFeatureCreditRo?.citySlug || districtFeatureWeekendRo?.citySlug || districtFeatureOpenNowRo?.citySlug;
   const districtSlug = districtParamsRu?.districtSlug || districtParamsRo?.districtSlug ||
                        districtFeaturePediatricRu?.districtSlug || districtFeatureParkingRu?.districtSlug || districtFeatureSosRu?.districtSlug ||
-                       districtFeatureWork24hRu?.districtSlug || districtFeatureCreditRu?.districtSlug || districtFeatureWeekendRu?.districtSlug ||
+                       districtFeatureWork24hRu?.districtSlug || districtFeatureCreditRu?.districtSlug || districtFeatureWeekendRu?.districtSlug || districtFeatureOpenNowRu?.districtSlug ||
                        districtFeaturePediatricRo?.districtSlug || districtFeatureParkingRo?.districtSlug || districtFeatureSosRo?.districtSlug ||
-                       districtFeatureWork24hRo?.districtSlug || districtFeatureCreditRo?.districtSlug || districtFeatureWeekendRo?.districtSlug;
+                       districtFeatureWork24hRo?.districtSlug || districtFeatureCreditRo?.districtSlug || districtFeatureWeekendRo?.districtSlug || districtFeatureOpenNowRo?.districtSlug;
   
   // Определяем активные функции из URL
   const getActiveFeaturesFromUrl = () => {
@@ -129,6 +135,9 @@ export default function Home() {
   const activeFeatures = getActiveFeaturesFromUrl();
   const activeFeature = activeFeatures.length > 0 ? activeFeatures[0] : null; // Для обратной совместимости
   
+  // Определяем, активен ли фильтр "Открыты сейчас" из URL
+  const isOpenNowActive = !!(featureOpenNowRu || featureOpenNowRo || cityFeatureOpenNowRu || cityFeatureOpenNowRo || districtFeatureOpenNowRu || districtFeatureOpenNowRo);
+  
   // useSEO будет вызван условно ниже
   
   // Переключаем язык в i18n системе при изменении URL
@@ -153,7 +162,8 @@ export default function Home() {
     features: activeFeatures,
     promotionalLabels: [],
     sort: 'dscore',
-    verified: undefined
+    verified: undefined,
+    openNow: isOpenNowActive ? true : undefined
   });
   
   const [page, setPage] = useState(1);
@@ -280,6 +290,7 @@ export default function Home() {
     console.log('🔍 Frontend filters:', filters);
     console.log('🔍 Cities available:', cities.length);
     console.log('🔍 Districts available:', districts.length);
+    console.log('🔍 openNow filter value:', filters.openNow);
     
     return queryString;
   }, [searchQuery, filters, page, language, cities.length, districts.length]);
@@ -379,6 +390,36 @@ export default function Home() {
     }
   }, [cities, districts, language, setLocation]);
 
+  // Функция для навигации к URL "Открыты сейчас"
+  const navigateToOpenNow = useCallback((cityId?: string, districtId?: string) => {
+    let baseUrl = language === 'ro' ? '/ro/open-now' : '/open-now';
+    
+    if (cityId && cities.length > 0) {
+      const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+      const city = cities.find(c => c.id === cityId);
+      if (city) {
+        if (districtId && districts.length > 0) {
+          const district = districts.find(d => d.id === districtId);
+          if (district) {
+            baseUrl = language === 'ro' 
+              ? `/ro/city/${city[slugField]}/${district[slugField]}/open-now`
+              : `/city/${city[slugField]}/${district[slugField]}/open-now`;
+          } else {
+            baseUrl = language === 'ro' 
+              ? `/ro/city/${city[slugField]}/open-now`
+              : `/city/${city[slugField]}/open-now`;
+          }
+        } else {
+          baseUrl = language === 'ro' 
+            ? `/ro/city/${city[slugField]}/open-now`
+            : `/city/${city[slugField]}/open-now`;
+        }
+      }
+    }
+    
+    setLocation(baseUrl);
+  }, [cities, districts, language, setLocation]);
+
   // Функция для навигации к URL функций/удобств
   const navigateToFeature = useCallback((features: string[], cityId?: string, districtId?: string) => {
     // Если выбрана только одна функция, используем красивые URL
@@ -473,11 +514,37 @@ export default function Home() {
                            !newFilters.features.every(f => filters.features.includes(f)) ||
                            !filters.features.every(f => newFilters.features.includes(f));
     
-    // Если изменились только фильтры без навигации (openNow, verified, promotionalLabels, sort)
-    const onlyFilterChanged = !cityChanged && !districtChanged && !featuresChanged;
+    // Проверяем, изменился ли фильтр openNow
+    const openNowChanged = newFilters.openNow !== filters.openNow;
+    
+    // Если изменились только фильтры без навигации (verified, promotionalLabels, sort)
+    const onlyFilterChanged = !cityChanged && !districtChanged && !featuresChanged && !openNowChanged;
     
     if (onlyFilterChanged) {
       console.log('🔍 Only filter changed, updating filters directly');
+      setFilters(newFilters);
+      setPage(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    // Если изменился только фильтр openNow
+    if (openNowChanged && !cityChanged && !districtChanged && !featuresChanged) {
+      console.log('🔍 OpenNow filter changed, navigating to URL');
+      if (newFilters.openNow) {
+        // Включаем фильтр "Открыты сейчас" - переходим на URL
+        navigateToOpenNow(newFilters.city, newFilters.districts[0]);
+      } else {
+        // Выключаем фильтр "Открыты сейчас" - возвращаемся на обычную страницу
+        if (newFilters.features.length > 0) {
+          navigateToFeature(newFilters.features, newFilters.city, newFilters.districts[0]);
+        } else if (newFilters.city) {
+          navigateToLocation(newFilters.city, newFilters.districts[0]);
+        } else {
+          const homeUrl = language === 'ro' ? '/ro' : '/';
+          setLocation(homeUrl);
+        }
+      }
       setFilters(newFilters);
       setPage(1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -590,7 +657,7 @@ export default function Home() {
     setFilters(newFilters);
     setPage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [filters.city, filters.districts, filters.features, navigateToLocation, navigateToFeature, language, setLocation, setIsManualFilterChange]);
+  }, [filters.city, filters.districts, filters.features, filters.openNow, navigateToLocation, navigateToFeature, navigateToOpenNow, language, setLocation, setIsManualFilterChange]);
 
   const handleApplyFilters = useCallback(() => {
     setPage(1);
@@ -801,7 +868,13 @@ export default function Home() {
 
     // Генерируем canonical URL
     let canonical = `/${language === 'ro' ? 'ro/' : ''}`;
-    if (selectedFeatures.length === 1 && selectedCity && selectedDistrict) {
+    if (isOpenNowActive && selectedCity && selectedDistrict) {
+      canonical += `city/${citySlug}/${districtSlug}/open-now`;
+    } else if (isOpenNowActive && selectedCity) {
+      canonical += `city/${citySlug}/open-now`;
+    } else if (isOpenNowActive) {
+      canonical += 'open-now';
+    } else if (selectedFeatures.length === 1 && selectedCity && selectedDistrict) {
       const feature = featureNames[selectedFeatures[0]];
       canonical += `city/${citySlug}/${districtSlug}/${feature.slug}`;
     } else if (selectedFeatures.length === 1 && selectedCity) {
@@ -828,7 +901,90 @@ export default function Home() {
       canonical = canonical.slice(0, -1) || '/'; // Remove trailing slash for home
     }
 
-    if (selectedFeatures.length > 0 && selectedCity && selectedDistrict) {
+    if (isOpenNowActive && selectedCity && selectedDistrict) {
+      // Страница "Открыты сейчас" + город + район
+      return {
+        title: language === 'ru' 
+          ? `Открытые сейчас стоматологические клиники в ${cityName} на ${districtName} - Dent Moldova`
+          : `Clinici stomatologice deschise acum în ${cityName}, ${districtName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `Открытые сейчас стоматологические клиники в ${cityName} на ${districtName}`
+          : `Clinici stomatologice deschise acum în ${cityName}, ${districtName}`,
+        description: language === 'ru'
+          ? `Найдите открытые сейчас стоматологические клиники в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
+          : `Găsiți clinici stomatologice deschise acum în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
+        keywords: language === 'ru'
+          ? `открытые сейчас стоматологические клиники ${cityName}, стоматолог ${cityName}, лечение зубов ${cityName}, клиника ${cityName}`
+          : `clinici stomatologice deschise acum ${cityName}, stomatolog ${cityName}, tratament dentar ${cityName}, clinică ${cityName}`,
+        canonical,
+        schemaType: 'MedicalBusiness',
+        schemaData: {
+          name: language === 'ru' ? `Стоматологические клиники в ${cityName}` : `Clinici stomatologice în ${cityName}`,
+          description: language === 'ru' 
+            ? `Открытые сейчас стоматологические клиники в ${cityName}`
+            : `Clinici stomatologice deschise acum în ${cityName}`,
+          address: {
+            addressLocality: cityName,
+            addressCountry: 'MD'
+          }
+        }
+      };
+    } else if (isOpenNowActive && selectedCity) {
+      // Страница "Открыты сейчас" + город
+      return {
+        title: language === 'ru' 
+          ? `Открытые сейчас стоматологические клиники в ${cityName} - Dent Moldova`
+          : `Clinici stomatologice deschise acum în ${cityName} - Dent Moldova`,
+        h1: language === 'ru'
+          ? `Открытые сейчас стоматологические клиники в ${cityName}`
+          : `Clinici stomatologice deschise acum în ${cityName}`,
+        description: language === 'ru'
+          ? `Найдите открытые сейчас стоматологические клиники в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
+          : `Găsiți clinici stomatologice deschise acum în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`,
+        keywords: language === 'ru'
+          ? `открытые сейчас стоматологические клиники ${cityName}, стоматолог ${cityName}, лечение зубов ${cityName}, клиника ${cityName}`
+          : `clinici stomatologice deschise acum ${cityName}, stomatolog ${cityName}, tratament dentar ${cityName}, clinică ${cityName}`,
+        canonical,
+        schemaType: 'MedicalBusiness',
+        schemaData: {
+          name: language === 'ru' ? `Стоматологические клиники в ${cityName}` : `Clinici stomatologice în ${cityName}`,
+          description: language === 'ru' 
+            ? `Открытые сейчас стоматологические клиники в ${cityName}`
+            : `Clinici stomatologice deschise acum în ${cityName}`,
+          address: {
+            addressLocality: cityName,
+            addressCountry: 'MD'
+          }
+        }
+      };
+    } else if (isOpenNowActive) {
+      // Страница "Открыты сейчас"
+      return {
+        title: language === 'ru' 
+          ? `Открытые сейчас стоматологические клиники - Dent Moldova`
+          : `Clinici stomatologice deschise acum - Dent Moldova`,
+        h1: language === 'ru'
+          ? `Открытые сейчас стоматологические клиники`
+          : `Clinici stomatologice deschise acum`,
+        description: language === 'ru'
+          ? `Найдите открытые сейчас стоматологические клиники в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны.`
+          : `Găsiți clinici stomatologice deschise acum în Moldova. Programare online, recenzii, prețuri, adrese și telefoane.`,
+        keywords: language === 'ru'
+          ? `открытые сейчас стоматологические клиники, стоматолог, лечение зубов, клиника`
+          : `clinici stomatologice deschise acum, stomatolog, tratament dentar, clinică`,
+        canonical,
+        schemaType: 'MedicalBusiness',
+        schemaData: {
+          name: language === 'ru' ? `Стоматологические клиники` : `Clinici stomatologice`,
+          description: language === 'ru' 
+            ? `Открытые сейчас стоматологические клиники в Молдове`
+            : `Clinici stomatologice deschise acum în Moldova`,
+          address: {
+            addressCountry: 'MD'
+          }
+        }
+      };
+    } else if (selectedFeatures.length > 0 && selectedCity && selectedDistrict) {
       // Страница функций + город + район
       return {
         title: language === 'ru' 
