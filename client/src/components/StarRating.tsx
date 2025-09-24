@@ -12,9 +12,9 @@ export function StarRating({ value, onChange, size = 'md', disabled = false, lab
   const [hoverValue, setHoverValue] = useState<number | null>(null);
 
   const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    sm: 'w-3 h-3',
+    md: 'w-4 h-4',
+    lg: 'w-5 h-5'
   };
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>, index: number) => {
@@ -49,7 +49,7 @@ export function StarRating({ value, onChange, size = 'md', disabled = false, lab
       {label && (
         <span className="text-sm font-medium text-gray-700">{label}</span>
       )}
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center space-x-0.5">
         {[0, 1, 2, 3, 4].map((index) => {
           const starValue = index + 1;
           const isHalf = displayValue >= starValue - 0.5 && displayValue < starValue;

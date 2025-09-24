@@ -81,6 +81,7 @@ body.modal-open {
     .mobile-filters-modal,
     .clinic-detail-modal,
     .booking-modal,
+    .review-modal,
     [data-radix-dialog-content] {
       margin: 0 !important;
       max-width: calc(100vw - 2rem) !important;
@@ -97,7 +98,8 @@ body.modal-open {
     
     /* Prevent horizontal scroll on mobile */
     .clinic-detail-modal,
-    .booking-modal {
+    .booking-modal,
+    .review-modal {
       overflow-x: hidden !important;
     }
   }

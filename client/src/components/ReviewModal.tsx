@@ -5,6 +5,7 @@ import { StarRating } from './StarRating';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { lockBodyScroll, unlockBodyScroll } from '@/utils/modalBodyLock';
 
 interface ReviewModalProps {
   open: boolean;
@@ -44,6 +45,20 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
     const average = total > 0 ? total / 4 : 0;
     setAverageRating(average);
   }, [ratings]);
+
+  // Управление блокировкой скролла для скрытия меню браузера на iOS
+  useEffect(() => {
+    if (open) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+
+    // Cleanup при размонтировании компонента
+    return () => {
+      unlockBodyScroll();
+    };
+  }, [open]);
 
   const handleRatingChange = (category: keyof typeof ratings, value: number) => {
     setRatings(prev => ({
@@ -113,30 +128,21 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
       <DialogContent 
-        className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-gray-200 z-[10001]"
+        className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 review-modal"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="border-b border-gray-200 pb-4">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Heart className="w-6 h-6 text-red-500" />
-              {t('leaveReview')}
-            </DialogTitle>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 hidden"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <DialogHeader className="px-6 py-4 border-b border-gray-200">
+          <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Heart className="w-6 h-6 text-red-500" />
+            {t('leaveReview')}
+          </DialogTitle>
           <p className="text-gray-600 mt-2">
             {t('reviewForClinic')}: <span className="font-semibold text-blue-600">{clinicName}</span>
           </p>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="p-6 space-y-6 overflow-y-auto h-full">
           {/* Контактная информация */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">
@@ -191,28 +197,28 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
               <StarRating
                 value={ratings.quality}
                 onChange={(value) => handleRatingChange('quality', value)}
-                size="lg"
+                size="md"
                 label={t('quality')}
               />
               
               <StarRating
                 value={ratings.service}
                 onChange={(value) => handleRatingChange('service', value)}
-                size="lg"
+                size="md"
                 label={t('service')}
               />
               
               <StarRating
                 value={ratings.comfort}
                 onChange={(value) => handleRatingChange('comfort', value)}
-                size="lg"
+                size="md"
                 label={t('comfort')}
               />
               
               <StarRating
                 value={ratings.price}
                 onChange={(value) => handleRatingChange('price', value)}
-                size="lg"
+                size="md"
                 label={t('price')}
               />
             </div>

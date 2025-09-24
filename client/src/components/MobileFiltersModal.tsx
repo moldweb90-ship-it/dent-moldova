@@ -105,6 +105,14 @@ export function MobileFiltersModal({
     updateFilter('features', updated);
   };
 
+  const togglePromotionalLabel = (label: string) => {
+    const current = filters.promotionalLabels;
+    const updated = current.includes(label) 
+      ? current.filter(v => v !== label)
+      : [...current, label];
+    updateFilter('promotionalLabels', updated);
+  };
+
   const handleApply = () => {
     onApply();
     onClose();
@@ -408,13 +416,7 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="premium"
                   checked={filters.promotionalLabels.includes('premium')}
-                  onCheckedChange={() => {
-                    const current = filters.promotionalLabels;
-                    const updated = current.includes('premium') 
-                      ? current.filter(v => v !== 'premium')
-                      : [...current, 'premium'];
-                    updateFilter('promotionalLabels', updated);
-                  }}
+                  onCheckedChange={() => togglePromotionalLabel('premium')}
                   className="h-4 w-4"
                 />
                 <label 
@@ -428,13 +430,7 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="discount"
                   checked={filters.promotionalLabels.includes('discount')}
-                  onCheckedChange={() => {
-                    const current = filters.promotionalLabels;
-                    const updated = current.includes('discount') 
-                      ? current.filter(v => v !== 'discount')
-                      : [...current, 'discount'];
-                    updateFilter('promotionalLabels', updated);
-                  }}
+                  onCheckedChange={() => togglePromotionalLabel('discount')}
                   className="h-4 w-4"
                 />
                 <label 
@@ -448,13 +444,7 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="new"
                   checked={filters.promotionalLabels.includes('new')}
-                  onCheckedChange={() => {
-                    const current = filters.promotionalLabels;
-                    const updated = current.includes('new') 
-                      ? current.filter(v => v !== 'new')
-                      : [...current, 'new'];
-                    updateFilter('promotionalLabels', updated);
-                  }}
+                  onCheckedChange={() => togglePromotionalLabel('new')}
                   className="h-4 w-4"
                 />
                 <label 
@@ -468,13 +458,7 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="popular"
                   checked={filters.promotionalLabels.includes('popular')}
-                  onCheckedChange={() => {
-                    const current = filters.promotionalLabels;
-                    const updated = current.includes('popular') 
-                      ? current.filter(v => v !== 'popular')
-                      : [...current, 'popular'];
-                    updateFilter('promotionalLabels', updated);
-                  }}
+                  onCheckedChange={() => togglePromotionalLabel('popular')}
                   className="h-4 w-4"
                 />
                 <label 
@@ -488,13 +472,7 @@ export function MobileFiltersModal({
                 <Checkbox
                   id="high_rating"
                   checked={filters.promotionalLabels.includes('high_rating')}
-                  onCheckedChange={() => {
-                    const current = filters.promotionalLabels;
-                    const updated = current.includes('high_rating') 
-                      ? current.filter(v => v !== 'high_rating')
-                      : [...current, 'high_rating'];
-                    updateFilter('promotionalLabels', updated);
-                  }}
+                  onCheckedChange={() => togglePromotionalLabel('high_rating')}
                   className="h-4 w-4"
                 />
                 <label 

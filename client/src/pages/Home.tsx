@@ -255,6 +255,7 @@ export default function Home() {
     
     if (filters.openNow !== undefined) {
       params.set('openNow', filters.openNow.toString());
+      console.log('🔍 Setting openNow filter:', filters.openNow);
     }
     
     params.set('sort', filters.sort);
@@ -448,6 +449,8 @@ export default function Home() {
 
   const handleFiltersChange = useCallback((newFilters: FilterValues) => {
     console.log('🔍 handleFiltersChange:', newFilters);
+    console.log('🔍 openNow filter changed:', newFilters.openNow);
+    console.log('🔍 Current filters:', filters);
     setIsManualFilterChange(true); // Отмечаем как ручное изменение
     
     // Проверяем, изменился ли город, район или функции для навигации
@@ -457,6 +460,17 @@ export default function Home() {
     const featuresChanged = newFilters.features.length !== filters.features.length || 
                            !newFilters.features.every(f => filters.features.includes(f)) ||
                            !filters.features.every(f => newFilters.features.includes(f));
+    
+    // Если изменились только фильтры без навигации (openNow, verified, promotionalLabels, sort)
+    const onlyFilterChanged = !cityChanged && !districtChanged && !featuresChanged;
+    
+    if (onlyFilterChanged) {
+      console.log('🔍 Only filter changed, updating filters directly');
+      setFilters(newFilters);
+      setPage(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     
     // Если пользователь выбрал "Все города" (city = ''), возвращаемся на главную
     if (cityChanged && !newFilters.city) {
