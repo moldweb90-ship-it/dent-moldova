@@ -1,4 +1,7 @@
-import 'dotenv/config';
+// Load .env only in development to avoid bundling dotenv in production
+if (process.env.NODE_ENV !== 'production') {
+  await import('dotenv/config');
+}
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzleSQLite } from 'drizzle-orm/better-sqlite3';
