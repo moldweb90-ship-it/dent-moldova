@@ -224,7 +224,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-6xl max-h-[95vh] overflow-y-auto mx-auto z-[9999] clinic-detail-modal">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto z-[9999] clinic-detail-modal">
         <DialogHeader className="border-b border-gray-200 pb-4">
           {/* Two column layout - Desktop */}
           <div className="hidden sm:flex items-start justify-between gap-6 mb-4">

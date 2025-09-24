@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../lib/i18n';
 import { getClinicName } from '../lib/utils';
-import { Calendar, Clock, User, Phone, Mail, MessageCircle, Stethoscope, MessageSquare, AlertTriangle, FileText } from 'lucide-react';
+import { Calendar, Clock, User, Phone, Mail, MessageCircle, Stethoscope, MessageSquare, AlertTriangle, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -295,20 +295,31 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-sm" />
       <DialogContent 
-        className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto md:overflow-y-visible mx-auto bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001] p-0 sm:p-6"
+        className="w-[calc(100vw-2rem)] max-w-2xl h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto md:overflow-y-visible bg-gradient-to-br from-white to-gray-50 border-0 rounded-3xl z-[10001] p-0 sm:p-6"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-0 sm:-m-6 px-3 pt-3 pb-2 sm:px-8 sm:py-7 rounded-t-3xl sm:rounded-t-lg text-white relative overflow-hidden">
+        <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 -m-0 sm:-m-6 px-3 pt-4 pb-16 sm:px-8 sm:py-8 rounded-t-3xl sm:rounded-t-lg text-white relative overflow-hidden">
           {/* Background pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
           
-          <DialogTitle className="text-lg sm:text-2xl font-bold text-white flex items-center relative z-10">
-            <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 border border-white/30">
-                              <Calendar className="h-4 w-4 text-white" />
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 sm:top-6 sm:right-6 z-30 w-8 h-8 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 transition-all duration-200 hover:scale-110 active:scale-95"
+            aria-label="Закрыть"
+          >
+            <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          </button>
+          
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-white flex items-center relative z-20 pr-12 sm:pr-16 min-h-[3rem] sm:min-h-[3.5rem] leading-tight">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 border border-white/30 flex-shrink-0">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            {t('bookingToClinic')} {getClinicName(clinic, language) || t('clinic')}
+            <span className="block">
+              {t('bookingToClinic')} {getClinicName(clinic, language) || t('clinic')}
+            </span>
           </DialogTitle>
         </DialogHeader>
 
