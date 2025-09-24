@@ -10,7 +10,11 @@ await build({
     '@babel/preset-typescript',
     'lightningcss',
     '../pkg',
-    '../lightningcss.*.node'
+    '../lightningcss.*.node',
+    'dotenv',
+    'fs',
+    'path',
+    'child_process'
   ],
   packages: 'external'
 });
