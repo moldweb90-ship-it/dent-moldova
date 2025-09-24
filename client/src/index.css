@@ -15,6 +15,14 @@ body {
   font-family: 'Raleway', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* iOS Safari browser menu hiding - body styles */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -82,6 +90,10 @@ body {
       top: 1rem !important;
       transform: translateX(-50%) !important;
       position: fixed !important;
+      /* iOS Safari browser menu hiding */
+      overscroll-behavior: contain !important;
+      touch-action: pan-y !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     
     /* Prevent horizontal scroll on mobile */

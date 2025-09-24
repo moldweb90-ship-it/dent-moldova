@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { lockBodyScroll, unlockBodyScroll } from '@/utils/modalBodyLock';
 
 interface Clinic {
   id: string;
@@ -96,6 +97,20 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
 
     loadClinicData();
   }, [clinic?.id, language]);
+
+  // Управление блокировкой скролла для скрытия меню браузера на iOS
+  useEffect(() => {
+    if (open) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+
+    // Cleanup при размонтировании компонента
+    return () => {
+      unlockBodyScroll();
+    };
+  }, [open]);
 
   // Функция для генерации временных слотов на основе рабочих часов клиники
   const generateTimeSlots = (selectedDate: string) => {
