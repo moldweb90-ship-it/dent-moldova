@@ -11,7 +11,7 @@ import { ClinicDetail } from '../components/ClinicDetail';
 import { LazyClinicCard } from '../components/LazyClinicCard';
 import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
-import { AddClinicModal } from '../components/AddClinicModal';
+import { AddClinicForm } from '../components/AddClinicForm';
 import { RecommendedClinics } from '../components/RecommendedClinics';
 import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
@@ -1410,8 +1410,8 @@ export default function Home() {
         onClose={() => setMobileFiltersOpen(false)}
       />
       
-      {/* Add Clinic Modal */}
-      <AddClinicModal
+      {/* Add Clinic Form */}
+      <AddClinicForm
         open={clinicFormOpen}
         onClose={() => setClinicFormOpen(false)}
       />

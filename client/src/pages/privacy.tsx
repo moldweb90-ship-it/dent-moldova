@@ -4,7 +4,7 @@ import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { AddClinicModal } from '@/components/AddClinicModal';
+import { AddClinicForm } from '@/components/AddClinicForm';
 import { Building2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -63,9 +63,9 @@ export default function PrivacyPolicyPage() {
 
   return (
     <>
-      <AddClinicModal 
+      <AddClinicForm 
         open={clinicFormOpen} 
-        onClose={() => setClinicFormOpen(false)} 
+        onClose={() => setClinicFormOpen(false)}
       />
       
       <div className="min-h-screen bg-white">

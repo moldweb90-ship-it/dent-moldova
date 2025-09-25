@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Link, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
-import { AddClinicModal } from '../components/AddClinicModal';
+import { AddClinicForm } from '../components/AddClinicForm';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -65,9 +65,9 @@ export default function PricingPage() {
 
   return (
     <>
-      <AddClinicModal 
+      <AddClinicForm 
         open={clinicFormOpen} 
-        onClose={() => setClinicFormOpen(false)} 
+        onClose={() => setClinicFormOpen(false)}
       />
       
       <div className="min-h-screen bg-white">
