@@ -69,10 +69,10 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     agreement: false
   });
 
-  // Загружаем услуги и рабочие часы клиники
+  // Загружаем услуги и рабочие часы клиники (только если модал открыт)
   useEffect(() => {
     const loadClinicData = async () => {
-             if (!clinic?.id) {
+             if (!clinic?.id || !open) {
          setClinicServices([]);
          setClinicWorkingHours([]);
          return;
@@ -96,7 +96,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     };
 
     loadClinicData();
-  }, [clinic?.id, language]);
+  }, [clinic?.id, language, open]);
 
   // Управление блокировкой скролла для скрытия меню браузера на iOS
   useEffect(() => {
@@ -308,12 +308,18 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 booking-modal">
+        <DialogContent 
+          className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 booking-modal"
+          aria-describedby="booking-modal-description"
+        >
         <DialogHeader className="px-6 py-4 border-b border-gray-200">
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
             {t('bookingToClinic')} {getClinicName(clinic, language) || t('clinic')}
           </DialogTitle>
+          <div id="booking-modal-description" className="sr-only">
+            {t('bookingFormDescription') || 'Форма записи в клинику. Заполните все обязательные поля для подачи заявки.'}
+          </div>
         </DialogHeader>
 
             <div className="p-6 space-y-6 overflow-y-auto h-full">
@@ -423,13 +429,14 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                                               <SelectContent>
                    {clinicServices.length > 0 ? (
                      clinicServices.map((service, index) => (
-                       <SelectItem key={`${service.id}-${index}`} value={service.name}>
+                       <SelectItem key={`service-${service.id}-${index}`} value={service.name}>
                          {service.name}
                        </SelectItem>
                      ))
                    ) : (
-                     clinic.specializations?.map((spec, index) => (
-                       <SelectItem key={`${spec}-${index}`} value={spec}>{spec}</SelectItem>
+                     // Убираем дубликаты из специализаций
+                     [...new Set(clinic.specializations || [])].map((spec, index) => (
+                       <SelectItem key={`spec-${spec}-${index}`} value={spec}>{spec}</SelectItem>
                      ))
                    )}
                  </SelectContent>

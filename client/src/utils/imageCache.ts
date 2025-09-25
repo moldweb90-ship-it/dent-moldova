@@ -78,7 +78,6 @@ class ImageCache {
       if (entry.expiresAt > Date.now()) {
         this.stats.hits++;
         this.updateHitRate();
-        console.log(`✅ Кеш попадание для: ${src.substring(0, 50)}...`);
         return entry.data;
       } else {
         // Удаляем истекшую запись
@@ -239,7 +238,6 @@ class ImageCache {
       misses: 0
     };
     localStorage.removeItem('imageCache');
-    console.log('🗑️ Кеш изображений очищен');
   }
 
   // Предзагрузка изображений

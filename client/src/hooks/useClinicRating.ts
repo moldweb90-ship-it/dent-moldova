@@ -29,9 +29,11 @@ export const useClinicRating = (clinicId: string): {
       }
       return response.json();
     },
-    enabled: !!clinicId,
-    staleTime: 10 * 60 * 1000, // Кешируем на 10 минут
-    cacheTime: 15 * 60 * 1000, // Храним в кеше 15 минут
+    enabled: !!clinicId && clinicId.length > 0, // Более строгая проверка
+    staleTime: 30 * 60 * 1000, // Кешируем на 30 минут (дольше)
+    cacheTime: 60 * 60 * 1000, // Храним в кеше 1 час
+    refetchOnWindowFocus: false, // Не перезапрашивать при фокусе окна
+    refetchOnMount: false, // Не перезапрашивать при монтировании если данные есть
   });
 
   const ratingData = calculateClinicRating(data?.reviews || []);

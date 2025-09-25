@@ -98,8 +98,8 @@ export default function Home() {
                        districtFeaturePediatricRo?.districtSlug || districtFeatureParkingRo?.districtSlug || districtFeatureSosRo?.districtSlug ||
                        districtFeatureWork24hRo?.districtSlug || districtFeatureCreditRo?.districtSlug || districtFeatureWeekendRo?.districtSlug || districtFeatureOpenNowRo?.districtSlug;
   
-  // Определяем активные функции из URL
-  const getActiveFeaturesFromUrl = () => {
+  // Определяем активные функции из URL (мемоизируем для предотвращения бесконечных циклов)
+  const activeFeatures = useMemo(() => {
     const features = [];
     
     // Проверяем одиночные функции из slug'ов
@@ -130,13 +130,21 @@ export default function Home() {
     }
     
     return [...new Set(features)]; // Убираем дубликаты
-  };
+  }, [
+    featurePediatricRu, featurePediatricRo, cityFeaturePediatricRu, cityFeaturePediatricRo, districtFeaturePediatricRu, districtFeaturePediatricRo,
+    featureParkingRu, featureParkingRo, cityFeatureParkingRu, cityFeatureParkingRo, districtFeatureParkingRu, districtFeatureParkingRo,
+    featureSosRu, featureSosRo, cityFeatureSosRu, cityFeatureSosRo, districtFeatureSosRu, districtFeatureSosRo,
+    featureWork24hRu, featureWork24hRo, cityFeatureWork24hRu, cityFeatureWork24hRo, districtFeatureWork24hRu, districtFeatureWork24hRo,
+    featureCreditRu, featureCreditRo, cityFeatureCreditRu, cityFeatureCreditRo, districtFeatureCreditRu, districtFeatureCreditRo,
+    featureWeekendRu, featureWeekendRo, cityFeatureWeekendRu, cityFeatureWeekendRo, districtFeatureWeekendRu, districtFeatureWeekendRo
+  ]);
 
-  const activeFeatures = getActiveFeaturesFromUrl();
   const activeFeature = activeFeatures.length > 0 ? activeFeatures[0] : null; // Для обратной совместимости
   
-  // Определяем, активен ли фильтр "Открыты сейчас" из URL
-  const isOpenNowActive = !!(featureOpenNowRu || featureOpenNowRo || cityFeatureOpenNowRu || cityFeatureOpenNowRo || districtFeatureOpenNowRu || districtFeatureOpenNowRo);
+  // Определяем, активен ли фильтр "Открыты сейчас" из URL (мемоизируем)
+  const isOpenNowActive = useMemo(() => {
+    return !!(featureOpenNowRu || featureOpenNowRo || cityFeatureOpenNowRu || cityFeatureOpenNowRo || districtFeatureOpenNowRu || districtFeatureOpenNowRo);
+  }, [featureOpenNowRu, featureOpenNowRo, cityFeatureOpenNowRu, cityFeatureOpenNowRo, districtFeatureOpenNowRu, districtFeatureOpenNowRo]);
   
   // useSEO будет вызван условно ниже
   
@@ -145,7 +153,7 @@ export default function Home() {
     changeLanguage(language);
     // Обновляем lang атрибут HTML
     document.documentElement.lang = language;
-  }, [language, changeLanguage]);
+  }, [language]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
@@ -171,7 +179,7 @@ export default function Home() {
     if (isOpenNowActive && !filters.openNow) {
       setFilters(prev => ({ ...prev, openNow: true }));
     }
-  }, [isOpenNowActive, filters.openNow]);
+  }, [isOpenNowActive]); // Убрал filters.openNow из зависимостей
   
   const [page, setPage] = useState(1);
   const limit = 50;
@@ -184,7 +192,6 @@ export default function Home() {
       const response = await fetch('/api/cities');
       if (!response.ok) throw new Error('Failed to fetch cities');
       const data = await response.json();
-      console.log('🔍 Cities loaded:', data);
       return data;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
@@ -199,7 +206,6 @@ export default function Home() {
       const response = await fetch(`/api/cities/${filters.city}/districts`);
       if (!response.ok) throw new Error('Failed to fetch districts');
       const data = await response.json();
-      console.log('🔍 Districts loaded for city', filters.city, ':', data);
       return data;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
@@ -248,23 +254,8 @@ export default function Home() {
     if (isManualFilterChange) {
       setIsManualFilterChange(false);
     }
-  }, [citySlug, districtSlug, cities, districts, language, activeFeatures, filters.features, isManualFilterChange]);
+  }, [citySlug, districtSlug, cities, districts, language, activeFeatures, isManualFilterChange]);
 
-  // Отдельный useEffect для обработки изменений фильтров openNow и verified
-  useEffect(() => {
-    // Этот эффект срабатывает при изменении filters.openNow или filters.verified
-    // и принудительно обновляет запрос к API
-    if (filters.openNow !== undefined || filters.verified !== undefined) {
-      // Принудительно обновляем запрос, изменяя ключ запроса
-      setPage(1);
-      
-      // Принудительно инвалидируем кэш для клиник
-      if (window.queryClient) {
-        window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
-        window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
-      }
-    }
-  }, [filters.openNow, filters.verified]);
   
   // Build query parameters
   const buildQueryParams = useCallback(() => {
@@ -318,21 +309,18 @@ export default function Home() {
       const url = `/api/clinics?${buildQueryParams()}&clientTime=${encodeURIComponent(clientTime)}&clientTimezone=${encodeURIComponent(clientTimezone)}&clientTimezoneOffset=${clientTimezoneOffset}`;
       
       // Отправляем время клиента на сервер для корректной работы фильтра "Открытые сейчас"
-      console.log('🕐 Sending client time to server:', clientTime);
       
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch clinics');
       const data = await response.json();
       
-      // Логируем результат
-      console.log(`📊 Found ${data.clinics.length} open clinics out of ${data.total} total`);
       
       return data;
     },
-    staleTime: 0, // No stale time - always fetch fresh data
-    cacheTime: 0, // No cache time - don't cache at all
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchOnMount: true, // Always refetch on mount
+    staleTime: 30 * 1000, // Кешируем на 30 секунд
+    cacheTime: 2 * 60 * 1000, // Храним в кеше 2 минуты
+    refetchOnWindowFocus: false, // Не перезапрашивать при фокусе
+    refetchOnMount: false, // Не перезапрашивать при монтировании если данные есть
   });
 
   // Логи убраны для предотвращения бесконечного цикла
@@ -360,7 +348,6 @@ export default function Home() {
       const response = await fetch('/api/seo-settings');
       if (!response.ok) throw new Error('Failed to fetch site settings');
       const settings = await response.json();
-      console.log('🔍 Site settings loaded:', settings);
       return settings;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes

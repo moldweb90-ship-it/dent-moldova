@@ -77,7 +77,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
   const [showReviewModal, setShowReviewModal] = useState(false);
   const phoneOptionsRef = useRef<HTMLDivElement>(null);
   
-  // Получаем реальный рейтинг на основе отзывов
+  // Получаем реальный рейтинг на основе отзывов (только если клиника загружена)
   const { ratingData } = useClinicRating(clinic?.id || '');
 
   // Закрываем меню телефона при закрытии попапа

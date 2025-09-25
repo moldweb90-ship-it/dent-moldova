@@ -846,7 +846,7 @@ export default function ClinicForm({ clinic, onCancel, onSuccess }: ClinicFormPr
                           onClick={() => setNewService({...newService, name: 'Удаление зуба'})}
                           className="text-xs"
                         >
-                          Удаление зуботбеливание
+                          Удаление зуба
                         </Button>
                         <Button
                           type="button"

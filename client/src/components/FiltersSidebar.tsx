@@ -61,7 +61,6 @@ export function FiltersSidebar({
   }, [debouncedQuery, onSearch]);
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
-    console.log('🔍 updateFilter:', key, value);
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -86,12 +85,10 @@ export function FiltersSidebar({
   };
 
   const togglePromotionalLabel = (label: string) => {
-    console.log('🔍 togglePromotionalLabel:', label);
     const current = filters.promotionalLabels;
     const updated = current.includes(label) 
       ? current.filter(v => v !== label)
       : [...current, label];
-    console.log('🔍 Updated promotionalLabels:', updated);
     updateFilter('promotionalLabels', updated);
   };
 

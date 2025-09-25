@@ -1469,6 +1469,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve site.webmanifest
+  app.get('/site.webmanifest', (req, res) => {
+    const manifestPath = path.join(process.cwd(), 'public', 'site.webmanifest');
+    if (fs.existsSync(manifestPath)) {
+      res.setHeader('Content-Type', 'application/manifest+json');
+      res.sendFile(manifestPath);
+    } else {
+      // Default manifest if file doesn't exist
+      res.setHeader('Content-Type', 'application/manifest+json');
+      res.json({
+        name: "Dent Moldova",
+        short_name: "Dent Moldova",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#3b82f6"
+      });
+    }
+  });
+
   // Serve browserconfig.xml for Windows/Microsoft Edge
   app.get('/browserconfig.xml', (req, res) => {
     const browserconfigPath = path.join(process.cwd(), 'public', 'browserconfig.xml');

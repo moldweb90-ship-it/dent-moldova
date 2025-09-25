@@ -127,18 +127,21 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
 
   if (!clinic) return null;
 
-  // Используем загруженные услуги или fallback
+  // Используем загруженные услуги или fallback, убираем дубликаты
+  const clinicServiceNames = clinicServices.map(service => service.name);
+  const defaultServices = [
+    'Консультация стоматолога',
+    'Лечение кариеса',
+    'Профессиональная чистка',
+    'Отбеливание зубов',
+    'Имплантация',
+    'Ортодонтия',
+    'Удаление зубов'
+  ];
+  
   const services = clinicServices.length > 0 
-    ? clinicServices.map(service => service.name)
-    : (clinic.specializations || [
-        'Консультация стоматолога',
-        'Лечение кариеса',
-        'Профессиональная чистка',
-        'Отбеливание зубов',
-        'Имплантация',
-        'Ортодонтия',
-        'Удаление зубов'
-      ]);
+    ? clinicServiceNames
+    : (clinic.specializations || defaultServices);
 
   // Функция для генерации временных слотов на основе рабочих часов клиники
   const generateTimeSlots = (selectedDate: string) => {
@@ -305,8 +308,8 @@ export function BookingForm({ clinic, open, onClose }: BookingFormProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             >
               <option value="">Выберите услугу</option>
-              {services.map((service) => (
-                <option key={service} value={service}>{service}</option>
+              {services.map((service, index) => (
+                <option key={`service-${service}-${index}`} value={service}>{service}</option>
               ))}
             </select>
           </div>
