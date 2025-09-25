@@ -317,33 +317,15 @@ export default function Home() {
       
       const url = `/api/clinics?${buildQueryParams()}&clientTime=${encodeURIComponent(clientTime)}&clientTimezone=${encodeURIComponent(clientTimezone)}&clientTimezoneOffset=${clientTimezoneOffset}`;
       
-      // Расширенное логирование для диагностики
-      console.log('🕐 Client time info:', { 
-        clientTime, 
-        clientTimezone, 
-        clientTimezoneOffset,
-        currentTime: new Date().toLocaleString(),
-        currentDay: new Date().getDay(),
-        currentHour: new Date().getHours(),
-        currentMinute: new Date().getMinutes(),
-        openNowFilter: filters.openNow,
-        isOpenNowActive: isOpenNowActive,
-        userAgent: navigator.userAgent,
-        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      });
+      // Отправляем время клиента на сервер для корректной работы фильтра "Открытые сейчас"
+      console.log('🕐 Sending client time to server:', clientTime);
       
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch clinics');
       const data = await response.json();
       
-      // Логируем результат для диагностики
-      console.log('📊 API Response:', {
-        totalClinics: data.total,
-        openClinics: data.clinics.length,
-        openNowFilter: filters.openNow,
-        isOpenNowActive: isOpenNowActive,
-        responseUrl: url
-      });
+      // Логируем результат
+      console.log(`📊 Found ${data.clinics.length} open clinics out of ${data.total} total`);
       
       return data;
     },

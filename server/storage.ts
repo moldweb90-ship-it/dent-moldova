@@ -635,28 +635,39 @@ export class DatabaseStorage implements IStorage {
 
     // Filter by open now if requested (BEFORE sorting and pagination)
     if (filters.openNow) {
-      // Use client's time if available, otherwise fallback to server time
+      // ВСЕГДА используем время клиента для корректной работы на всех устройствах
       let now: Date;
       let currentDay: number;
       let currentTime: string;
       
       if (filters.clientTime) {
-        // Use client's time
+        // Время клиента приходит как UTC, но нужно использовать локальное время клиента
         now = new Date(filters.clientTime);
-        currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        // Если есть offset клиента, используем его для корректного времени
+        if (filters.clientTimezoneOffset !== undefined) {
+          // clientTimezoneOffset в минутах, отрицательный для UTC+
+          // Например: -180 = UTC+3, +120 = UTC-2
+          const clientTime = new Date(now.getTime() - (filters.clientTimezoneOffset * 60 * 1000));
+          currentDay = clientTime.getUTCDay();
+          currentTime = `${clientTime.getUTCHours().toString().padStart(2, '0')}:${clientTime.getUTCMinutes().toString().padStart(2, '0')}`;
+        } else {
+          // Fallback: используем UTC время напрямую
+          currentDay = now.getUTCDay();
+          currentTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+        }
         
         console.log(`🕐 Using CLIENT time: ${currentTime}, day: ${currentDay}`);
-        console.log(`🕐 Client timezone: ${filters.clientTimezone}, offset: ${filters.clientTimezoneOffset}`);
-        console.log(`🕐 Full client time: ${now.toLocaleString()}`);
+        console.log(`🕐 Client timezone offset: ${filters.clientTimezoneOffset}`);
+        console.log(`🕐 Raw client time: ${now.toISOString()}`);
       } else {
-        // Fallback to server time
+        // Если время клиента не передано, используем UTC+3 (Moldova time)
         now = new Date();
-        currentDay = now.getDay();
-        currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        const moldovaTime = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // UTC+3
+        currentDay = moldovaTime.getUTCDay();
+        currentTime = `${moldovaTime.getUTCHours().toString().padStart(2, '0')}:${moldovaTime.getUTCMinutes().toString().padStart(2, '0')}`;
         
-        console.log(`🕐 Using SERVER time (fallback): ${currentTime}, day: ${currentDay}`);
-        console.log(`🕐 Full server time: ${now.toLocaleString()}`);
+        console.log(`🕐 Using Moldova time (UTC+3): ${currentTime}, day: ${currentDay}`);
       }
       
       clinicsWithServices = clinicsWithServices.filter(clinic => {
