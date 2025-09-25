@@ -624,9 +624,13 @@ export class DatabaseStorage implements IStorage {
 
     // Filter by open now if requested (BEFORE sorting and pagination)
     if (filters.openNow) {
+      // Use client's local time (the time the user sees on their device)
       const now = new Date();
       const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      console.log(`🕐 Client local time: ${currentTime}, day: ${currentDay}`);
+      console.log(`🕐 Full time: ${now.toLocaleString()}`);
       
       clinicsWithServices = clinicsWithServices.filter(clinic => {
         // Find ALL working hours for today (there might be duplicates)

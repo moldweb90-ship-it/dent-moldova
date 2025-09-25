@@ -24,3 +24,4 @@ ALTER TABLE "clinics" DROP COLUMN "cnam";
 
 
 
+
