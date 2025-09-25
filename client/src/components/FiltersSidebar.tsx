@@ -119,7 +119,7 @@ export function FiltersSidebar({
         <div>
           <div className="mt-6 mb-2 flex items-center gap-2">
             <MapPin className="h-4 w-4 text-indigo-600" />
-                          <span className="text-xs font-bold uppercase text-gray-800">{t('city')}</span>
+                          <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('city')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
           <Select value={filters.city || 'all'} onValueChange={(value) => updateFilter('city', value === 'all' ? undefined : value)}>
@@ -149,7 +149,7 @@ export function FiltersSidebar({
           <div>
             <div className="mt-6 mb-2 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-cyan-600" />
-                              <span className="text-xs font-bold uppercase text-gray-800">{t('districts')}</span>
+                              <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('districts')}</span>
               <div className="ml-2 h-px flex-1 bg-gray-200"></div>
             </div>
             <div className="space-y-3 max-h-48 overflow-y-auto">
@@ -181,7 +181,7 @@ export function FiltersSidebar({
         <div>
           <div className="mt-6 mb-2 flex items-center gap-2">
             <Clock className="h-4 w-4 text-green-600" />
-            <span className="text-xs font-bold uppercase text-gray-800">{t('availability')}</span>
+            <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('availability')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
           <div className="space-y-2">
@@ -209,7 +209,7 @@ export function FiltersSidebar({
         <div>
           <div className="mt-6 mb-2 flex items-center gap-2">
             <Zap className="h-4 w-4 text-blue-600" />
-            <span className="text-xs font-bold uppercase text-gray-800">{t('conveniences')}</span>
+            <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('conveniences')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -310,7 +310,7 @@ export function FiltersSidebar({
         <div>
           <div className="mt-6 mb-2 flex items-center gap-2">
             <ArrowUpDown className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs font-bold uppercase text-gray-800">{t('sort')}</span>
+            <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('sort')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
           <Select value={filters.sort} onValueChange={(value) => updateFilter('sort', value)}>
@@ -350,7 +350,7 @@ export function FiltersSidebar({
         <div>
           <div className="mt-6 mb-2 flex items-center gap-2">
             <Trophy className="h-4 w-4 text-orange-600" />
-            <span className="text-xs font-bold uppercase text-gray-800">{t('statuses')}</span>
+            <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('statuses')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
