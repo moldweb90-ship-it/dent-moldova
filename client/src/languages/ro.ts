@@ -37,6 +37,7 @@ export const ro = {
   bookOneClick: "Programare în 1 clic",
   wantAppointment: "Vreau programare",
   prices: "Prețuri",
+  details: "Detalii",
   verifiedBadge: "Verificat",
 
   packages: "Pachete",

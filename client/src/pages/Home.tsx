@@ -1148,8 +1148,23 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center">
+            {/* Mobile: Left side - Filter Button, Center - Logo, Right - Language + Add Clinic */}
+            {/* Desktop: Left - Logo, Right - Filter + Language + Add Clinic */}
+            <div className="flex items-center md:hidden">
+              {/* Mobile Filter Toggle - Left side */}
+              <Button
+                onClick={() => setMobileFiltersOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-1 px-2 bg-gray-100 border-gray-300"
+              >
+                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">{t('filters')}</span>
+              </Button>
+            </div>
+
+            {/* Logo - Center on mobile, Left on desktop */}
+            <div className="flex items-center md:flex-none absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none">
               <button 
                 onClick={() => window.location.href = '/'}
                 className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
@@ -1174,16 +1189,6 @@ export default function Home() {
             </div>
             
             <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-              {/* Mobile Filter Toggle */}
-              <Button
-                onClick={() => setMobileFiltersOpen(true)}
-                variant="outline"
-                size="sm"
-                className="flex md:hidden items-center space-x-1 px-2 bg-gray-100 border-gray-300"
-              >
-                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{t('filters')}</span>
-              </Button>
               
               {/* Desktop Filter Toggle */}
               <Button

@@ -109,7 +109,7 @@ export const WorkingHoursDisplay: React.FC<WorkingHoursDisplayProps> = ({
         
         {/* Время работы */}
         <span className={`font-medium ${
-          isCard ? 'text-[10px] text-white' : 'text-sm text-gray-600'
+          isCard ? 'text-[10px] md:text-[12px] text-white' : 'text-sm text-gray-600'
         }`}>
           {todayInfo.time}
         </span>

@@ -71,7 +71,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Raleway", "var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["Roboto Flex", "var(--font-sans)", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
       },

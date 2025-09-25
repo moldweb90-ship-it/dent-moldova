@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
@@ -15,14 +15,14 @@ interface AddClinicFormProps {
 }
 
 export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
-  const { t, i18n } = useTranslation();
-  const isRomanian = i18n.language === 'ro';
+  const { t, language } = useTranslation();
+  const isRomanian = language === 'ro';
   
   const [loading, setLoading] = useState(false);
 
   // Fetch cities
   const { data: cities = [], isLoading: citiesLoading } = useQuery<any[]>({
-    queryKey: ['/api/cities', i18n.language],
+    queryKey: ['/api/cities', language],
     queryFn: async () => {
       const response = await fetch('/api/cities');
       if (!response.ok) throw new Error('Failed to fetch cities');
@@ -105,7 +105,7 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="w-[calc(100vw-2rem)] max-w-4xl h-[85vh] max-h-[85vh] overflow-hidden p-0 border-0 shadow-2xl"
+        className="w-[calc(100vw-2rem)] max-w-4xl h-[85vh] max-h-[85vh] md:h-auto md:max-h-none overflow-hidden p-0 border-0 shadow-2xl rounded-lg"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {/* Заголовок */}
