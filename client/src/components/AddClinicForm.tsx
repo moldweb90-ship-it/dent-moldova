@@ -30,6 +30,7 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
       return data;
     }
   });
+  
   const [formData, setFormData] = useState({
     clinicName: '',
     city: '',
@@ -104,7 +105,7 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="w-[calc(100vw-2rem)] md:max-w-4xl h-[85vh] md:h-auto p-0 border-0 shadow-2xl"
+        className="w-[calc(100vw-2rem)] max-w-4xl h-[85vh] max-h-[85vh] overflow-hidden p-0 border-0 shadow-2xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {/* Заголовок */}
@@ -116,10 +117,8 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
         </DialogHeader>
 
         {/* Контент */}
-        <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto p-6">
-            <form onSubmit={handleSubmit} className="space-y-6 h-full">
-            <button tabIndex={-1} className="sr-only" autoFocus></button>
+        <div className="p-6 overflow-y-auto h-full">
+          <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* Название клиники и Город */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,12 +260,8 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
               />
             </div>
 
-            </form>
-          </div>
-          
-          {/* Кнопки - фиксированы внизу */}
-          <div className="border-t border-gray-200 p-6 bg-white">
-            <div className="flex justify-end gap-3">
+            {/* Кнопки */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -278,7 +273,6 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
               <Button 
                 type="submit" 
                 disabled={loading}
-                onClick={handleSubmit}
                 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:via-gray-500 disabled:to-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -294,7 +288,7 @@ export function AddClinicForm({ open, onClose }: AddClinicFormProps) {
                 )}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>
