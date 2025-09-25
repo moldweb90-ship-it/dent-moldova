@@ -310,9 +310,41 @@ export default function Home() {
   const { data: clinicsData, isLoading, isFetching } = useQuery({
     queryKey,
     queryFn: async () => {
-      const response = await fetch(`/api/clinics?${buildQueryParams()}`);
+      // Добавляем информацию о времени клиента для корректной работы фильтра "Открытые сейчас"
+      const clientTime = new Date().toISOString();
+      const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const clientTimezoneOffset = new Date().getTimezoneOffset();
+      
+      const url = `/api/clinics?${buildQueryParams()}&clientTime=${encodeURIComponent(clientTime)}&clientTimezone=${encodeURIComponent(clientTimezone)}&clientTimezoneOffset=${clientTimezoneOffset}`;
+      
+      // Расширенное логирование для диагностики
+      console.log('🕐 Client time info:', { 
+        clientTime, 
+        clientTimezone, 
+        clientTimezoneOffset,
+        currentTime: new Date().toLocaleString(),
+        currentDay: new Date().getDay(),
+        currentHour: new Date().getHours(),
+        currentMinute: new Date().getMinutes(),
+        openNowFilter: filters.openNow,
+        isOpenNowActive: isOpenNowActive,
+        userAgent: navigator.userAgent,
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      });
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch clinics');
       const data = await response.json();
+      
+      // Логируем результат для диагностики
+      console.log('📊 API Response:', {
+        totalClinics: data.total,
+        openClinics: data.clinics.length,
+        openNowFilter: filters.openNow,
+        isOpenNowActive: isOpenNowActive,
+        responseUrl: url
+      });
+      
       return data;
     },
     staleTime: 0, // No stale time - always fetch fresh data

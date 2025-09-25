@@ -1981,9 +1981,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         page: z.string().optional().transform(val => val ? parseInt(val) : 1),
         limit: z.string().optional().transform(val => val ? parseInt(val) : 12),
         language: z.string().optional().default('ru'),
+        // Добавляем параметры времени клиента для корректной работы фильтра "Открытые сейчас"
+        clientTime: z.string().optional(),
+        clientTimezone: z.string().optional(),
+        clientTimezoneOffset: z.string().optional().transform(val => val ? parseInt(val) : undefined),
       });
 
       const filters = querySchema.parse(req.query);
+      
+      // Логируем все фильтры для отладки
+      console.log('🔍 Parsed filters:', {
+        openNow: filters.openNow,
+        openNowType: typeof filters.openNow,
+        rawOpenNow: req.query.openNow,
+        allFilters: filters
+      });
+      
+      // Логируем информацию о времени клиента
+      if (filters.clientTime || filters.clientTimezone || filters.clientTimezoneOffset) {
+        console.log('🕐 Client time info received:', {
+          clientTime: filters.clientTime,
+          clientTimezone: filters.clientTimezone,
+          clientTimezoneOffset: filters.clientTimezoneOffset,
+          serverTime: new Date().toISOString()
+        });
+      }
+      
       const result = await storage.getClinics(filters);
       console.log(`📊 API /api/clinics result: ${result.clinics.length} clinics`);
       

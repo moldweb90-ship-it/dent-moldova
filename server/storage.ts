@@ -158,6 +158,10 @@ export interface ClinicFilters {
   page?: number;
   limit?: number;
   language?: string;
+  // Добавляем параметры времени клиента для корректной работы фильтра "Открытые сейчас"
+  clientTime?: string;
+  clientTimezone?: string;
+  clientTimezoneOffset?: number;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -393,6 +397,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getClinics(filters: ClinicFilters): Promise<{ clinics: (Clinic & { city: City; district: District | null; services: Service[] })[]; total: number }> {
+    // Логируем входящие фильтры для отладки
+    console.log('🔍 getClinics called with filters:', {
+      openNow: filters.openNow,
+      openNowType: typeof filters.openNow,
+      allFilters: filters
+    });
+    
     const { q, city, districts: filterDistricts, features, promotionalLabels, specializations, languages, verified, urgentToday, priceMin, priceMax, sort = 'dscore', page = 1, limit = 12 } = filters;
 
     let query = db
@@ -624,13 +635,29 @@ export class DatabaseStorage implements IStorage {
 
     // Filter by open now if requested (BEFORE sorting and pagination)
     if (filters.openNow) {
-      // Use client's local time (the time the user sees on their device)
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      // Use client's time if available, otherwise fallback to server time
+      let now: Date;
+      let currentDay: number;
+      let currentTime: string;
       
-      console.log(`🕐 Client local time: ${currentTime}, day: ${currentDay}`);
-      console.log(`🕐 Full time: ${now.toLocaleString()}`);
+      if (filters.clientTime) {
+        // Use client's time
+        now = new Date(filters.clientTime);
+        currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        console.log(`🕐 Using CLIENT time: ${currentTime}, day: ${currentDay}`);
+        console.log(`🕐 Client timezone: ${filters.clientTimezone}, offset: ${filters.clientTimezoneOffset}`);
+        console.log(`🕐 Full client time: ${now.toLocaleString()}`);
+      } else {
+        // Fallback to server time
+        now = new Date();
+        currentDay = now.getDay();
+        currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        console.log(`🕐 Using SERVER time (fallback): ${currentTime}, day: ${currentDay}`);
+        console.log(`🕐 Full server time: ${now.toLocaleString()}`);
+      }
       
       clinicsWithServices = clinicsWithServices.filter(clinic => {
         // Find ALL working hours for today (there might be duplicates)
