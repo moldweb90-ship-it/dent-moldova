@@ -146,18 +146,14 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="w-[calc(100vw-2rem)] max-w-3xl h-[85vh] max-h-[85vh] overflow-hidden p-0 add-clinic-modal"
+        className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 add-clinic-modal"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white relative overflow-hidden rounded-t-lg">
-          <div className="p-4 sm:p-6">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-white flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg border border-white/30">
-                <Building2 className="h-6 w-6 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <span className="text-center sm:text-left">{t('clinicFormTitle')}</span>
-            </DialogTitle>
-          </div>
+        <DialogHeader className="px-6 py-4 border-b border-gray-200">
+          <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+            <Building2 className="h-5 w-5 mr-2" />
+            {t('clinicFormTitle')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="p-6 space-y-6 overflow-y-auto h-full">
@@ -165,14 +161,6 @@ export function AddClinicModal({ open, onClose }: AddClinicModalProps) {
           <button tabIndex={-1} className="sr-only" autoFocus></button>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 shadow-sm">
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-xs font-bold">ℹ️</span>
-              </div>
-              <p className="leading-relaxed">{t('addClinicInfo')}</p>
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
