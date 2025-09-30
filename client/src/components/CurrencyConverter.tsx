@@ -59,7 +59,7 @@ export function CurrencyConverter({ services, className = '', onCurrencyChange }
       </div>
 
       {/* Services List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {convertedServices.map((service, index) => (
           <div
             key={index}
@@ -67,7 +67,7 @@ export function CurrencyConverter({ services, className = '', onCurrencyChange }
           >
             {/* Service Name */}
             <div className="p-4 pb-2">
-              <div className="text-gray-900 font-light text-sm leading-tight line-clamp-2 min-h-[2.5rem] flex items-start">
+              <div className="text-gray-900 font-light text-sm leading-tight line-clamp-2 min-h-[0.5rem] flex items-start">
                 {service.name}
               </div>
             </div>
