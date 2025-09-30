@@ -801,11 +801,30 @@ export function serveStatic(app: Express) {
       );
       
       // Заменяем main.tsx скрипт на production assets
+      // Динамически определяем имена файлов из public/assets/
+      const assetsPath = path.resolve(distPath, "assets");
+      let indexJs = 'index.js';
+      let vendorJs = 'vendor.js';
+      let indexCss = 'index.css';
+      
+      try {
+        const files = fs.readdirSync(assetsPath);
+        const indexJsFile = files.find(f => f.startsWith('index-') && f.endsWith('.js'));
+        const vendorJsFile = files.find(f => f.startsWith('vendor-') && f.endsWith('.js'));
+        const indexCssFile = files.find(f => f.startsWith('index-') && f.endsWith('.css'));
+        
+        if (indexJsFile) indexJs = indexJsFile;
+        if (vendorJsFile) vendorJs = vendorJsFile;
+        if (indexCssFile) indexCss = indexCssFile;
+      } catch (error) {
+        console.error('Error reading assets directory:', error);
+      }
+      
       template = template.replace(
         /<script type="module" src="\/src\/main\.tsx[^>]*><\/script>/g,
-        `<script type="module" crossorigin src="/assets/index-BfyUaeoV.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-OK3B2gEz.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-KoR5eSsp.css">`
+        `<script type="module" crossorigin src="/assets/${indexJs}"></script>
+    <link rel="modulepreload" crossorigin href="/assets/${vendorJs}">
+    <link rel="stylesheet" crossorigin href="/assets/${indexCss}">`
       );
       
       // Определяем язык из URL и устанавливаем lang атрибут
