@@ -23,6 +23,22 @@ body {
     "YTUC" 712;
 }
 
+/* Prevent page scroll when modal open */
+/* Always reserve scrollbar space to avoid layout shift */
+html { overflow-y: scroll; }
+body.modal-open { overflow: hidden; }
+
+/* Override Radix/react-remove-scroll body adjustments to prevent layout shift */
+body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+html body.modal-open[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
 /* Reduce motion on mobile to lower main-thread work */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

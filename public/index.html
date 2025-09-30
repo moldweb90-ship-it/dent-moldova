@@ -19,18 +19,20 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="http://localhost:5000">
 
-    <!-- Базовая фавиконка для предотвращения мигания технической иконки -->
-    <link rel="icon" type="image/png" href="/favicon.ico" sizes="any">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <!-- Динамическая фавиконка будет добавлена через vite.ts -->
+    <!-- Фавикон с нулевым размером как предзагрузка, затем SVG-иконка без мигания -->
+    <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" fetchpriority="high">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png" sizes="180x180">
+    <meta name="msapplication-TileImage" content="/favicon.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/site.webmanifest">
 
     <!-- Removed external Google Fonts to avoid render-blocking and reduce CLS; using system fonts -->
-    <script type="module" crossorigin src="/assets/index-BmR58ad5.js"></script>
+    <script type="module" crossorigin src="/assets/index-BfyUaeoV.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-OK3B2gEz.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-Dyi9Ffm0.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-KoR5eSsp.css">
   </head>
   <body>
     <div id="root"></div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
@@ -158,11 +159,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingClinic, setBookingClinic] = useState<any>(null);
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
+  // Lock body scroll when any modal is open to prevent background jump
+  useBodyScrollLock(detailOpen || bookingOpen || mobileFiltersOpen || clinicFormOpen);
   
   const [filters, setFilters] = useState<FilterValues>({
     city: '',
