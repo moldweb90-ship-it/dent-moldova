@@ -513,6 +513,15 @@ export async function setupVite(app: Express, server: Server) {
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', url);
 
+      // Базовый URL от запроса (домен продакшена или локальный)
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
+      const host = req.headers.host;
+      const baseUrl = `${proto}://${host}`;
+      // Обновляем canonical и og:url под реальный домен
+      template = template
+        .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}"`)
+        .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}"`);
+
       // Получаем глобальные настройки для фавиконки
       const { storage } = await import('./storage');
       const settings = await storage.getAllSiteSettings();
@@ -520,6 +529,16 @@ export async function setupVite(app: Express, server: Server) {
         acc[setting.key] = setting.value;
         return acc;
       }, {});
+
+      // Удаляем старые фавиконки из template перед добавлением новых
+      template = template.replace(/<link rel="preload" href="\/favicon\.svg"[^>]*>/g, '');
+      template = template.replace(/<link rel="icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="shortcut icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="apple-touch-icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="apple-touch-icon-precomposed"[^>]*>/g, '');
+      template = template.replace(/<meta name="msapplication-TileImage"[^>]*>/g, '');
+      template = template.replace(/<meta name="msapplication-config"[^>]*>/g, '');
+      template = template.replace(/<link rel="manifest" href="\/site\.webmanifest">/g, '');
 
       // Добавляем фавикон ко всем страницам для лучшей индексации
       console.log('🔍 Favicon check:', settingsMap.favicon);
@@ -559,7 +578,23 @@ export async function setupVite(app: Express, server: Server) {
         );
         console.log('✅ Favicon preload and tags added to HTML');
       } else {
-        console.log('❌ No favicon found in settings');
+        console.log('❌ No favicon found in settings. Injecting default /favicon.svg');
+        template = template.replace(
+          /<head>/,
+          `<head>
+    <!-- Favicon preload для мгновенной загрузки -->
+    <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" fetchpriority="high">`
+        );
+        template = template.replace(
+          /<\/head>/,
+          `    <!-- Favicon для поисковиков и браузеров -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png" sizes="180x180">
+    <meta name="msapplication-TileImage" content="/favicon.png">
+    <link rel="manifest" href="/site.webmanifest">
+  </head>`
+        );
       }
 
       // Добавляем логотип сайта в мета-теги Open Graph
@@ -760,6 +795,14 @@ export function serveStatic(app: Express) {
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', req.originalUrl);
 
+      // Базовый URL от запроса
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
+      const host = req.headers.host;
+      const baseUrl = `${proto}://${host}`;
+      template = template
+        .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}"`)
+        .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}"`);
+
       // Получаем глобальные настройки для фавиконки (продакшн)
       const { storage } = await import('./storage');
       const settings = await storage.getAllSiteSettings();
@@ -767,6 +810,16 @@ export function serveStatic(app: Express) {
         acc[setting.key] = setting.value;
         return acc;
       }, {});
+
+      // Удаляем старые фавиконки из template перед добавлением новых (продакшн)
+      template = template.replace(/<link rel="preload" href="\/favicon\.svg"[^>]*>/g, '');
+      template = template.replace(/<link rel="icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="shortcut icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="apple-touch-icon"[^>]*>/g, '');
+      template = template.replace(/<link rel="apple-touch-icon-precomposed"[^>]*>/g, '');
+      template = template.replace(/<meta name="msapplication-TileImage"[^>]*>/g, '');
+      template = template.replace(/<meta name="msapplication-config"[^>]*>/g, '');
+      template = template.replace(/<link rel="manifest" href="\/site\.webmanifest">/g, '');
 
       // Добавляем фавикон ко всем страницам для лучшей индексации (продакшн)
       console.log('🔍 Favicon check (prod):', settingsMap.favicon);
@@ -806,7 +859,23 @@ export function serveStatic(app: Express) {
         );
         console.log('✅ Favicon preload and tags added to HTML (prod)');
       } else {
-        console.log('❌ No favicon found in settings (prod)');
+        console.log('❌ No favicon found in settings (prod). Injecting default /favicon.svg');
+        template = template.replace(
+          /<head>/,
+          `<head>
+    <!-- Favicon preload для мгновенной загрузки -->
+    <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" fetchpriority="high">`
+        );
+        template = template.replace(
+          /<\/head>/,
+          `    <!-- Favicon для поисковиков и браузеров -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png" sizes="180x180">
+    <meta name="msapplication-TileImage" content="/favicon.png">
+    <link rel="manifest" href="/site.webmanifest">
+  </head>`
+        );
       }
 
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
