@@ -783,8 +783,25 @@ export function serveStatic(app: Express) {
       return res.status(404).end();
     }
     try {
-      const indexPath = path.resolve(distPath, "index.html");
-      let template = await fs.promises.readFile(indexPath, "utf-8");
+      // Используем client/index.html как базу (как в dev версии)
+      const clientTemplate = path.resolve(import.meta.dirname, "..", "client", "index.html");
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      
+      // Заменяем dev скрипты на продакшн версии
+      template = template.replace(
+        /<script type="module">[\s\S]*?<\/script>/g,
+        ''
+      );
+      template = template.replace(
+        /<script type="module" src="\/@vite\/client"><\/script>/g,
+        ''
+      );
+      template = template.replace(
+        /<script type="module" src="\/src\/main\.tsx\?v=[^"]*" defer><\/script>/g,
+        `<script type="module" crossorigin src="/assets/index-BfyUaeoV.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-OK3B2gEz.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-KoR5eSsp.css">`
+      );
       
       // Определяем язык из URL и устанавливаем lang атрибут
       const isRomanian = req.originalUrl.startsWith('/clinic/ro/') || req.originalUrl.startsWith('/ro/') || req.originalUrl === '/ro';
