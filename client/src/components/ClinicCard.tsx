@@ -69,8 +69,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Получаем все рейтинги клиники (объединенный хук для устранения дублирования запросов)
-  const { ratingData, realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRatings(clinic.id);
+  // Ленивая загрузка отзывов: активируем после ховера/фокуса или если карточка приоритетная
+  const [enableRatings, setEnableRatings] = useState<boolean>(priority);
+  const { ratingData, realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRatings(clinic.id, { enabled: enableRatings });
   
   
   // Отладка названий клиник (временно отключено)
@@ -234,8 +235,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
     <div 
       className={`relative rounded-2xl overflow-hidden ${clinic.verified ? 'cursor-pointer' : 'cursor-default'} aspect-[5/6] md:aspect-[4/3] group ${getPromotionalBorder()}`}
       onClick={handleCardClick}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => { setIsHovered(true); setEnableRatings(true); }}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setEnableRatings(true)}
+      tabIndex={0}
     >
       {/* Background Image */}
       <div className="absolute inset-0">
@@ -245,6 +248,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
           className="w-full h-full object-cover"
           fallbackSrc={fallbackImage}
           priority={priority}
+          width={400}
+          height={300}
           onError={(e) => {
             // Если не загрузилось загруженное фото, пробуем сгенерированное
             if (clinic.logoUrl && (e.target as HTMLImageElement).src === clinic.logoUrl) {

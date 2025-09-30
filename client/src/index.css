@@ -4,15 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Font loading optimization */
-@font-face {
-  font-family: 'Roboto Flex';
-  font-display: swap;
-}
-
-/* Apply Roboto Flex as default font */
+/* Use system font stack to avoid render-blocking webfonts */
 body {
-  font-family: "Roboto Flex", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
   font-variation-settings:
@@ -165,7 +159,7 @@ body.modal-open {
   --sidebar-accent-foreground: hsl(203.8863 88.2845% 53.1373%);
   --sidebar-border: hsl(205.0000 25.0000% 90.5882%);
   --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
-  --font-sans: "Roboto Flex", system-ui, sans-serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 0.75rem;

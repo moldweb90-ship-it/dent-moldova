@@ -3,14 +3,16 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PhoneModal } from "@/components/PhoneModal";
-import { useState } from "react";
-import Home from "@/pages/Home";
-import ClinicPage from "@/pages/clinic/[slug]";
-import AdminPage from "@/pages/admin";
-import PricingPage from "@/pages/pricing";
-import PrivacyPolicyPage from "@/pages/privacy";
-import NotFound from "@/pages/not-found";
+import { useState, lazy, Suspense } from "react";
+
+// Route-based code splitting
+const Home = lazy(() => import("@/pages/Home"));
+const ClinicPage = lazy(() => import("@/pages/clinic/[slug]"));
+const AdminPage = lazy(() => import("@/pages/admin"));
+const PricingPage = lazy(() => import("@/pages/pricing"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/privacy"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const PhoneModal = lazy(() => import("@/components/PhoneModal"));
 
 // Глобальное состояние для телефонного модала
 let globalPhoneModalState = {
@@ -59,6 +61,7 @@ declare global {
 
 function Router() {
   return (
+    <Suspense fallback={<div />}> 
     <Switch>
       {/* Home page handles all city/district filtering */}
       <Route path="/ro" component={Home} />
@@ -127,6 +130,7 @@ function Router() {
       <Route path="/ro/privacy" component={PrivacyPolicyPage} />
       <Route component={NotFound} />
     </Switch>
+    </Suspense>
   );
 }
 
@@ -157,11 +161,13 @@ function App() {
         
         {/* Глобальный телефонный модал */}
         {phoneModalState.isOpen && phoneModalState.clinic && (
-          <PhoneModal
-            isOpen={phoneModalState.isOpen}
-            onClose={phoneModalState.onClose}
-            clinic={phoneModalState.clinic}
-          />
+          <Suspense fallback={null}>
+            <PhoneModal
+              isOpen={phoneModalState.isOpen}
+              onClose={phoneModalState.onClose}
+              clinic={phoneModalState.clinic}
+            />
+          </Suspense>
         )}
       </TooltipProvider>
     </QueryClientProvider>

@@ -324,7 +324,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
 
             <div className="p-6 space-y-6 overflow-y-auto h-full">
           {/* Hidden button to receive initial focus */}
-          <button tabIndex={-1} className="sr-only" autoFocus></button>
+          <button tabIndex={-1} className="sr-only"></button>
           
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Имя и Телефон в одной строке */}
@@ -341,6 +341,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 value={formData.firstName}
                 onChange={(e) => updateField('firstName', e.target.value)}
                 placeholder={t('firstNamePlaceholder')}
+                tabIndex={-1}
                 className={`border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-blue-400 ${errors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
               />
                              {errors.firstName && <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -361,6 +362,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 value={formData.phone}
                 onChange={handlePhoneChange}
                 placeholder={t('phonePlaceholder')}
+                tabIndex={-1}
                 className={`border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-green-400 ${errors.phone ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
               />
                              {errors.phone && <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -385,6 +387,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
                 placeholder={t('emailPlaceholder')}
+                tabIndex={-1}
                 className={`border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-purple-400 ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
               />
                              {errors.email && <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -401,7 +404,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 {t('contactMethod')}
               </Label>
               <Select value={formData.contactMethod} onValueChange={(value) => updateField('contactMethod', value)}>
-                <SelectTrigger className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-orange-400 border-gray-200 hover:border-gray-300">
+                <SelectTrigger tabIndex={-1} className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-orange-400 border-gray-200 hover:border-gray-300">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -423,7 +426,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
               {t('service')}
             </Label>
             <Select value={formData.service} onValueChange={(value) => updateField('service', value)}>
-              <SelectTrigger className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-indigo-400 border-gray-200 hover:border-gray-300">
+              <SelectTrigger tabIndex={-1} className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-indigo-400 border-gray-200 hover:border-gray-300">
                 <SelectValue placeholder={t('servicePlaceholder')} />
               </SelectTrigger>
                                               <SelectContent>
@@ -458,6 +461,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 value={formData.date}
                 onChange={(e) => updateField('date', e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
+                tabIndex={-1}
                 className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-pink-400 border-gray-200 hover:border-gray-300"
               />
             </div>
@@ -470,7 +474,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 {t('time')}
               </Label>
               <Select value={formData.time} onValueChange={(value) => updateField('time', value)}>
-                <SelectTrigger className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-teal-400 border-gray-200 hover:border-gray-300">
+                <SelectTrigger tabIndex={-1} className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-teal-400 border-gray-200 hover:border-gray-300">
                   <SelectValue placeholder={t('timePlaceholder')} />
                 </SelectTrigger>
                                                    <SelectContent>
@@ -501,6 +505,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
               onChange={(e) => updateField('comment', e.target.value)}
               placeholder={t('commentPlaceholder')}
               rows={3}
+              tabIndex={-1}
               className="border-2 transition-all duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 ring-0 focus-visible:ring-offset-0 focus:border-yellow-400 border-gray-200 hover:border-gray-300"
             />
           </div>
@@ -511,6 +516,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
                 id="agreement"
                 checked={formData.agreement}
                 onCheckedChange={(checked) => updateField('agreement', checked)}
+                tabIndex={-1}
                 className={`mt-1 ${errors.agreement ? 'border-red-500' : ''}`}
               />
               <label htmlFor="agreement" className="text-sm text-gray-700 leading-relaxed">

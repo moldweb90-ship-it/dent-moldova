@@ -40,7 +40,7 @@ interface CombinedRatingData {
  * Объединенный хук для получения всех рейтингов клиники
  * Заменяет useClinicRating и useClinicRealRatings для устранения дублирования запросов
  */
-export const useClinicRatings = (clinicId: string): CombinedRatingData => {
+export const useClinicRatings = (clinicId: string, options?: { enabled?: boolean }): CombinedRatingData => {
   const { data, isLoading, error } = useQuery<ReviewsResponse>({
     queryKey: ['clinic-ratings', clinicId],
     queryFn: async () => {
@@ -52,7 +52,7 @@ export const useClinicRatings = (clinicId: string): CombinedRatingData => {
       }
       return response.json();
     },
-    enabled: !!clinicId,
+    enabled: !!clinicId && (options?.enabled ?? false),
     staleTime: 10 * 60 * 1000, // Кешируем на 10 минут
     cacheTime: 15 * 60 * 1000, // Храним в кеше 15 минут
   });
@@ -103,6 +103,10 @@ export const useClinicRatings = (clinicId: string): CombinedRatingData => {
     error
   };
 };
+
+
+
+
 
 
 

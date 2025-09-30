@@ -8,6 +8,8 @@ interface LazyImageProps {
   fallbackSrc?: string;
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
   priority?: boolean; // Приоритетная загрузка для видимых изображений
+  width?: number;
+  height?: number;
 }
 
 export function LazyImage({ 
@@ -16,7 +18,9 @@ export function LazyImage({
   className = '', 
   fallbackSrc,
   onError,
-  priority = false
+  priority = false,
+  width = 400,
+  height = 300
 }: LazyImageProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -108,6 +112,9 @@ export function LazyImage({
           className={`${className} transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           onError={handleError}
           loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          width={width}
+          height={height}
           onLoad={() => setIsLoading(false)}
         />
       ) : (
