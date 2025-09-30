@@ -89,7 +89,7 @@ export function LanguageToggle() {
   // Fancy RU/RO toggle
   const isRO = currentLanguage === 'ro';
   return (
-    <div className="lang-toggle">
+    <div className="lang-toggle inline-flex h-9 items-center">
       <div className="toggle-button-cover">
         <div className="button r" id="lang-button">
           <input

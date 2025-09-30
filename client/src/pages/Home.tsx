@@ -1209,10 +1209,10 @@ export default function Home() {
               {/* Add Clinic Button */}
               <Button
                 onClick={() => setClinicFormOpen(true)}
-                className="hidden md:inline-flex h-10 md:h-11 px-4 md:px-5 gap-2 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg border border-white/20"
+                className="hidden md:inline-flex h-9 md:h-9 px-4 md:px-5 pb-[0.7rem] gap-2 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg border border-white/20"
               >
                 <Plus className="h-4 w-4" />
-                <span className="text-sm font-medium">{t('addClinic')}</span>
+                <span className="text-sm font-medium leading-[0]">{t('addClinic')}</span>
               </Button>
               <Button
                 onClick={() => setClinicFormOpen(true)}
@@ -1220,7 +1220,7 @@ export default function Home() {
                 size="sm"
               >
                 <Plus className="h-3 w-3" />
-                <span className="hidden sm:inline text-xs sm:text-sm">{t('addClinic')}</span>
+                <span className="hidden sm:inline text-xs sm:text-sm leading-[0]">{t('addClinic')}</span>
               </Button>
               
               {/* Language Toggle - for desktop */}
