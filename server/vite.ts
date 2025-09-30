@@ -788,6 +788,7 @@ export function serveStatic(app: Express) {
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       
       // Заменяем dev скрипты на продакшн версии
+      // Удаляем все dev скрипты
       template = template.replace(
         /<script type="module">[\s\S]*?<\/script>/g,
         ''
@@ -796,8 +797,10 @@ export function serveStatic(app: Express) {
         /<script type="module" src="\/@vite\/client"><\/script>/g,
         ''
       );
+      
+      // Заменяем main.tsx скрипт на production assets
       template = template.replace(
-        /<script type="module" src="\/src\/main\.tsx(?:\?v=[^"]*)?" defer><\/script>/g,
+        /<script type="module" src="\/src\/main\.tsx[^>]*><\/script>/g,
         `<script type="module" crossorigin src="/assets/index-BfyUaeoV.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-OK3B2gEz.js">
     <link rel="stylesheet" crossorigin href="/assets/index-KoR5eSsp.css">`
