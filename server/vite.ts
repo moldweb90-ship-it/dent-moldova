@@ -962,6 +962,60 @@ export function serveStatic(app: Express) {
           );
         }
         
+        // Генерируем и добавляем JSON-LD схему
+        if (seoData.schemaType && seoData.schemaData && Object.keys(seoData.schemaData).length > 0) {
+          let jsonLdSchema;
+          
+          try {
+            // Если schemaData уже является объектом, используем его
+            if (typeof seoData.schemaData === 'object') {
+              jsonLdSchema = seoData.schemaData;
+            } else {
+              // Если это строка, пытаемся распарсить JSON
+              jsonLdSchema = JSON.parse(seoData.schemaData);
+            }
+          } catch (error) {
+            console.error('❌ Error parsing schemaData:', error);
+            // Создаем базовую схему на основе настроек
+            jsonLdSchema = generateBasicSchema(seoData, seoData.settingsMap || settingsMap, seoData.clinicData);
+          }
+          
+          // Добавляем JSON-LD в head
+          const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(jsonLdSchema, null, 2)}</script>`;
+          template = template.replace(
+            /<\/head>/,
+            `    ${jsonLdScript}
+  </head>`
+          );
+          console.log('✅ Custom JSON-LD schema added to HTML');
+        } else {
+          // Если нет кастомной схемы, генерируем базовую
+          console.log('🔍 Generating basic schema with clinicData:', seoData.clinicData ? 'YES' : 'NO');
+          if (seoData.clinicData) {
+            console.log('🔍 Clinic data available:', {
+              name: seoData.clinicData.nameRu,
+              googleRating: seoData.clinicData.googleRating,
+              googleReviewsCount: seoData.clinicData.googleReviewsCount,
+              dScore: seoData.clinicData.dScore,
+              reviewsRating: seoData.clinicData.reviewsRating,
+              reviewsCount: seoData.clinicData.reviewsCount,
+              services: seoData.clinicData.services ? seoData.clinicData.services.length : 0,
+              servicesData: seoData.clinicData.services ? seoData.clinicData.services.slice(0, 3).map((s: any) => ({ name: s.name, price: s.price, currency: s.currency })) : []
+            });
+          } else {
+            console.log('❌ No clinic data available for schema generation');
+          }
+          const basicSchema = generateBasicSchema(seoData, seoData.settingsMap || settingsMap, seoData.clinicData);
+          console.log('🔍 Generated schema:', JSON.stringify(basicSchema, null, 2));
+          const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(basicSchema, null, 2)}</script>`;
+          template = template.replace(
+            /<\/head>/,
+            `    ${jsonLdScript}
+  </head>`
+          );
+          console.log('✅ Basic JSON-LD schema added to HTML');
+        }
+        
       }
       
       res.status(200).set({ "Content-Type": "text/html" }).end(template);
