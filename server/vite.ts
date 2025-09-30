@@ -771,8 +771,10 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve other static files (images, icons, etc.)
-  app.use(express.static(distPath));
+  // Serve other static files (images, icons, etc.) - но НЕ index.html
+  app.use(express.static(distPath, {
+    index: false // Отключаем автоматическую отдачу index.html
+  }));
 
   // fall through to index.html if the file doesn't exist
   // Fallback only for non-asset requests
