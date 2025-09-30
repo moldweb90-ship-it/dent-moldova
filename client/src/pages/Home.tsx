@@ -1121,7 +1121,7 @@ export default function Home() {
 
   return (
     <>
-      {seoData && (
+      {seoData ? (
         <DynamicSEO
           title={seoData.title}
           description={seoData.description}
@@ -1134,7 +1134,17 @@ export default function Home() {
           schemaData={seoData.schemaData}
           language={language}
         />
-      )}
+      ) : seoSettings?.seoSettings ? (
+        <DynamicSEO
+          title={language === 'ru' ? seoSettings.seoSettings.siteTitleRu : seoSettings.seoSettings.siteTitleRo}
+          description={language === 'ru' ? seoSettings.seoSettings.metaDescriptionRu : seoSettings.seoSettings.metaDescriptionRo}
+          keywords={language === 'ru' ? seoSettings.seoSettings.keywordsRu : seoSettings.seoSettings.keywordsRo}
+          ogTitle={language === 'ru' ? seoSettings.seoSettings.ogTitleRu : seoSettings.seoSettings.ogTitleRo}
+          ogDescription={language === 'ru' ? seoSettings.seoSettings.ogDescriptionRu : seoSettings.seoSettings.ogDescriptionRo}
+          canonical={language === 'ru' ? seoSettings.seoSettings.canonicalRu : seoSettings.seoSettings.canonicalRo}
+          language={language}
+        />
+      ) : null}
       <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
