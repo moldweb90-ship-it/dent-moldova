@@ -3,7 +3,7 @@ import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Calendar, Tag, Shield, MapPin, Star, Gem, Sparkles, Eye } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getMinPrice, formatPrice, type Currency } from '@/lib/currency';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import { AnimatedNumber } from './AnimatedNumber';
@@ -64,7 +64,43 @@ interface ClinicCardProps {
 export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, language: propLanguage, priority = false }: ClinicCardProps) {
   const { t, language: i18nLanguage } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
-  const [isHovered, setIsHovered] = useState(false);
+  // Показывать блок со звёздами по клику (и на десктопе, и на мобилке)
+  const [showRatings, setShowRatings] = useState(false);
+  const [autoHideTimer, setAutoHideTimer] = useState<number | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Закрывать рейтинг, если кликнули на другую карточку
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<{ clinicId: string }>;
+      if (custom.detail?.clinicId !== clinic.id) {
+        setShowRatings(false);
+        if (autoHideTimer) {
+          clearTimeout(autoHideTimer);
+          setAutoHideTimer(null);
+        }
+      }
+    };
+    window.addEventListener('clinic-card:showRatings', handler as EventListener);
+    return () => window.removeEventListener('clinic-card:showRatings', handler as EventListener);
+  }, [clinic.id, autoHideTimer]);
+
+  // Закрытие по клику вне карточки
+  useEffect(() => {
+    if (!showRatings) return;
+    const onDocClick = (ev: MouseEvent) => {
+      const target = ev.target as HTMLElement;
+      if (rootRef.current && !rootRef.current.contains(target)) {
+        setShowRatings(false);
+        if (autoHideTimer) {
+          clearTimeout(autoHideTimer);
+          setAutoHideTimer(null);
+        }
+      }
+    };
+    document.addEventListener('mousedown', onDocClick, true);
+    return () => document.removeEventListener('mousedown', onDocClick, true);
+  }, [showRatings, autoHideTimer]);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,16 +154,28 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
+    // Если клик по любой кнопке — не трогаем карточку
+    if ((e.target as HTMLElement).closest('button')) return;
+    // Тоггл: если уже открыто — закрываем сразу
+    if (showRatings) {
+      setShowRatings(false);
+      if (autoHideTimer) {
+        clearTimeout(autoHideTimer);
+        setAutoHideTimer(null);
+      }
       return;
     }
-    // Don't navigate if clinic is not verified
-    if (!clinic.verified) {
-      return;
+    // Иначе показываем на этой карточке и скрываем на остальных
+    window.dispatchEvent(new CustomEvent('clinic-card:showRatings', { detail: { clinicId: clinic.id } }));
+    setShowRatings(true);
+    if (autoHideTimer) {
+      clearTimeout(autoHideTimer);
     }
-    trackClickDetails(clinic.id);
-    onClinicClick(clinic.slug);
+    const timer = window.setTimeout(() => {
+      setShowRatings(false);
+      setAutoHideTimer(null);
+    }, 5000);
+    setAutoHideTimer(timer);
   };
 
   const handleVerificationSubmit = async (e: React.FormEvent) => {
@@ -233,10 +281,9 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
 
   return (
     <div 
+      ref={rootRef}
       className={`relative rounded-2xl overflow-hidden ${clinic.verified ? 'cursor-pointer' : 'cursor-default'} aspect-[5/6] md:aspect-[4/3] group ${getPromotionalBorder()}`}
       onClick={handleCardClick}
-      onMouseEnter={() => { setIsHovered(true); setEnableRatings(true); }}
-      onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setEnableRatings(true)}
       tabIndex={0}
     >
@@ -270,7 +317,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
 
       {/* Always visible content */}
       <div className={`absolute inset-0 flex flex-col justify-between text-white pl-2 pr-2 pt-2 sm:p-2 md:p-4 relative z-10 transition-opacity duration-300 ${
-        isHovered ? 'opacity-30' : 'opacity-100'
+        showRatings ? 'opacity-30' : 'opacity-100'
       }`}>
         {/* Top section - always visible */}
         <div className="flex justify-between items-start">
@@ -370,7 +417,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       </div>
 
       {/* Bottom section - Action Buttons - always visible at bottom */}
-      <div className={`absolute bottom-0 left-0 right-0 pl-2 pr-2 pb-2 sm:p-2 md:p-4 transition-opacity duration-300 z-20 ${isHovered ? 'opacity-70' : 'opacity-90'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 pl-2 pr-2 pb-2 sm:p-2 md:p-4 transition-opacity duration-300 z-20 ${showRatings ? 'opacity-70' : 'opacity-90'}`}>
         {clinic.verified ? (
           <div className="flex space-x-1 sm:space-x-1 md:space-x-2">
             <Button 
@@ -415,7 +462,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       </div>
 
       {/* Hover overlay - Real ratings with stars */}
-      {isHovered && (
+      {showRatings && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 transition-all duration-300 pointer-events-none z-20">
           <div className="text-white transform transition-all duration-300 translate-y-0 opacity-100">
             {/* Real ratings with animated stars - only visible on hover */}
