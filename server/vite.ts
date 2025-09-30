@@ -10,8 +10,8 @@ const viteLogger = createLogger();
 
 // Функция для генерации базовой JSON-LD схемы
 function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
-  const baseUrl = settingsMap.websiteUrl || 'https://dentmoldova.md';
-  const organizationName = settingsMap.organizationName || 'Dent Moldova';
+  const baseUrl = settingsMap.websiteUrl || 'https://mdent.md';
+  const organizationName = settingsMap.organizationName || 'MDent.md - стоматологии Молдовы в одном месте';
   const organizationDescription = settingsMap.organizationDescription || 'Каталог стоматологических клиник в Молдове';
   const organizationCity = settingsMap.organizationCity || 'Кишинёв';
   const organizationCountry = settingsMap.organizationCountry || 'MD';
@@ -600,7 +600,7 @@ export async function setupVite(app: Express, server: Server) {
       // Добавляем логотип сайта в мета-теги Open Graph
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML:', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://dentmoldova.md'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo}`;
         
         // Добавляем og:image и og:logo
         template = template.replace(
@@ -881,7 +881,7 @@ export function serveStatic(app: Express) {
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML (prod):', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://dentmoldova.md'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo}`;
         
         // Добавляем og:image и og:logo
         template = template.replace(

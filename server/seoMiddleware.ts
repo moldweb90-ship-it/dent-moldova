@@ -88,29 +88,29 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
       // Добавляем SEO данные для главной страницы
       (req as any).homepageSEO = {
         title: isRomanian 
-          ? (settingsMap.siteTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice')
-          : (settingsMap.siteTitleRu || 'Dent Moldova - Каталог стоматологических клиник'),
+          ? (settingsMap.siteTitleRo || 'MDent.md – Catalogul clinicilor stomatologice din Moldova')
+          : (settingsMap.siteTitleRu || 'MDent.md – Все стоматологии Молдовы в одном месте | Онлайн-запись, цены, отзывы'),
         description: isRomanian
-          ? (settingsMap.metaDescriptionRo || 'Găsiți cea mai bună clinică stomatologică din Moldova. Catalogul clinicilor verificate cu prețuri, recenzii și evaluări.')
-          : (settingsMap.metaDescriptionRu || 'Найдите лучшую стоматологическую клинику в Молдове. Каталог проверенных клиник с ценами, отзывами и рейтингами.'),
+          ? (settingsMap.metaDescriptionRo || 'MDent.md – portalul unitar al clinicilor stomatologice din Moldova 🦷. Comparați prețurile, serviciile și evaluările, citiți recenziile pacienților și programați-vă online cu 1 click. Cele mai bune clinici din țară într-un singur loc.')
+          : (settingsMap.metaDescriptionRu || 'MDent.md – единый портал стоматологий Молдовы 🦷. Сравнивайте цены, услуги и рейтинги, читайте отзывы пациентов и записывайтесь онлайн за 1 клик. Лучшие клиники страны в одном месте.'),
         keywords: isRomanian
-          ? (settingsMap.keywordsRo || 'stomatologie, dentist, tratament dentar, clinică, Moldova, Chișinău')
-          : (settingsMap.keywordsRu || 'стоматология, стоматолог, лечение зубов, клиника, Молдова, Кишинёв'),
+          ? (settingsMap.keywordsRo || 'stomatologie Chișinău, stomatologie Moldova, cele mai bune stomatologii, stomatologie recenzii, implanturi Chișinău, fațete Chișinău, stomatologie prețuri, programare stomatolog online, stomatologie pediatrică, stomatologie 24/7')
+          : (settingsMap.keywordsRu || 'стоматология Кишинёв, стоматология Молдова, лучшие стоматологии, стоматология отзывы, импланты Кишинёв, виниры Кишинёв, стоматология цены, запись к стоматологу онлайн, детская стоматология, стоматология 24/7'),
         h1: isRomanian
           ? (settingsMap.h1Ro || 'Catalogul clinicilor stomatologice din Moldova')
           : (settingsMap.h1Ru || 'Каталог стоматологических клиник в Молдове'),
         ogTitle: isRomanian
-          ? (settingsMap.ogTitleRo || settingsMap.siteTitleRo || 'Dent Moldova - Catalogul clinicilor stomatologice')
-          : (settingsMap.ogTitleRu || settingsMap.siteTitleRu || 'Dent Moldova - Каталог стоматологических клиник'),
+          ? (settingsMap.ogTitleRo || settingsMap.siteTitleRo || 'MDent.md – Portalul unitar al clinicilor stomatologice din Moldova')
+          : (settingsMap.ogTitleRu || settingsMap.siteTitleRu || 'MDent.md – Единый портал стоматологий Молдовы'),
         ogDescription: isRomanian
-          ? (settingsMap.ogDescriptionRo || settingsMap.metaDescriptionRo || 'Găsiți cele mai bune clinici stomatologice din Moldova')
-          : (settingsMap.ogDescriptionRu || settingsMap.metaDescriptionRu || 'Найдите лучшие стоматологические клиники в Молдове'),
+          ? (settingsMap.ogDescriptionRo || settingsMap.metaDescriptionRo || 'Găsiți stomatologia potrivită în Moldova: prețuri, servicii, recenzii, programare online. MDent.md – toate clinicile din țară într-un singur loc.')
+          : (settingsMap.ogDescriptionRu || settingsMap.metaDescriptionRu || 'Найдите подходящую стоматологию в Молдове: цены, услуги, отзывы, онлайн-запись. MDent.md – все клиники страны в одном месте.'),
         ogImage: isRomanian
           ? (settingsMap.ogImageRo || settingsMap.logo || '')
           : (settingsMap.ogImageRu || settingsMap.logo || ''),
         canonical: isRomanian
-          ? (settingsMap.canonicalRo || 'https://dentmoldova.md/ro')
-          : (settingsMap.canonicalRu || 'https://dentmoldova.md'),
+          ? (settingsMap.canonicalRo || 'https://mdent.md/ro')
+          : (settingsMap.canonicalRu || 'https://mdent.md'),
         robots: settingsMap.robots || 'index,follow',
         schemaType: settingsMap.schemaType || 'Organization',
         schemaData: settingsMap.schemaData || '',
