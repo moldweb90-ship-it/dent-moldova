@@ -797,7 +797,7 @@ export function serveStatic(app: Express) {
         ''
       );
       template = template.replace(
-        /<script type="module" src="\/src\/main\.tsx(?:\?v=[^"]*)?" defer><\/script>/g,
+        /<script type="module" src="\/src\/main\.tsx(?:\?v=[^"]*)??" defer><\/script>/g,
         `<script type="module" crossorigin src="/assets/index-BfyUaeoV.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-OK3B2gEz.js">
     <link rel="stylesheet" crossorigin href="/assets/index-KoR5eSsp.css">`
