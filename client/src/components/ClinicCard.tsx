@@ -250,6 +250,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
           priority={priority}
           width={400}
           height={300}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           onError={(e) => {
             // Если не загрузилось загруженное фото, пробуем сгенерированное
             if (clinic.logoUrl && (e.target as HTMLImageElement).src === clinic.logoUrl) {
@@ -275,7 +276,7 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0 relative z-10">
             {/* Clinic name - always first and prominent */}
-            <h3 className="text-[1.1rem] sm:text-sm md:text-lg font-extrabold leading-tight mb-1 sm:mb-2 relative z-10 break-words text-white drop-shadow-2xl">
+            <h3 className="text-[1.1rem] sm:text-sm md:text-lg font-bold leading-tight mb-1 sm:mb-2 relative z-10 break-words text-white drop-shadow-2xl">
               {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
               {clinic.verified && (
                 <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">

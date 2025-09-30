@@ -10,6 +10,7 @@ interface LazyImageProps {
   priority?: boolean; // Приоритетная загрузка для видимых изображений
   width?: number;
   height?: number;
+  sizes?: string;
 }
 
 export function LazyImage({ 
@@ -20,7 +21,8 @@ export function LazyImage({
   onError,
   priority = false,
   width = 400,
-  height = 300
+  height = 300,
+  sizes
 }: LazyImageProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -115,6 +117,8 @@ export function LazyImage({
           decoding="async"
           width={width}
           height={height}
+          fetchpriority={priority ? 'high' : undefined}
+          sizes={sizes}
           onLoad={() => setIsLoading(false)}
         />
       ) : (

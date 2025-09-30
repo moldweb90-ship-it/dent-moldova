@@ -23,6 +23,23 @@ body {
     "YTUC" 712;
 }
 
+/* Reduce motion on mobile to lower main-thread work */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile: reduce extra-bold to bold for clinic titles */
+@media (max-width: 640px) {
+  .font-extrabold {
+    font-weight: 700 !important;
+  }
+}
+
 
 /* iOS Safari browser menu hiding - body styles */
 body.modal-open {

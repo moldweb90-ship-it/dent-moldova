@@ -182,6 +182,7 @@ export default function Home() {
   }, [isOpenNowActive]); // Убрал filters.openNow из зависимостей
   
   const [page, setPage] = useState(1);
+  // Количество карточек на странице (вернули как было)
   const limit = 50;
   const [isManualFilterChange, setIsManualFilterChange] = useState(false);
 

@@ -190,7 +190,7 @@ export function RecommendedClinics({ onClinicClick, onBookClick, onPricesClick, 
               
               {/* Clinic Name Overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 md:p-4">
-                <h3 className="text-base md:text-lg font-extrabold leading-tight mb-2 relative z-10 break-words text-white drop-shadow-2xl tracking-wide">
+                <h3 className="text-base md:text-lg font-bold leading-tight mb-2 relative z-10 break-words text-white drop-shadow-2xl tracking-wide">
                   {language === 'ru' ? clinic.nameRu : clinic.nameRo}
                 </h3>
               </div>
