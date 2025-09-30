@@ -378,12 +378,11 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
                 e.stopPropagation();
                 onBookClick(clinic);
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs sm:text-xs md:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4 transition-all duration-200"
-              size="sm"
+              className="w-full inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-3 sm:px-4 md:px-5 transition-all duration-200"
             >
-              <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" />
-              <span className="hidden sm:inline lg:inline">{t('bookOneClick')}</span>
-              <span className="sm:hidden">{t('book')}</span>
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden lg:inline font-medium lg:text-[0.9rem]">{t('bookOneClick')}</span>
+              <span className="lg:hidden font-medium">{t('book')}</span>
             </Button>
             <Button 
               onClick={handlePricesClick}

@@ -246,12 +246,12 @@ export function RecommendedClinics({ onClinicClick, onBookClick, onPricesClick, 
                       e.stopPropagation();
                       onBookClick(clinic);
                     }}
-                    className="w-full rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 md:h-9 px-3 md:px-4 transition-all duration-200 shadow-md hover:shadow-lg"
+                    className="w-full inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs md:text-sm h-8 md:h-9 px-3 md:px-4 transition-all duration-200 shadow-md hover:shadow-lg"
                     size="sm"
                   >
-                    <Calendar className="h-3 w-3 mr-1" />
-                    <span className="hidden lg:inline">{t('bookOneClick')}</span>
-                    <span className="lg:hidden">{t('book')}</span>
+                    <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
+                    <span className="hidden lg:inline font-medium lg:text-[0.9rem]">{t('bookOneClick')}</span>
+                    <span className="lg:hidden font-medium">{t('book')}</span>
                   </Button>
                 </div>
               ) : (

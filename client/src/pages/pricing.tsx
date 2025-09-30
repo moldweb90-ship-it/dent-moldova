@@ -81,7 +81,7 @@ export default function PricingPage() {
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <div className="flex items-center">
-                <Link href="/">
+                <Link href={isRomanian ? '/ro' : '/'}>
                   <button 
                     className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
                     title={siteSettings?.logoAlt || t('appTitle')}
@@ -107,7 +107,7 @@ export default function PricingPage() {
               
               <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
                 {/* Navigation Menu */}
-                <Link href="/">
+                <Link href={isRomanian ? '/ro' : '/'}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -146,7 +146,7 @@ export default function PricingPage() {
         <div className="bg-gray-50 border-b border-gray-200 pt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <nav className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link href="/">
+              <Link href={isRomanian ? '/ro' : '/'}>
                 <span className="hover:text-gray-900 transition-colors cursor-pointer">
                   {t('home')}
                 </span>

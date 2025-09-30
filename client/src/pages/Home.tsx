@@ -1154,7 +1154,10 @@ export default function Home() {
             {/* Logo - Center on mobile, Left on desktop */}
             <div className="flex items-center md:flex-none absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none">
               <button 
-                onClick={() => window.location.href = '/'}
+                onClick={() => {
+                  const isRO = typeof window !== 'undefined' && (window.location.pathname === '/ro' || window.location.pathname.startsWith('/ro/'));
+                  window.location.href = isRO ? '/ro' : '/';
+                }}
                 className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
                 title={siteSettings?.logoAlt || t('appTitle')}
               >
@@ -1206,10 +1209,17 @@ export default function Home() {
               {/* Add Clinic Button */}
               <Button
                 onClick={() => setClinicFormOpen(true)}
-                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-1 px-2"
+                className="hidden md:inline-flex h-10 md:h-11 px-4 md:px-5 gap-2 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg border border-white/20"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-sm font-medium">{t('addClinic')}</span>
+              </Button>
+              <Button
+                onClick={() => setClinicFormOpen(true)}
+                className="md:hidden inline-flex h-9 px-3 gap-1 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow md:shadow-md"
                 size="sm"
               >
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Plus className="h-3 w-3" />
                 <span className="hidden sm:inline text-xs sm:text-sm">{t('addClinic')}</span>
               </Button>
               
