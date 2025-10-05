@@ -37,7 +37,7 @@ export const ru = {
   bookOneClick: "Запись в 1 клик",
   wantAppointment: "Хочу на приём",
   prices: "Цены",
-  details: "Подробнее",
+  details: "Подробно",
   verifiedBadge: "Проверено",
 
   packages: "Пакеты",
