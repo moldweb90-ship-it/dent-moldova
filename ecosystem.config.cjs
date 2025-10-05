@@ -1,7 +1,8 @@
 module.exports = {
   apps: [{
     name: 'clinici-md',
-    script: 'dist/index.js',
+    script: 'node_modules/.bin/tsx',
+    args: 'server/index.ts',
     cwd: './',
     watch: false,
     instances: 1,
