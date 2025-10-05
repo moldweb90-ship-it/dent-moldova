@@ -24,13 +24,10 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy to VPS
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd /var/www/clinici.md &&
             git pull origin main &&
-            echo 'DATABASE_URL=${DATABASE_URL}' > .env &&
-            docker-compose down || true &&
-            docker-compose up -d --build --remove-orphans
+            npm install &&
+            pm2 restart clinici-md || pm2 start ecosystem.config.cjs
           "
