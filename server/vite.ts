@@ -785,47 +785,9 @@ export function serveStatic(app: Express) {
       return res.status(404).end();
     }
     try {
-      // Используем client/index.html как базу (как в dev версии)
-      const clientTemplate = path.resolve(import.meta.dirname, "..", "client", "index.html");
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      
-      // Заменяем dev скрипты на продакшн версии
-      // Удаляем все dev скрипты
-      template = template.replace(
-        /<script type="module">[\s\S]*?<\/script>/g,
-        ''
-      );
-      template = template.replace(
-        /<script type="module" src="\/@vite\/client"><\/script>/g,
-        ''
-      );
-      
-      // Заменяем main.tsx скрипт на production assets
-      // Динамически определяем имена файлов из public/assets/
-      const assetsPath = path.resolve(distPath, "assets");
-      let indexJs = 'index.js';
-      let vendorJs = 'vendor.js';
-      let indexCss = 'index.css';
-      
-      try {
-        const files = fs.readdirSync(assetsPath);
-        const indexJsFile = files.find(f => f.startsWith('index-') && f.endsWith('.js'));
-        const vendorJsFile = files.find(f => f.startsWith('vendor-') && f.endsWith('.js'));
-        const indexCssFile = files.find(f => f.startsWith('index-') && f.endsWith('.css'));
-        
-        if (indexJsFile) indexJs = indexJsFile;
-        if (vendorJsFile) vendorJs = vendorJsFile;
-        if (indexCssFile) indexCss = indexCssFile;
-      } catch (error) {
-        console.error('Error reading assets directory:', error);
-      }
-      
-      template = template.replace(
-        /<script type="module" src="\/src\/main\.tsx[^>]*><\/script>/g,
-        `<script type="module" crossorigin src="/assets/${indexJs}"></script>
-    <link rel="modulepreload" crossorigin href="/assets/${vendorJs}">
-    <link rel="stylesheet" crossorigin href="/assets/${indexCss}">`
-      );
+      // Используем готовый public/index.html из сборки
+      const builtTemplate = path.resolve(distPath, "index.html");
+      let template = await fs.promises.readFile(builtTemplate, "utf-8");
       
       // Определяем язык из URL и устанавливаем lang атрибут
       const isRomanian = req.originalUrl.startsWith('/clinic/ro/') || req.originalUrl.startsWith('/ro/') || req.originalUrl === '/ro';
