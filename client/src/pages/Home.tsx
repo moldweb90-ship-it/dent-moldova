@@ -159,6 +159,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [savedScrollPosition, setSavedScrollPosition] = useState(0);
 
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingClinic, setBookingClinic] = useState<any>(null);
@@ -1379,9 +1380,28 @@ export default function Home() {
       <ClinicDetail
         clinic={clinicDetail}
         open={detailOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            // Сохраняем позицию скролла перед открытием
+            setSavedScrollPosition(window.scrollY);
+          } else {
+            // Восстанавливаем позицию скролла после закрытия
+            setTimeout(() => {
+              window.scrollTo(0, savedScrollPosition);
+            }, 0);
+          }
+          setDetailOpen(open);
+          if (!open) {
+            setSelectedClinic(null);
+          }
+        }}
         onClose={() => {
           setDetailOpen(false);
           setSelectedClinic(null);
+          // Восстанавливаем позицию скролла
+          setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition);
+          }, 0);
         }}
         onBookClick={handleBookClick}
         language={language}

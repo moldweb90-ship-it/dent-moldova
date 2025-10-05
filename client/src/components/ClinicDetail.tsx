@@ -61,11 +61,12 @@ interface ClinicDetailProps {
   clinic: Clinic | null;
   open: boolean;
   onClose: () => void;
+  onOpenChange?: (open: boolean) => void;
   onBookClick: (clinic: Clinic) => void;
   language?: string; // Добавляем язык как пропс
 }
 
-export function ClinicDetail({ clinic, open, onClose, onBookClick, language: propLanguage }: ClinicDetailProps) {
+export function ClinicDetail({ clinic, open, onClose, onOpenChange, onBookClick, language: propLanguage }: ClinicDetailProps) {
   const { t, language: i18nLanguage } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -224,7 +225,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange || onClose}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal">
         <DialogHeader className="border-b border-gray-200 pb-4">
           {/* Two column layout - Desktop */}
