@@ -14,7 +14,6 @@ import { SosButton } from './SosButton';
 import { ReviewModal } from './ReviewModal';
 import { useClinicRating } from '../hooks/useClinicRating';
 import { LazyImage } from './LazyImage';
-import { lockBodyScroll, unlockBodyScroll } from '@/utils/modalBodyLock';
 
 import { type Currency } from '@/lib/currency';
 import { trackClickBook, trackClickPhone, trackClickWebsite } from '@/lib/analytics';
@@ -87,19 +86,7 @@ export function ClinicDetail({ clinic, open, onClose, onBookClick, language: pro
     }
   }, [open]);
 
-  // Управление блокировкой скролла для скрытия меню браузера на iOS
-  useEffect(() => {
-    if (open) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
-
-    // Cleanup при размонтировании компонента
-    return () => {
-      unlockBodyScroll();
-    };
-  }, [open]);
+  // Radix UI Dialog автоматически управляет блокировкой скролла без прокрутки страницы
 
   // Обработчик клика вне меню телефона
   useEffect(() => {

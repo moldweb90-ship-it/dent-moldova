@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDebounce } from '../hooks/use-debounce';
-import { lockBodyScroll, unlockBodyScroll } from '@/utils/modalBodyLock';
 import { useQuery } from '@tanstack/react-query';
 import { ActiveClinicsCounter } from './ActiveClinicsCounter';
 
@@ -68,18 +67,7 @@ export function MobileFiltersModal({
   }, [debouncedQuery, onSearch]);
 
   // Управление блокировкой скролла для скрытия меню браузера на iOS
-  useEffect(() => {
-    if (open) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
-
-    // Cleanup при размонтировании компонента
-    return () => {
-      unlockBodyScroll();
-    };
-  }, [open]);
+  // Radix UI Dialog автоматически управляет блокировкой скролла без прокрутки страницы
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
     onFiltersChange({ ...filters, [key]: value });

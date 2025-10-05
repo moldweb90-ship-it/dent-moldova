@@ -5,7 +5,6 @@ import { StarRating } from './StarRating';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { lockBodyScroll, unlockBodyScroll } from '@/utils/modalBodyLock';
 
 interface ReviewModalProps {
   open: boolean;
@@ -47,18 +46,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
   }, [ratings]);
 
   // Управление блокировкой скролла для скрытия меню браузера на iOS
-  useEffect(() => {
-    if (open) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
-
-    // Cleanup при размонтировании компонента
-    return () => {
-      unlockBodyScroll();
-    };
-  }, [open]);
+  // Radix UI Dialog автоматически управляет блокировкой скролла без прокрутки страницы
 
   const handleRatingChange = (category: keyof typeof ratings, value: number) => {
     setRatings(prev => ({
