@@ -18,8 +18,11 @@ let db: any;
 let pool: any;
 
 if (DATABASE_URL) {
-  // Используем PostgreSQL (Neon)
-  console.log('🗄️ Используем PostgreSQL (Neon)');
+  // Определяем тип PostgreSQL по URL
+  const isLocalPostgres = DATABASE_URL.includes('localhost') || DATABASE_URL.includes('127.0.0.1');
+  const dbType = isLocalPostgres ? '🟢 Используем локальный PostgreSQL' : '🔴 Используем PostgreSQL (Neon)';
+  console.log(`🗄️ ${dbType}`);
+  console.log(`📍 Database host: ${new URL(DATABASE_URL).hostname}`);
   pool = new Pool({ connectionString: DATABASE_URL });
   db = drizzle({ client: pool, schema });
 } else {
