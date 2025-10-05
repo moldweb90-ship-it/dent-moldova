@@ -706,16 +706,19 @@ export default function Home() {
   }, [language, setLocation]);
 
   const handleClinicClick = useCallback((slug: string) => {
+    setSavedScrollPosition(window.scrollY);
     setSelectedClinic(slug);
     setDetailOpen(true);
   }, []);
 
   const handlePricesClick = useCallback((slug: string) => {
+    setSavedScrollPosition(window.scrollY);
     setSelectedClinic(slug);
     setDetailOpen(true);
   }, []);
 
   const handleBookClick = useCallback((clinic: any) => {
+    setSavedScrollPosition(window.scrollY);
     setBookingClinic(clinic);
     setBookingOpen(true);
   }, []);
@@ -1381,27 +1384,22 @@ export default function Home() {
         clinic={clinicDetail}
         open={detailOpen}
         onOpenChange={(open) => {
-          if (open) {
-            // Сохраняем позицию скролла перед открытием
-            setSavedScrollPosition(window.scrollY);
-          } else {
+          if (!open) {
             // Восстанавливаем позицию скролла после закрытия
             setTimeout(() => {
               window.scrollTo(0, savedScrollPosition);
             }, 0);
-          }
-          setDetailOpen(open);
-          if (!open) {
             setSelectedClinic(null);
           }
+          setDetailOpen(open);
         }}
         onClose={() => {
-          setDetailOpen(false);
-          setSelectedClinic(null);
           // Восстанавливаем позицию скролла
           setTimeout(() => {
             window.scrollTo(0, savedScrollPosition);
           }, 0);
+          setDetailOpen(false);
+          setSelectedClinic(null);
         }}
         onBookClick={handleBookClick}
         language={language}
@@ -1429,6 +1427,10 @@ export default function Home() {
         clinic={bookingClinic}
         open={bookingOpen}
         onClose={() => {
+          // Восстанавливаем позицию скролла
+          setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition);
+          }, 0);
           setBookingOpen(false);
           setBookingClinic(null);
         }}
