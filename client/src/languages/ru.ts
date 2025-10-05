@@ -301,7 +301,6 @@ export const ru = {
   readMore: "Читать далее",
   readLess: "Свернуть",
   
-  details: "Подробнее",
   detailsShort: "Подробно",
   appointment: "Запись",
   appointmentShort: "Запись",

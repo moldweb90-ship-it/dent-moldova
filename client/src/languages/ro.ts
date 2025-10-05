@@ -301,7 +301,6 @@ export const ro = {
   readMore: "Citește mai mult",
   readLess: "Rezumat",
   
-  details: "Detalii",
   detailsShort: "Detalii",
   appointment: "Programare",
   appointmentShort: "Programare",
