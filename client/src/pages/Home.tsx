@@ -186,7 +186,7 @@ export default function Home() {
     if (isOpenNowActive && !filters.openNow) {
       setFilters(prev => ({ ...prev, openNow: true }));
     }
-  }, [isOpenNowActive]); // Убрал filters.openNow из зависимостей
+  }, [isOpenNowActive, filters.openNow]); // Добавил filters.openNow обратно в зависимости
   
   const [page, setPage] = useState(1);
   // Количество карточек на странице (вернули как было)

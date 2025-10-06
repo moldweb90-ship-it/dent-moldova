@@ -191,21 +191,21 @@ export function Settings() {
       pagesEnabled: true,
       pagesDuration: 2,
       pagesPreload: true,
-      cacheEnabled: true,
+      cacheEnabled: false, // По умолчанию отключено для стабильности
       cacheStrategy: 'staleWhileRevalidate',
     },
   });
 
   useEffect(() => {
     loadSettings();
-    loadCacheStats();
+    // loadCacheStats(); // Временно отключено для исправления проблем
     
-    // Автоматическое обновление статистики кеша каждые 5 секунд
-    const statsInterval = setInterval(() => {
-      loadCacheStats();
-    }, 5000);
+    // Автоматическое обновление статистики кеша каждые 5 секунд - временно отключено
+    // const statsInterval = setInterval(() => {
+    //   loadCacheStats();
+    // }, 5000);
     
-    return () => clearInterval(statsInterval);
+    // return () => clearInterval(statsInterval);
   }, []);
 
   const loadSettings = async () => {

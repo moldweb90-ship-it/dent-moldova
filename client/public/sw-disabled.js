@@ -1,18 +1,13 @@
-// Отключенный Service Worker для экстренного деплоя
-console.log('Service Worker отключен');
-
-// Просто пропускаем все запросы без кеширования
-self.addEventListener('fetch', (event) => {
-  // Не делаем ничего - все запросы идут напрямую к серверу
-  return;
-});
-
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Установка (отключен)');
+// Отключенный Service Worker - не выполняет кеширование
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Активация (отключен)');
+self.addEventListener('activate', () => {
   self.clients.claim();
+});
+
+// Никакого кеширования - просто пропускаем все запросы
+self.addEventListener('fetch', (event) => {
+  // Просто пропускаем все запросы без кеширования
 });
