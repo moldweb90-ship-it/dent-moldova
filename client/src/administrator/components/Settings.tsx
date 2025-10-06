@@ -191,21 +191,21 @@ export function Settings() {
       pagesEnabled: true,
       pagesDuration: 2,
       pagesPreload: true,
-      cacheEnabled: false, // По умолчанию отключено для стабильности
+      cacheEnabled: true, // Включаем кеш по умолчанию
       cacheStrategy: 'staleWhileRevalidate',
     },
   });
 
   useEffect(() => {
     loadSettings();
-    // loadCacheStats(); // Полностью отключено для стабильности
+    loadCacheStats(); // Включаем загрузку статистики кеша
     
-    // Автоматическое обновление статистики кеша полностью отключено
-    // const statsInterval = setInterval(() => {
-    //   loadCacheStats();
-    // }, 5000);
+    // Автоматическое обновление статистики кеша каждые 30 секунд
+    const statsInterval = setInterval(() => {
+      loadCacheStats();
+    }, 30000); // Увеличили интервал до 30 секунд
     
-    // return () => clearInterval(statsInterval);
+    return () => clearInterval(statsInterval);
   }, []);
 
   const loadSettings = async () => {
@@ -413,8 +413,8 @@ export function Settings() {
       });
       // Перезагружаем настройки для обновления формы
       loadSettings();
-      // Обновляем статистику кеша - отключено для стабильности
-      // loadCacheStats();
+      // Обновляем статистику кеша
+      loadCacheStats();
     } catch (error: any) {
       toast({
         title: 'Ошибка',
@@ -476,8 +476,8 @@ export function Settings() {
         title: 'Кеш очищен',
         description: 'Весь кеш успешно очищен. Сайт будет загружаться заново.',
       });
-      // Обновляем статистику - отключено для стабильности
-      // loadCacheStats();
+      // Обновляем статистику
+      loadCacheStats();
     } catch (error: any) {
       toast({
         title: 'Ошибка',
