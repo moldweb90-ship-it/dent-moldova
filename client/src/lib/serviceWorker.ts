@@ -25,6 +25,12 @@ class ServiceWorkerManager {
     }
 
     try {
+      // Проверяем что мы в HTTPS или localhost
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        console.log('Service Worker требует HTTPS или localhost');
+        return false;
+      }
+
       // Сначала пытаемся зарегистрировать обычный SW
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
