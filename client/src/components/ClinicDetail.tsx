@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Phone, Globe, ExternalLink, Calendar, Shield, Copy, Star } from 'lucide-react';
 import { useTranslation, SPECIALIZATIONS } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+// Popup открытие/блюр реализуем как в BookingModal (без Radix Dialog)
 import { ScoreBar } from './ScoreBar';
 import { BookingModal } from './BookingModal';
 import { CurrencyConverter } from './CurrencyConverter';
@@ -89,7 +89,14 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
     }
   }, [open]);
 
-  // Radix UI Dialog автоматически управляет блокировкой скролла без прокрутки страницы
+  // Закрытие по ESC
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (open) window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open, onClose]);
 
   // Обработчик клика вне меню телефона
   useEffect(() => {
@@ -226,9 +233,11 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
     }
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange || onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal animate-in fade-in-0 zoom-in-95 duration-300" style={{ position: 'fixed' }}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal bg-white rounded-3xl shadow-2xl" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
         {isLoading || !clinic ? (
           <div className="h-full bg-white">
             {/* Скелетон заголовка */}
@@ -280,18 +289,29 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
           </div>
         ) : (
           <>
-        <DialogHeader className="border-b border-gray-200 pb-4">
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-t-3xl pb-4">
+          {/* decorative bg */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-50 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 border border-white/30"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
           {/* Two column layout - Desktop */}
-          <div className="hidden sm:flex items-start justify-between gap-6 mb-4">
+          <div className="relative z-10 hidden sm:flex items-start justify-between gap-6 mb-4 px-6 pt-6">
             {/* Left column - Clinic info */}
             <div className="flex-1 min-w-0">
               {/* Clinic name */}
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 break-words text-left mb-3">
+              <h2 className="text-xl sm:text-2xl font-bold text-white break-words text-left mb-3">
                 {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
                 {clinic.verified && (
                   <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
                     <svg 
-                      className="inline-block w-5 h-5 md:w-6 md:h-6 text-blue-500 cursor-help ml-2" 
+                      className="inline-block w-5 h-5 md:w-6 md:h-6 text-white cursor-help ml-2" 
                       viewBox="0 0 24 24" 
                       fill="currentColor"
                     >
@@ -299,12 +319,12 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
                     </svg>
                   </Tooltip>
                 )}
-              </DialogTitle>
+              </h2>
 
               {/* Address and working hours */}
               <div className="space-y-2">
-                <div className="flex items-center text-gray-600 text-sm">
-                  <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center text-white/90 text-sm">
+                  <svg className="w-4 h-4 mr-2 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -317,11 +337,15 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
                 </div>
                 
                 {clinic.workingHours && clinic.workingHours.length > 0 && (
-                  <div className="flex items-center text-gray-600 text-sm">
+                  <div className="inline-flex items-center text-white/90 text-sm bg-white/15 rounded-full px-2 py-1 backdrop-blur-sm border border-white/20">
+                    <svg className="w-4 h-4 mr-1.5 flex-shrink-0 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <WorkingHoursDisplay 
                       workingHours={clinic.workingHours} 
                       compact={true} 
                       showToday={true}
+                      lightText={true}
                     />
                   </div>
                 )}
@@ -341,7 +365,7 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
                 
                 <Button
                   onClick={handleViewFullPage}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none"
                 >
                   <ExternalLink className="h-4 w-4" />
                   <span className="font-medium">{t('details')}</span>
@@ -349,14 +373,14 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
               </div>
               
               {ratingData.hasRating && (
-                <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
+                <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/30" title={t('overallRating')}>
                   <svg 
-                    className="w-5 h-5 text-yellow-400 fill-current mr-1" 
+                    className="w-5 h-5 text-yellow-300 fill-current mr-1" 
                     viewBox="0 0 24 24"
                   >
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
-                  <span className="text-gray-800 font-bold text-sm">
+                  <span className="text-white font-bold text-sm">
                     {ratingData.averageRating.toFixed(2)}
                   </span>
                 </div>
@@ -365,95 +389,98 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
           </div>
 
           {/* Mobile layout */}
-          <div className="sm:hidden">
+          <div className="relative z-10 sm:hidden px-4 pt-6 text-white">
             {/* Clinic name */}
-            <DialogTitle className="text-xl font-bold text-gray-900 break-words text-left mb-3">
-              {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
-              {clinic.verified && (
-                <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
-                  <svg 
-                    className="inline-block w-5 h-5 text-blue-500 cursor-help ml-2" 
-                    viewBox="0 0 24 24" 
-                    fill="currentColor"
-                  >
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </Tooltip>
-              )}
-            </DialogTitle>
-
-            {/* Address and working hours */}
-            <div className="mb-4 space-y-2">
-              <div className="flex items-center text-gray-600 text-sm">
-                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>
-                  {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
-                  {(clinic.addressRu || clinic.addressRo) && ', '}
-                  {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
-                  {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
-                </span>
-              </div>
-              
-              {clinic.workingHours && clinic.workingHours.length > 0 && (
-                <div className="flex items-center text-gray-600 text-sm">
-                  <WorkingHoursDisplay 
-                    workingHours={clinic.workingHours} 
-                    compact={true} 
-                    showToday={true}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            {clinic.cnam && (
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full">
-                {t('cnamBadge')}
-              </span>
-            )}
-          </div>
-
-          {/* Rating and Action buttons - Mobile */}
-          <div className="sm:hidden flex items-center justify-between gap-2 mb-4">
-            {ratingData.hasRating && (
-              <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/20" title={t('overallRating')}>
+            <h2 className="text-xl font-bold text-white break-words text-left mb-3">
+            {language === 'ru' ? (clinic.nameRu || clinic.nameRo || 'Название клиники') : (clinic.nameRo || clinic.nameRu || 'Numele clinicii')}
+            {clinic.verified && (
+              <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'} position="bottom">
                 <svg 
-                  className="w-4 h-4 text-yellow-400 fill-current mr-1" 
-                  viewBox="0 0 24 24"
+                  className="inline-block w-5 h-5 text-white cursor-help ml-2" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
                 >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
-                <span className="text-gray-800 font-bold text-sm">
-                  {ratingData.averageRating.toFixed(2)}
-                </span>
+              </Tooltip>
+            )}
+          </h2>
+
+          {/* Address and working hours */}
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center text-white/90 text-sm">
+              <svg className="w-4 h-4 mr-2 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {language === 'ru' ? (clinic.addressRu || clinic.addressRo) : (clinic.addressRo || clinic.addressRu)}
+                {(clinic.addressRu || clinic.addressRo) && ', '}
+                {language === 'ru' ? (clinic.city.nameRu || clinic.city.nameRo) : (clinic.city.nameRo || clinic.city.nameRu)}
+                {clinic.district && `, ${language === 'ru' ? (clinic.district.nameRu || clinic.district.nameRo) : (clinic.district.nameRo || clinic.district.nameRu)}`}
+              </span>
+            </div>
+            
+            {clinic.workingHours && clinic.workingHours.length > 0 && (
+              <div className="inline-flex items-center text-white/90 text-sm bg-white/15 rounded-full px-2 py-1 backdrop-blur-sm border border-white/20">
+                <svg className="w-4 h-4 mr-1.5 flex-shrink-0 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <WorkingHoursDisplay 
+                  workingHours={clinic.workingHours} 
+                  compact={true} 
+                  showToday={true}
+                  lightText={true}
+                />
               </div>
             )}
-            
-            <div className="flex space-x-2">
-              <Button
-                onClick={() => setShowReviewModal(true)}
-                className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1 h-7"
-              >
-                <Star className="h-3 w-3" />
-                <span>{language === 'ru' ? 'Оставить отзыв' : 'Lasă recenzie'}</span>
-              </Button>
-              
-              <Button
-                onClick={handleViewFullPage}
-                className="flex items-center space-x-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1 h-7"
-              >
-                <ExternalLink className="h-3 w-3" />
-                <span>{t('details')}</span>
-              </Button>
-            </div>
           </div>
+        </div>
 
-        </DialogHeader>
+        {/* Badges */}
+        <div className="flex flex-wrap items-center gap-2 mb-4 px-4">
+          {clinic.cnam && (
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full">
+              {t('cnamBadge')}
+            </span>
+          )}
+        </div>
+
+        {/* Rating and Action buttons - Mobile */}
+        <div className="sm:hidden flex items-center justify-between gap-2 mb-4 px-4">
+          {ratingData.hasRating && (
+            <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg border border-white/30" title={t('overallRating')}>
+              <svg 
+                className="w-4 h-4 text-yellow-300 fill-current mr-1" 
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              <span className="text-white font-bold text-sm">
+                {ratingData.averageRating.toFixed(2)}
+              </span>
+            </div>
+          )}
+          
+          <div className="flex space-x-2">
+            <Button
+              onClick={() => setShowReviewModal(true)}
+              className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs px-2 py-1 h-7"
+            >
+              <Star className="h-3 w-3" />
+              <span>{language === 'ru' ? 'Оставить отзыв' : 'Lasă recenzie'}</span>
+            </Button>
+            
+            <Button
+              onClick={handleViewFullPage}
+              className="flex items-center space-x-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg transition-all duration-300 text-xs px-2 py-1 h-7"
+            >
+              <ExternalLink className="h-3 w-3" />
+              <span>{t('details')}</span>
+            </Button>
+          </div>
+        </div>
+        </div>
 
         <div className="p-4 sm:p-6 overflow-y-auto h-full">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -620,9 +647,9 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
             </div>
           </div>
         </div>
-          </>
+        </>
         )}
-      </DialogContent>
+      </div>
       
       {/* Booking Form Overlay */}
       <BookingModal 
@@ -790,7 +817,6 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
         clinicName={language === 'ru' ? clinic.nameRu : clinic.nameRo}
         onSubmit={handleReviewSubmit}
       />
-
-    </Dialog>
+    </div>
   );
 }

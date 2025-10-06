@@ -17,6 +17,7 @@ interface WorkingHoursDisplayProps {
   compact?: boolean;
   showToday?: boolean;
   isCard?: boolean;
+  lightText?: boolean; // для белого текста на темном/градиентном фоне
 }
 
 const DAYS_OF_WEEK = [
@@ -33,7 +34,8 @@ export const WorkingHoursDisplay: React.FC<WorkingHoursDisplayProps> = ({
   workingHours,
   compact = false,
   showToday = false,
-  isCard = false
+  isCard = false,
+  lightText = false
 }) => {
   const { t, language } = useTranslation();
 
@@ -109,7 +111,9 @@ export const WorkingHoursDisplay: React.FC<WorkingHoursDisplayProps> = ({
         
         {/* Время работы */}
         <span className={`font-medium ${
-          isCard ? 'text-[10px] md:text-[12px] text-white' : 'text-sm text-gray-600'
+          isCard ? 'text-[10px] md:text-[12px] text-white' : 
+          lightText ? 'text-sm text-white' : 
+          'text-sm text-gray-600'
         }`}>
           {todayInfo.time}
         </span>

@@ -167,8 +167,9 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
-  // Lock body scroll for detail/mobile/forms, но НЕ для bookingOpen (иначе фон обрезается)
-  useBodyScrollLock(detailOpen || mobileFiltersOpen || clinicFormOpen);
+  // Lock body scroll только для мобильных фильтров и формы добавления клиники.
+  // Для detailOpen не блокируем, чтобы фон не обрезался при открытом попапе просмотра клиники
+  useBodyScrollLock(mobileFiltersOpen || clinicFormOpen);
   
   const [filters, setFilters] = useState<FilterValues>({
     city: '',
