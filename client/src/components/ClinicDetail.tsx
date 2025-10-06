@@ -60,13 +60,14 @@ interface Clinic {
 interface ClinicDetailProps {
   clinic: Clinic | null;
   open: boolean;
+  isLoading?: boolean;
   onClose: () => void;
   onOpenChange?: (open: boolean) => void;
   onBookClick: (clinic: Clinic) => void;
   language?: string; // Добавляем язык как пропс
 }
 
-export function ClinicDetail({ clinic, open, onClose, onOpenChange, onBookClick, language: propLanguage }: ClinicDetailProps) {
+export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenChange, onBookClick, language: propLanguage }: ClinicDetailProps) {
   const { t, language: i18nLanguage } = useTranslation();
   const language = propLanguage || i18nLanguage; // Используем переданный язык или из i18n
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -76,6 +77,7 @@ export function ClinicDetail({ clinic, open, onClose, onOpenChange, onBookClick,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const phoneOptionsRef = useRef<HTMLDivElement>(null);
+
   
   // Получаем реальный рейтинг на основе отзывов (только если клиника загружена)
   const { ratingData } = useClinicRating(clinic?.id || '');
@@ -226,7 +228,58 @@ export function ClinicDetail({ clinic, open, onClose, onOpenChange, onBookClick,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange || onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal animate-in fade-in-0 zoom-in-95 duration-300" style={{ position: 'fixed' }}>
+        {isLoading || !clinic ? (
+          <div className="h-full bg-white">
+            {/* Скелетон заголовка */}
+            <div className="border-b border-gray-200 pb-4 px-6 pt-6">
+              <div className="hidden sm:flex items-start justify-between gap-6 mb-4">
+                <div className="flex-1 min-w-0">
+                  <div className="h-8 bg-gray-200 rounded animate-pulse mb-3 w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Скелетон контента */}
+            <div className="p-4 sm:p-6 overflow-y-auto h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+                  {/* Скелетон кнопок */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    <div className="h-12 bg-gray-200 rounded animate-pulse flex-1"></div>
+                    <div className="h-12 bg-gray-200 rounded animate-pulse flex-1"></div>
+                  </div>
+                  
+                  {/* Скелетон информации */}
+                  <div className="space-y-4">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+                  </div>
+                </div>
+                
+                {/* Скелетон боковой панели */}
+                <div className="space-y-6">
+                  <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-48 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Индикатор загрузки в центре */}
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent absolute top-0 left-0"></div>
+                </div>
+                <p className="text-gray-600 text-sm font-medium">{language === 'ru' ? 'Загрузка...' : 'Se încarcă...'}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
         <DialogHeader className="border-b border-gray-200 pb-4">
           {/* Two column layout - Desktop */}
           <div className="hidden sm:flex items-start justify-between gap-6 mb-4">
@@ -567,6 +620,8 @@ export function ClinicDetail({ clinic, open, onClose, onOpenChange, onBookClick,
             </div>
           </div>
         </div>
+          </>
+        )}
       </DialogContent>
       
       {/* Booking Form Overlay */}

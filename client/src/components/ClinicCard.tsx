@@ -227,6 +227,12 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
 
   const handlePricesClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Добавляем визуальную обратную связь
+    const button = e.currentTarget as HTMLButtonElement;
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      button.style.transform = '';
+    }, 150);
     onPricesClick(clinic.slug);
   };
 

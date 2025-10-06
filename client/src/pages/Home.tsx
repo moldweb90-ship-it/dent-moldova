@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useRoute } from 'wouter';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { Filter, X, Plus, Building2 } from 'lucide-react';
@@ -23,6 +23,7 @@ import { useSEO } from '@/hooks/useSEO';
 export default function Home() {
   const { t, changeLanguage } = useTranslation();
   const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   
   // Определяем язык и параметры из URL
   const [, paramsRo] = useRoute('/ro');
@@ -329,10 +330,30 @@ export default function Home() {
     refetchOnMount: false, // Не перезапрашивать при монтировании если данные есть
   });
 
+  // Предзагружаем данные для первых 3 клиник для быстрого открытия поп-апов
+  useEffect(() => {
+    if (clinicsData?.clinics?.length > 0) {
+      const firstClinics = clinicsData.clinics.slice(0, 3);
+      firstClinics.forEach(clinic => {
+        queryClient.prefetchQuery({
+          queryKey: ['/api/clinics', clinic.slug, language],
+          queryFn: async () => {
+            const response = await fetch(`/api/clinics/${clinic.slug}?language=${language}`);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch clinic: ${response.status}`);
+            }
+            return response.json();
+          },
+          staleTime: 5 * 60 * 1000,
+        });
+      });
+    }
+  }, [clinicsData?.clinics, language, queryClient]);
+
   // Логи убраны для предотвращения бесконечного цикла
 
   // Fetch clinic detail
-  const { data: clinicDetail, error: clinicDetailError } = useQuery({
+  const { data: clinicDetail, error: clinicDetailError, isLoading: clinicDetailLoading } = useQuery({
     queryKey: ['/api/clinics', selectedClinic, language],
     enabled: !!selectedClinic,
     queryFn: async () => {
@@ -714,7 +735,10 @@ export default function Home() {
   const handlePricesClick = useCallback((slug: string) => {
     setSavedScrollPosition(window.scrollY);
     setSelectedClinic(slug);
-    setDetailOpen(true);
+    // Небольшая задержка для плавности
+    requestAnimationFrame(() => {
+      setDetailOpen(true);
+    });
   }, []);
 
   const handleBookClick = useCallback((clinic: any) => {
@@ -1383,6 +1407,7 @@ export default function Home() {
       <ClinicDetail
         clinic={clinicDetail}
         open={detailOpen}
+        isLoading={clinicDetailLoading}
         onOpenChange={(open) => {
           if (!open) {
             // Восстанавливаем позицию скролла после закрытия
