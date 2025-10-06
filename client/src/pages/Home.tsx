@@ -733,13 +733,10 @@ export default function Home() {
   }, []);
 
   const handlePricesClick = useCallback((slug: string) => {
-    setSavedScrollPosition(window.scrollY);
-    setSelectedClinic(slug);
-    // Небольшая задержка для плавности
-    requestAnimationFrame(() => {
-      setDetailOpen(true);
-    });
-  }, []);
+    // Переход на страницу клиники в этом же окне
+    const clinicPath = language === 'ro' ? `/clinic/ro/${slug}` : `/clinic/${slug}`;
+    setLocation(clinicPath);
+  }, [language, setLocation]);
 
   const handleBookClick = useCallback((clinic: any) => {
     setSavedScrollPosition(window.scrollY);

@@ -156,26 +156,10 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
   const handleCardClick = (e: React.MouseEvent) => {
     // Если клик по любой кнопке — не трогаем карточку
     if ((e.target as HTMLElement).closest('button')) return;
-    // Тоггл: если уже открыто — закрываем сразу
-    if (showRatings) {
-      setShowRatings(false);
-      if (autoHideTimer) {
-        clearTimeout(autoHideTimer);
-        setAutoHideTimer(null);
-      }
-      return;
-    }
-    // Иначе показываем на этой карточке и скрываем на остальных
-    window.dispatchEvent(new CustomEvent('clinic-card:showRatings', { detail: { clinicId: clinic.id } }));
-    setShowRatings(true);
-    if (autoHideTimer) {
-      clearTimeout(autoHideTimer);
-    }
-    const timer = window.setTimeout(() => {
-      setShowRatings(false);
-      setAutoHideTimer(null);
-    }, 5000);
-    setAutoHideTimer(timer);
+    // Неактивно для неверифицированных клиник
+    if (!clinic.verified) return;
+    // Открываем поп-ап просмотра клиники вместо блока рейтингов
+    onClinicClick(clinic.slug);
   };
 
   const handleVerificationSubmit = async (e: React.FormEvent) => {
