@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Filter, X, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, CreditCard, Calendar, Baby, Car, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
 import { AnimatedSearchInput } from './AnimatedSearchInput';
 import { useTranslation } from '../lib/i18n';
@@ -52,12 +52,32 @@ export function FiltersSidebar({
   const { t, language } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
-
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
   // Debug logging removed to prevent infinite loop
 
   useEffect(() => {
     onSearch(debouncedQuery);
   }, [debouncedQuery, onSearch]);
+
+  // Закрытие dropdown'ов при клике вне их
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setSortDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const updateFilter = (key: keyof FilterValues, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -118,23 +138,49 @@ export function FiltersSidebar({
                           <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('city')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
-          <div className="relative">
-            <select 
-              value={filters.city || 'all'} 
-              onChange={(e) => updateFilter('city', e.target.value === 'all' ? undefined : e.target.value)}
-              className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="all">{cities.length === 0 ? 'Загрузка городов...' : t('allCities')}</option>
-              {cities.length === 0 ? (
-                <option value="loading" disabled>Загрузка городов...</option>
-              ) : (
-                cities.map(city => (
-                  <option key={city.id} value={city.id}>
-                    {language === 'ru' ? city.nameRu : city.nameRo}
-                  </option>
-                ))
-              )}
-            </select>
+                  <div className="relative" ref={cityDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                      className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50 text-left flex items-center justify-between"
+                      disabled={cities.length === 0}
+                    >
+                      <span>
+                        {filters.city 
+                          ? cities.find(c => c.id === filters.city)?.[language === 'ru' ? 'nameRu' : 'nameRo'] || t('allCities')
+                          : t('allCities')
+                        }
+                      </span>
+                      <span className={`text-gray-400 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                    </button>
+                    
+                    {cityDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateFilter('city', undefined);
+                            setCityDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${!filters.city ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          {t('allCities')}
+                        </button>
+                        {cities.map(city => (
+                          <button
+                            key={city.id}
+                            type="button"
+                            onClick={() => {
+                              updateFilter('city', city.id);
+                              setCityDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${filters.city === city.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                          >
+                            {language === 'ru' ? city.nameRu : city.nameRo}
+                          </button>
+                        ))}
+                      </div>
+                    )}
           </div>
           {cities.length === 0 && (
             <p className="text-xs text-gray-500 mt-1">Загружаем список городов...</p>
@@ -310,17 +356,65 @@ export function FiltersSidebar({
             <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('sort')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
-          <div className="relative">
-            <select 
-              value={filters.sort} 
-              onChange={(e) => updateFilter('sort', e.target.value)}
-              className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors"
-            >
-              <option value="dscore">🏆 {t('sortByRating')}</option>
-              <option value="price">💰 {t('sortByPrice')}</option>
-              <option value="popularity">📈 {t('sortByPopularity')}</option>
-              <option value="reviews">⭐ {t('sortByReviews')}</option>
-            </select>
+                  <div className="relative" ref={sortDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                      className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors text-left flex items-center justify-between"
+                    >
+                      <span>
+                        {filters.sort === 'dscore' && '🏆 ' + t('sortByRating')}
+                        {filters.sort === 'price' && '💰 ' + t('sortByPrice')}
+                        {filters.sort === 'popularity' && '📈 ' + t('sortByPopularity')}
+                        {filters.sort === 'reviews' && '⭐ ' + t('sortByReviews')}
+                      </span>
+                      <span className={`text-gray-400 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                    </button>
+                    
+                    {sortDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateFilter('sort', 'dscore');
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${filters.sort === 'dscore' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          🏆 {t('sortByRating')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateFilter('sort', 'price');
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${filters.sort === 'price' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          💰 {t('sortByPrice')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateFilter('sort', 'popularity');
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${filters.sort === 'popularity' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          📈 {t('sortByPopularity')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateFilter('sort', 'reviews');
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${filters.sort === 'reviews' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          ⭐ {t('sortByReviews')}
+                        </button>
+                      </div>
+                    )}
           </div>
         </div>
 
