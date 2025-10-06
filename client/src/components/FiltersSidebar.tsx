@@ -3,7 +3,6 @@ import { Filter, X, MapPin, ArrowUpDown, Clock, Zap, Trophy, Star, Shield, Credi
 import { AnimatedSearchInput } from './AnimatedSearchInput';
 import { useTranslation } from '../lib/i18n';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { useDebounce } from '../hooks/use-debounce';
@@ -119,23 +118,24 @@ export function FiltersSidebar({
                           <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('city')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
-          <Select value={filters.city || 'all'} onValueChange={(value) => updateFilter('city', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={cities.length === 0 ? 'Загрузка городов...' : t('allCities')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('allCities')}</SelectItem>
+          <div className="relative">
+            <select 
+              value={filters.city || 'all'} 
+              onChange={(e) => updateFilter('city', e.target.value === 'all' ? undefined : e.target.value)}
+              className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="all">{cities.length === 0 ? 'Загрузка городов...' : t('allCities')}</option>
               {cities.length === 0 ? (
-                <SelectItem value="loading" disabled>Загрузка городов...</SelectItem>
+                <option value="loading" disabled>Загрузка городов...</option>
               ) : (
                 cities.map(city => (
-                  <SelectItem key={city.id} value={city.id}>
+                  <option key={city.id} value={city.id}>
                     {language === 'ru' ? city.nameRu : city.nameRo}
-                  </SelectItem>
+                  </option>
                 ))
               )}
-            </SelectContent>
-          </Select>
+            </select>
+          </div>
           {cities.length === 0 && (
             <p className="text-xs text-gray-500 mt-1">Загружаем список городов...</p>
           )}
@@ -310,37 +310,18 @@ export function FiltersSidebar({
             <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('sort')}</span>
             <div className="ml-2 h-px flex-1 bg-gray-200"></div>
           </div>
-          <Select value={filters.sort} onValueChange={(value) => updateFilter('sort', value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="dscore">
-                <div className="flex items-center">
-                  <Trophy className="h-4 w-4 mr-2 text-yellow-500" />
-                  {t('sortByRating')}
-                </div>
-              </SelectItem>
-              <SelectItem value="price">
-                <div className="flex items-center">
-                  <DollarSign className="h-4 w-4 mr-2 text-green-500" />
-                  {t('sortByPrice')}
-                </div>
-              </SelectItem>
-              <SelectItem value="popularity">
-                <div className="flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
-                  {t('sortByPopularity')}
-                </div>
-              </SelectItem>
-              <SelectItem value="reviews">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-2 text-yellow-500" />
-                  {t('sortByReviews')}
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <select 
+              value={filters.sort} 
+              onChange={(e) => updateFilter('sort', e.target.value)}
+              className="w-full h-10 px-3 py-2 border-2 border-gray-200 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 hover:border-gray-300 transition-colors"
+            >
+              <option value="dscore">🏆 {t('sortByRating')}</option>
+              <option value="price">💰 {t('sortByPrice')}</option>
+              <option value="popularity">📈 {t('sortByPopularity')}</option>
+              <option value="reviews">⭐ {t('sortByReviews')}</option>
+            </select>
+          </div>
         </div>
 
         {/* Promotional Labels */}
@@ -433,6 +414,7 @@ export function FiltersSidebar({
             {t('reset')}
           </Button>
         </div>
+
       </div>
     </div>
   );
