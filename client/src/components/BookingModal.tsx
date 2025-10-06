@@ -3,7 +3,7 @@ import { useTranslation } from '../lib/i18n';
 import { getClinicName } from '../lib/utils';
 import { Calendar, Clock, User, Phone, Mail, MessageCircle, Stethoscope, MessageSquare, AlertTriangle, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
+// Используем кастомный оверлей как в модале верификации (без Radix Dialog)
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -289,30 +289,51 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
     }
   };
 
-  if (!clinic) {
+  // Закрытие по ESC (без нарушения порядка хуков)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (open) window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open, onClose]);
+
+  if (!clinic || !open) {
     return null;
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent 
-          className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 booking-modal"
-          aria-describedby="booking-modal-description"
-        >
-        <DialogHeader className="px-6 py-4 border-b border-gray-200">
-          <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            {t('bookingToClinic')} {getClinicName(clinic, language) || t('clinic')}
-          </DialogTitle>
-          <div id="booking-modal-description" className="sr-only">
-            {t('bookingFormDescription') || 'Форма записи в клинику. Заполните все обязательные поля для подачи заявки.'}
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden border-0" onClick={(e) => e.stopPropagation()}>
+        {/* Header (в стиле модала верификации) */}
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">{t('bookingToClinic')} {getClinicName(clinic, language) || t('clinic')}</h3>
+                <p className="text-white/90 text-sm font-medium">{t('bookingFormDescription') || 'Форма записи в клинику. Заполните обязательные поля.'}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 border border-white/30"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        </DialogHeader>
+        </div>
 
-            <div className="p-6 space-y-6 overflow-y-auto h-full">
-          {/* Hidden button to receive initial focus */}
-          <button tabIndex={-1} className="sr-only"></button>
-          
+        {/* Form */}
+        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Имя и Телефон в одной строке */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -545,7 +566,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
           </div>
           </form>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

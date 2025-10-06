@@ -167,8 +167,8 @@ export default function Home() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
-  // Lock body scroll when any modal is open to prevent background jump
-  useBodyScrollLock(detailOpen || bookingOpen || mobileFiltersOpen || clinicFormOpen);
+  // Lock body scroll for detail/mobile/forms, но НЕ для bookingOpen (иначе фон обрезается)
+  useBodyScrollLock(detailOpen || mobileFiltersOpen || clinicFormOpen);
   
   const [filters, setFilters] = useState<FilterValues>({
     city: '',
