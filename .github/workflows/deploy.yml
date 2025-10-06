@@ -27,8 +27,6 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd /var/www/clinici.md &&
-            git pull origin main &&
-            npm install &&
-            npm run build &&
-            pm2 restart clinici-md || pm2 start ecosystem.config.cjs
+            chmod +x deploy-safe.sh &&
+            ./deploy-safe.sh
           "
