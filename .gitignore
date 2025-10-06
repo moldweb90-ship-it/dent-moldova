@@ -85,3 +85,7 @@ Thumbs.db
 # Update scripts
 update-git.bat
 update-git.sh
+
+# Production images (не синхронизируем с локальным)
+img/
+img_backup_*/
