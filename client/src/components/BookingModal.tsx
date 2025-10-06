@@ -305,7 +305,7 @@ export function BookingModal({ clinic, open, onClose }: BookingModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4" onClick={onClose}>
       <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden border-0" onClick={(e) => e.stopPropagation()}>
         {/* Header (в стиле модала верификации) */}
         <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
