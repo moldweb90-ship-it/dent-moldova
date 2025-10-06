@@ -183,10 +183,16 @@ export default function Home() {
 
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
   useEffect(() => {
-    if (isOpenNowActive && !filters.openNow) {
-      setFilters(prev => ({ ...prev, openNow: true }));
+    if (isOpenNowActive) {
+      setFilters(prev => {
+        // Проверяем только если фильтр еще не установлен
+        if (!prev.openNow) {
+          return { ...prev, openNow: true };
+        }
+        return prev; // Возвращаем тот же объект если фильтр уже установлен
+      });
     }
-  }, [isOpenNowActive, filters.openNow]); // Добавил filters.openNow обратно в зависимости
+  }, [isOpenNowActive]); // Убираем filters.openNow из зависимостей чтобы избежать бесконечного цикла
   
   const [page, setPage] = useState(1);
   // Количество карточек на странице (вернули как было)
