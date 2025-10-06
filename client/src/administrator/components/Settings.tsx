@@ -413,8 +413,8 @@ export function Settings() {
       });
       // Перезагружаем настройки для обновления формы
       loadSettings();
-      // Обновляем статистику кеша
-      loadCacheStats();
+      // Обновляем статистику кеша - отключено для стабильности
+      // loadCacheStats();
     } catch (error: any) {
       toast({
         title: 'Ошибка',
@@ -476,8 +476,8 @@ export function Settings() {
         title: 'Кеш очищен',
         description: 'Весь кеш успешно очищен. Сайт будет загружаться заново.',
       });
-      // Обновляем статистику
-      loadCacheStats();
+      // Обновляем статистику - отключено для стабильности
+      // loadCacheStats();
     } catch (error: any) {
       toast({
         title: 'Ошибка',
