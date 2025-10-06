@@ -49,13 +49,15 @@ function forceResetBodyMargins() {
 // Запускаем бесконечный цикл сброса через RAF (работает синхронно с перерисовкой)
 forceResetBodyMargins();
 
-// Инициализируем Service Worker в любом режиме для тестирования
-initServiceWorker().then((success) => {
-  if (success) {
-    console.log('Service Worker инициализирован');
-  } else {
-    console.log('Service Worker не удалось инициализировать');
-  }
-});
+// Инициализируем Service Worker только в продакшене
+if (import.meta.env.PROD) {
+  initServiceWorker().then((success) => {
+    if (success) {
+      console.log('Service Worker инициализирован');
+    } else {
+      console.log('Service Worker не удалось инициализировать');
+    }
+  });
+}
 
 createRoot(document.getElementById("root")!).render(<App />);

@@ -25,6 +25,7 @@ class ServiceWorkerManager {
     }
 
     try {
+      // Сначала пытаемся зарегистрировать обычный SW
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
       });
@@ -47,7 +48,18 @@ class ServiceWorkerManager {
       return true;
     } catch (error) {
       console.error('Ошибка регистрации Service Worker:', error);
-      return false;
+      
+      // Если не удалось - пытаемся зарегистрировать отключенную версию
+      try {
+        this.registration = await navigator.serviceWorker.register('/sw-disabled.js', {
+          scope: '/'
+        });
+        console.log('Отключенный Service Worker зарегистрирован как fallback');
+        return true;
+      } catch (fallbackError) {
+        console.error('Fallback Service Worker также не удалось зарегистрировать:', fallbackError);
+        return false;
+      }
     }
   }
 
