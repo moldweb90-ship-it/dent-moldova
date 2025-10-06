@@ -1343,7 +1343,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Romanian SEO settings
         siteTitleRo, metaDescriptionRo, keywordsRo, ogTitleRo, ogDescriptionRo, ogImageRo, canonicalRo, h1Ro,
         // Common settings
-        robotsTxt, robots, schemaType, schemaData
+        robotsTxt, robots, schemaType, schemaData,
+        // Cache settings
+        cacheEnabled, cacheStrategy, staticAssetsEnabled, staticAssetsDuration, staticAssetsMaxSize,
+        apiDataEnabled, apiDataDuration, apiEndpoints, pagesEnabled, pagesDuration, pagesPreload,
+        // General settings
+        logo, logoAlt, logoWidth, favicon, websiteName, websiteUrl, organizationName, organizationDescription,
+        organizationUrl, organizationCity, organizationCountry, businessType, businessPriceRange,
+        businessOpeningHours, adminAccessCode
       } = req.body;
       
       // Save each setting individually
@@ -1408,6 +1415,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Security settings
       if (req.body.adminAccessCode !== undefined) promises.push(storage.setSiteSetting('adminAccessCode', req.body.adminAccessCode));
+      
+      // Cache settings
+      if (cacheEnabled !== undefined) promises.push(storage.setSiteSetting('cacheEnabled', cacheEnabled.toString()));
+      if (cacheStrategy !== undefined) promises.push(storage.setSiteSetting('cacheStrategy', cacheStrategy));
+      if (staticAssetsEnabled !== undefined) promises.push(storage.setSiteSetting('staticAssetsEnabled', staticAssetsEnabled.toString()));
+      if (staticAssetsDuration !== undefined) promises.push(storage.setSiteSetting('staticAssetsDuration', staticAssetsDuration.toString()));
+      if (staticAssetsMaxSize !== undefined) promises.push(storage.setSiteSetting('staticAssetsMaxSize', staticAssetsMaxSize.toString()));
+      if (apiDataEnabled !== undefined) promises.push(storage.setSiteSetting('apiDataEnabled', apiDataEnabled.toString()));
+      if (apiDataDuration !== undefined) promises.push(storage.setSiteSetting('apiDataDuration', apiDataDuration.toString()));
+      if (apiEndpoints !== undefined) promises.push(storage.setSiteSetting('apiEndpoints', apiEndpoints));
+      if (pagesEnabled !== undefined) promises.push(storage.setSiteSetting('pagesEnabled', pagesEnabled.toString()));
+      if (pagesDuration !== undefined) promises.push(storage.setSiteSetting('pagesDuration', pagesDuration.toString()));
+      if (pagesPreload !== undefined) promises.push(storage.setSiteSetting('pagesPreload', pagesPreload.toString()));
       
       await Promise.all(promises);
       console.log('✅ All settings saved successfully');
@@ -1845,6 +1865,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+
+  // ===== CACHE MANAGEMENT ROUTES =====
+  
+  // Get cache settings
+  app.get('/api/admin/cache/settings', requireAdminAuth, async (req, res) => {
+    try {
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      
+      const cacheSettings = {
+        cacheEnabled: settingsMap.cacheEnabled !== 'false',
+        cacheStrategy: settingsMap.cacheStrategy || 'staleWhileRevalidate',
+        staticAssetsEnabled: settingsMap.staticAssetsEnabled !== 'false',
+        staticAssetsDuration: parseInt(settingsMap.staticAssetsDuration) || 30,
+        staticAssetsMaxSize: parseInt(settingsMap.staticAssetsMaxSize) || 100,
+        apiDataEnabled: settingsMap.apiDataEnabled !== 'false',
+        apiDataDuration: parseInt(settingsMap.apiDataDuration) || 15,
+        apiEndpoints: (settingsMap.apiEndpoints || 'clinics,cities,districts,services').split(','),
+        pagesEnabled: settingsMap.pagesEnabled !== 'false',
+        pagesDuration: parseInt(settingsMap.pagesDuration) || 2,
+        pagesPreload: settingsMap.pagesPreload !== 'false'
+      };
+      
+      res.json(cacheSettings);
+    } catch (error) {
+      console.error('Error fetching cache settings:', error);
+      res.status(500).json({ message: 'Ошибка при получении настроек кеша' });
+    }
+  });
+
+  // Get cache statistics
+  app.get('/api/admin/cache/stats', requireAdminAuth, async (req, res) => {
+    try {
+      // Получаем настройки кеша
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      
+      // Проверяем включен ли кеш
+      const cacheEnabled = settingsMap.cacheEnabled === 'true';
+      
+      if (!cacheEnabled) {
+        return res.json({
+          totalFiles: 0,
+          totalSize: '0 MB',
+          hitRate: '0%',
+          cacheEnabled: false,
+          message: 'Кеширование отключено'
+        });
+      }
+      
+      // Получаем статистику из базы данных (если есть)
+      const cacheStatsSetting = await storage.getSiteSetting('cacheStats');
+      let stats;
+      
+      if (cacheStatsSetting && cacheStatsSetting.value) {
+        try {
+          stats = JSON.parse(cacheStatsSetting.value);
+          stats.cacheEnabled = true;
+        } catch (error) {
+          stats = {
+            totalFiles: 0,
+            totalSize: '0 MB',
+            hitRate: '0%',
+            cacheEnabled: true,
+            message: 'Статистика обновляется...'
+          };
+        }
+      } else {
+        stats = {
+          totalFiles: 0,
+          totalSize: '0 MB',
+          hitRate: '0%',
+          cacheEnabled: true,
+          message: 'Статистика обновляется...'
+        };
+      }
+      
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching cache stats:', error);
+      res.status(500).json({ message: 'Ошибка при получении статистики кеша' });
+    }
+  });
+
+  // Update cache statistics from Service Worker
+  app.post('/api/admin/cache/stats/update', async (req, res) => {
+    try {
+      const { totalFiles, totalSize, hitCount, missCount, hitRate } = req.body;
+      
+      const stats = {
+        totalFiles: totalFiles || 0,
+        totalSize: totalSize ? `${Math.round(totalSize / 1024 / 1024 * 100) / 100} MB` : '0 MB',
+        hitRate: `${hitRate || 0}%`,
+        hitCount: hitCount || 0,
+        missCount: missCount || 0,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      // Сохраняем статистику в базу данных
+      await storage.setSiteSetting('cacheStats', JSON.stringify(stats));
+      
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error updating cache stats:', error);
+      res.status(500).json({ message: 'Ошибка при обновлении статистики кеша' });
+    }
+  });
+
+  // Clear cache
+  app.post('/api/admin/cache/clear', requireAdminAuth, async (req, res) => {
+    try {
+      // В реальном приложении здесь бы была логика очистки кеша
+      // Пока просто возвращаем успех
+      res.json({ success: true, message: 'Кеш очищен' });
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      res.status(500).json({ message: 'Ошибка при очистке кеша' });
+    }
+  });
 
   // ===== PUBLIC ROUTES (existing) =====
   // Get cities

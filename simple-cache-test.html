@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой тест кеша</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Простой тест кеша</h1>
+    
+    <div class="test">
+        <h3>1. Проверка Service Worker</h3>
+        <button onclick="checkServiceWorker()">Проверить SW</button>
+        <div id="sw-status" class="log"></div>
+    </div>
+
+    <div class="test">
+        <h3>2. Тест кеширования</h3>
+        <button onclick="testCache()">Запустить тест</button>
+        <div id="cache-results" class="log"></div>
+    </div>
+
+    <div class="test">
+        <h3>3. Статистика кеша</h3>
+        <button onclick="getCacheStats()">Получить статистику</button>
+        <div id="stats-results" class="log"></div>
+    </div>
+
+    <script>
+        // Проверка Service Worker
+        async function checkServiceWorker() {
+            const statusDiv = document.getElementById('sw-status');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        statusDiv.textContent = `✅ Service Worker зарегистрирован\nScope: ${registration.scope}\nState: ${registration.active?.state || 'неактивен'}`;
+                        statusDiv.parentElement.className = 'test success';
+                    } else {
+                        statusDiv.textContent = '❌ Service Worker не зарегистрирован';
+                        statusDiv.parentElement.className = 'test error';
+                    }
+                } catch (error) {
+                    statusDiv.textContent = `❌ Ошибка: ${error.message}`;
+                    statusDiv.parentElement.className = 'test error';
+                }
+            } else {
+                statusDiv.textContent = '❌ Service Worker не поддерживается';
+                statusDiv.parentElement.className = 'test error';
+            }
+        }
+
+        // Тест кеширования
+        async function testCache() {
+            const resultsDiv = document.getElementById('cache-results');
+            resultsDiv.textContent = 'Запускаем тест кеширования...';
+
+            try {
+                // Тестируем несколько запросов
+                const tests = [
+                    { name: 'API городов', url: '/api/cities' },
+                    { name: 'API клиник', url: '/api/clinics' },
+                    { name: 'CSS файл', url: '/assets/index.css' }
+                ];
+
+                let results = '🧪 Результаты теста:\n\n';
+                
+                for (const test of tests) {
+                    try {
+                        const startTime = performance.now();
+                        const response = await fetch(test.url);
+                        const endTime = performance.now();
+                        const duration = Math.round(endTime - startTime);
+                        
+                        results += `✅ ${test.name}: ${response.status} (${duration}ms)\n`;
+                    } catch (error) {
+                        results += `❌ ${test.name}: ${error.message}\n`;
+                    }
+                }
+                
+                results += '\n💡 Повторите тест - второй раз должен быть быстрее!';
+                
+                resultsDiv.textContent = results;
+                resultsDiv.parentElement.className = 'test success';
+                
+            } catch (error) {
+                resultsDiv.textContent = `❌ Ошибка теста: ${error.message}`;
+                resultsDiv.parentElement.className = 'test error';
+            }
+        }
+
+        // Получение статистики кеша
+        async function getCacheStats() {
+            const statsDiv = document.getElementById('stats-results');
+            statsDiv.textContent = 'Получаем статистику...';
+
+            try {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    const messageChannel = new MessageChannel();
+                    
+                    messageChannel.port1.onmessage = (event) => {
+                        const stats = event.data;
+                        if (stats) {
+                            const hitRate = stats.hitCount + stats.missCount > 0 
+                                ? Math.round((stats.hitCount / (stats.hitCount + stats.missCount)) * 100) 
+                                : 0;
+                            
+                            const totalSize = stats.totalSize ? Math.round(stats.totalSize / 1024 / 1024 * 100) / 100 : 0;
+                            
+                            statsDiv.textContent = `📊 Статистика кеша:
+Файлов в кеше: ${stats.totalFiles || 0}
+Размер кеша: ${totalSize} MB
+Попаданий: ${stats.hitCount || 0}
+Промахов: ${stats.missCount || 0}
+Эффективность: ${hitRate}%
+Обновлено: ${new Date(stats.lastUpdated || Date.now()).toLocaleTimeString()}`;
+                            
+                            statsDiv.parentElement.className = 'test success';
+                        } else {
+                            statsDiv.textContent = '❌ Нет данных от Service Worker';
+                            statsDiv.parentElement.className = 'test error';
+                        }
+                    };
+                    
+                    navigator.serviceWorker.controller.postMessage(
+                        { type: 'GET_CACHE_STATS' },
+                        [messageChannel.port2]
+                    );
+                } else {
+                    statsDiv.textContent = '❌ Service Worker не активен';
+                    statsDiv.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                statsDiv.textContent = `❌ Ошибка: ${error.message}`;
+                statsDiv.parentElement.className = 'test error';
+            }
+        }
+
+        // Автоматическая проверка при загрузке
+        window.addEventListener('load', () => {
+            setTimeout(checkServiceWorker, 1000);
+        });
+    </script>
+</body>
+</html>

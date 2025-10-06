@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Service Worker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .info { background-color: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Тест Service Worker</h1>
+    
+    <div class="test info">
+        <h3>📋 Что проверить:</h3>
+        <div class="log">
+1. Откройте DevTools (F12) → Console
+2. Обновите страницу
+3. Должно появиться сообщение "Service Worker инициализирован"
+4. Если нет - проверьте вкладку Application → Service Workers
+5. Если SW не зарегистрирован - проблема в коде
+        </div>
+    </div>
+
+    <div class="test">
+        <h3>1. Ручная регистрация Service Worker</h3>
+        <button onclick="registerSW()">Зарегистрировать SW</button>
+        <div id="sw-register" class="log"></div>
+    </div>
+
+    <div class="test">
+        <h3>2. Проверка статуса</h3>
+        <button onclick="checkStatus()">Проверить статус</button>
+        <div id="sw-status" class="log"></div>
+    </div>
+
+    <div class="test">
+        <h3>3. Тест кеширования</h3>
+        <button onclick="testCache()">Тест кеша</button>
+        <div id="cache-test" class="log"></div>
+    </div>
+
+    <script>
+        // Ручная регистрация Service Worker
+        async function registerSW() {
+            const registerDiv = document.getElementById('sw-register');
+            registerDiv.textContent = 'Регистрируем Service Worker...';
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    });
+                    
+                    registerDiv.textContent = `✅ Service Worker зарегистрирован!
+Scope: ${registration.scope}
+State: ${registration.active?.state || 'неактивен'}`;
+                    registerDiv.parentElement.className = 'test success';
+                } else {
+                    registerDiv.textContent = '❌ Service Worker не поддерживается';
+                    registerDiv.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                registerDiv.textContent = `❌ Ошибка регистрации: ${error.message}`;
+                registerDiv.parentElement.className = 'test error';
+            }
+        }
+
+        // Проверка статуса
+        async function checkStatus() {
+            const statusDiv = document.getElementById('sw-status');
+            let output = '🔍 Статус Service Worker:\n\n';
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        output += `✅ Зарегистрирован\n`;
+                        output += `Scope: ${registration.scope}\n`;
+                        output += `Active: ${registration.active ? 'Да' : 'Нет'}\n`;
+                        output += `State: ${registration.active?.state || 'неактивен'}\n`;
+                        
+                        if (registration.active) {
+                            output += `Script URL: ${registration.active.scriptURL}\n`;
+                        }
+                        
+                        statusDiv.parentElement.className = 'test success';
+                    } else {
+                        output += '❌ Не зарегистрирован';
+                        statusDiv.parentElement.className = 'test error';
+                    }
+                } else {
+                    output += '❌ Service Worker не поддерживается';
+                    statusDiv.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                output += `❌ Ошибка: ${error.message}`;
+                statusDiv.parentElement.className = 'test error';
+            }
+
+            statusDiv.textContent = output;
+        }
+
+        // Тест кеширования
+        async function testCache() {
+            const testDiv = document.getElementById('cache-test');
+            testDiv.textContent = 'Тестируем кеширование...';
+
+            try {
+                // Делаем несколько запросов
+                const requests = [
+                    '/api/cities',
+                    '/api/clinics'
+                ];
+
+                let output = '🧪 Тест кеширования:\n\n';
+
+                for (const url of requests) {
+                    try {
+                        const startTime = performance.now();
+                        const response = await fetch(url);
+                        const endTime = performance.now();
+                        const duration = Math.round(endTime - startTime);
+                        
+                        output += `📡 ${url}:\n`;
+                        output += `  Статус: ${response.status}\n`;
+                        output += `  Время: ${duration}ms\n`;
+                        
+                        // Проверяем заголовки кеша
+                        const swCacheDate = response.headers.get('sw-cache-date');
+                        if (swCacheDate) {
+                            output += `  ✅ SW кеш: ${swCacheDate}\n`;
+                        } else {
+                            output += `  ❌ SW кеш: не найден\n`;
+                        }
+                        
+                    } catch (error) {
+                        output += `❌ ${url}: ${error.message}\n`;
+                    }
+                    output += '\n';
+                }
+
+                output += '💡 Повторите тест - второй раз должен быть быстрее!';
+                
+                testDiv.textContent = output;
+                testDiv.parentElement.className = 'test success';
+                
+            } catch (error) {
+                testDiv.textContent = `❌ Ошибка теста: ${error.message}`;
+                testDiv.parentElement.className = 'test error';
+            }
+        }
+
+        // Автоматическая проверка при загрузке
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkStatus();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

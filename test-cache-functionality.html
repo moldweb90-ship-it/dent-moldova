@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест кеширования</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+        .instructions { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест кеширования Service Worker</h1>
+    
+    <div class="instructions">
+        <h3>📋 Инструкции для тестирования:</h3>
+        <ol>
+            <li><strong>Откройте DevTools</strong> (F12)</li>
+            <li><strong>Перейдите в Application → Storage</strong></li>
+            <li><strong>Посмотрите Cache Storage</strong> - там должны быть кеши</li>
+            <li><strong>Обновите страницу</strong> несколько раз</li>
+            <li><strong>Проверьте что файлы кешируются</strong></li>
+        </ol>
+    </div>
+
+    <div class="test-section info">
+        <h3>🔍 Проверка Service Worker</h3>
+        <button onclick="checkServiceWorker()">Проверить Service Worker</button>
+        <div id="sw-status" class="log"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>📊 Проверка кеша</h3>
+        <button onclick="checkCache()">Проверить кеш</button>
+        <div id="cache-status" class="log"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>🧪 Тест кеширования</h3>
+        <button onclick="testCaching()">Запустить тест кеширования</button>
+        <div id="test-results" class="log"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>📱 Тест на мобильном</h3>
+        <div class="instructions">
+            <p><strong>Для тестирования на мобильном:</strong></p>
+            <ol>
+                <li>Откройте сайт на мобильном устройстве</li>
+                <li>Пройдитесь по нескольким страницам</li>
+                <li>Закройте браузер</li>
+                <li>Подождите 2-3 минуты</li>
+                <li>Откройте браузер снова</li>
+                <li><strong>Сайт НЕ должен полностью перезагружаться!</strong></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Проверка Service Worker
+        async function checkServiceWorker() {
+            const statusDiv = document.getElementById('sw-status');
+            statusDiv.textContent = 'Проверяем Service Worker...';
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        statusDiv.textContent = `✅ Service Worker зарегистрирован!\n\nАктивный: ${registration.active ? 'Да' : 'Нет'}\nОжидающий: ${registration.waiting ? 'Да' : 'Нет'}\nОбласть: ${registration.scope}`;
+                        statusDiv.parentElement.className = 'test-section success';
+                    } else {
+                        statusDiv.textContent = '❌ Service Worker не зарегистрирован';
+                        statusDiv.parentElement.className = 'test-section error';
+                    }
+                } else {
+                    statusDiv.textContent = '❌ Service Worker не поддерживается браузером';
+                    statusDiv.parentElement.className = 'test-section error';
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Ошибка: ${error.message}`;
+                statusDiv.parentElement.className = 'test-section error';
+            }
+        }
+
+        // Проверка кеша
+        async function checkCache() {
+            const statusDiv = document.getElementById('cache-status');
+            statusDiv.textContent = 'Проверяем кеш...';
+
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    let cacheInfo = `✅ Cache API поддерживается\n\nНайдено кешей: ${cacheNames.length}\n\n`;
+                    
+                    for (const cacheName of cacheNames) {
+                        const cache = await caches.open(cacheName);
+                        const keys = await cache.keys();
+                        cacheInfo += `📁 ${cacheName}: ${keys.length} файлов\n`;
+                    }
+                    
+                    statusDiv.textContent = cacheInfo;
+                    statusDiv.parentElement.className = 'test-section success';
+                } else {
+                    statusDiv.textContent = '❌ Cache API не поддерживается браузером';
+                    statusDiv.parentElement.className = 'test-section error';
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Ошибка: ${error.message}`;
+                statusDiv.parentElement.className = 'test-section error';
+            }
+        }
+
+        // Тест кеширования
+        async function testCaching() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.textContent = 'Запускаем тест кеширования...';
+
+            try {
+                // Тестируем загрузку API
+                const apiResponse = await fetch('/api/cities');
+                const apiData = await apiResponse.json();
+                
+                // Тестируем загрузку статических ресурсов
+                const staticResponse = await fetch('/assets/index.css');
+                
+                let results = '🧪 Результаты теста кеширования:\n\n';
+                results += `✅ API запрос: ${apiResponse.status} (${apiData.length} городов)\n`;
+                results += `✅ Статический ресурс: ${staticResponse.status}\n\n`;
+                
+                // Проверяем кеш после запросов
+                const cacheNames = await caches.keys();
+                results += `📊 Кешей после запросов: ${cacheNames.length}\n`;
+                
+                for (const cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const keys = await cache.keys();
+                    results += `📁 ${cacheName}: ${keys.length} файлов\n`;
+                }
+                
+                results += '\n💡 Теперь обновите страницу и проверьте DevTools → Application → Storage';
+                
+                resultsDiv.textContent = results;
+                resultsDiv.parentElement.className = 'test-section success';
+            } catch (error) {
+                resultsDiv.textContent = `❌ Ошибка теста: ${error.message}`;
+                resultsDiv.parentElement.className = 'test-section error';
+            }
+        }
+
+        // Автоматическая проверка при загрузке
+        window.addEventListener('load', () => {
+            checkServiceWorker();
+            checkCache();
+        });
+    </script>
+</body>
+</html>

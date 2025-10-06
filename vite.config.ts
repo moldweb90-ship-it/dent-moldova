@@ -33,6 +33,7 @@ export default defineConfig({
       },
     },
   },
+  publicDir: path.resolve(__dirname, "client", "public"),
   server: {
     fs: {
       strict: true,

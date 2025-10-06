@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест реальной статистики кеша</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #2563eb; }
+        .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест реальной статистики кеша</h1>
+    
+    <div class="test-section info">
+        <h3>📊 Статистика кеша в реальном времени</h3>
+        <button onclick="loadCacheStats()">Обновить статистику</button>
+        <button onclick="startAutoRefresh()">Автообновление (каждые 3 сек)</button>
+        <button onclick="stopAutoRefresh()">Остановить автообновление</button>
+        
+        <div id="cache-stats" class="stats"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>🧪 Тест кеширования</h3>
+        <button onclick="testCaching()">Запустить тест кеширования</button>
+        <div id="test-results" class="log"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>📱 Проверка на мобильном</h3>
+        <div class="log">
+1. Откройте сайт на мобильном устройстве
+2. Пройдитесь по нескольким страницам
+3. Закройте браузер
+4. Подождите 2-3 минуты
+5. Откройте браузер снова
+6. Сайт НЕ должен полностью перезагружаться!
+
+Статистика должна показывать реальные данные:
+- Файлов в кеше: > 0
+- Размер кеша: > 0 MB
+- Эффективность: > 0%
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval;
+
+        // Загрузка статистики кеша
+        async function loadCacheStats() {
+            const statsDiv = document.getElementById('cache-stats');
+            statsDiv.innerHTML = '<div>Загружаем статистику...</div>';
+
+            try {
+                // Запрашиваем статистику у Service Worker
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    const messageChannel = new MessageChannel();
+                    
+                    messageChannel.port1.onmessage = (event) => {
+                        const swStats = event.data;
+                        if (swStats) {
+                            displayStats(swStats);
+                        }
+                    };
+                    
+                    navigator.serviceWorker.controller.postMessage(
+                        { type: 'GET_CACHE_STATS' },
+                        [messageChannel.port2]
+                    );
+                } else {
+                    statsDiv.innerHTML = '<div class="error">Service Worker не активен</div>';
+                }
+            } catch (error) {
+                statsDiv.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
+            }
+        }
+
+        // Отображение статистики
+        function displayStats(stats) {
+            const statsDiv = document.getElementById('cache-stats');
+            
+            const hitRate = stats.hitCount + stats.missCount > 0 
+                ? Math.round((stats.hitCount / (stats.hitCount + stats.missCount)) * 100) 
+                : 0;
+            
+            const totalSize = stats.totalSize ? Math.round(stats.totalSize / 1024 / 1024 * 100) / 100 : 0;
+            
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalFiles || 0}</div>
+                    <div class="stat-label">Файлов в кеше</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalSize} MB</div>
+                    <div class="stat-label">Размер кеша</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${hitRate}%</div>
+                    <div class="stat-label">Эффективность</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.hitCount || 0}</div>
+                    <div class="stat-label">Попаданий в кеш</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.missCount || 0}</div>
+                    <div class="stat-label">Промахов кеша</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${new Date(stats.lastUpdated || Date.now()).toLocaleTimeString()}</div>
+                    <div class="stat-label">Последнее обновление</div>
+                </div>
+            `;
+        }
+
+        // Автообновление
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            autoRefreshInterval = setInterval(loadCacheStats, 3000);
+            loadCacheStats();
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        // Тест кеширования
+        async function testCaching() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.textContent = 'Запускаем тест кеширования...';
+
+            try {
+                // Тестируем загрузку различных ресурсов
+                const tests = [
+                    { name: 'API городов', url: '/api/cities' },
+                    { name: 'API клиник', url: '/api/clinics' },
+                    { name: 'CSS файл', url: '/assets/index.css' },
+                    { name: 'Главная страница', url: '/' }
+                ];
+
+                let results = '🧪 Результаты теста кеширования:\n\n';
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url);
+                        results += `✅ ${test.name}: ${response.status}\n`;
+                    } catch (error) {
+                        results += `❌ ${test.name}: ${error.message}\n`;
+                    }
+                }
+                
+                results += '\n💡 Теперь проверьте статистику выше - должны появиться данные!';
+                
+                resultsDiv.textContent = results;
+                resultsDiv.parentElement.className = 'test-section success';
+                
+                // Обновляем статистику после теста
+                setTimeout(loadCacheStats, 1000);
+                
+            } catch (error) {
+                resultsDiv.textContent = `❌ Ошибка теста: ${error.message}`;
+                resultsDiv.parentElement.className = 'test-section error';
+            }
+        }
+
+        // Автоматическая загрузка при старте
+        window.addEventListener('load', () => {
+            loadCacheStats();
+        });
+
+        // Очистка при закрытии
+        window.addEventListener('beforeunload', () => {
+            stopAutoRefresh();
+        });
+    </script>
+</body>
+</html>

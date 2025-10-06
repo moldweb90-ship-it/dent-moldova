@@ -17,7 +17,10 @@
     "pm2:stop": "pm2 stop clinici-md",
     "pm2:restart": "pm2 restart clinici-md",
     "pm2:logs": "pm2 logs clinici-md",
-    "pm2:status": "pm2 status"
+    "pm2:status": "pm2 status",
+    "init:cache": "tsx scripts/init-cache-settings.ts",
+    "init:cache:prod": "tsx scripts/init-cache-settings-production.ts",
+    "check:cache": "tsx scripts/check-cache-settings-env.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
