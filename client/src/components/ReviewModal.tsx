@@ -214,32 +214,32 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-8">
               <StarRating
                 value={ratings.quality}
                 onChange={(value) => handleRatingChange('quality', value)}
-                size="md"
+                size="lg"
                 label={t('quality')}
               />
               
               <StarRating
                 value={ratings.service}
                 onChange={(value) => handleRatingChange('service', value)}
-                size="md"
+                size="lg"
                 label={t('service')}
               />
               
               <StarRating
                 value={ratings.comfort}
                 onChange={(value) => handleRatingChange('comfort', value)}
-                size="md"
+                size="lg"
                 label={t('comfort')}
               />
               
               <StarRating
                 value={ratings.price}
                 onChange={(value) => handleRatingChange('price', value)}
-                size="md"
+                size="lg"
                 label={t('price')}
               />
             </div>
