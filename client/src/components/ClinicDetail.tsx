@@ -246,7 +246,7 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
         onClose();
       }
     }}>
-      <div className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal bg-white rounded-3xl shadow-2xl" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+      <div className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] md:h-[90vh] max-h-[85vh] md:max-h-[90vh] overflow-hidden z-[9999] clinic-detail-modal bg-white rounded-3xl shadow-2xl flex flex-col" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
         {isLoading || !clinic ? (
           <div className="h-full bg-white">
             {/* Скелетон заголовка */}
@@ -503,7 +503,7 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
         </div>
         </div>
 
-        <div className="p-4 sm:p-6 overflow-y-auto h-full">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Left Content */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
@@ -650,7 +650,7 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
             </div>
 
             {/* Right Sidebar - Sticky Container */}
-            <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:min-h-[600px]">
+            <div className="lg:sticky lg:top-4 lg:self-start lg:min-h-[600px]">
               <div className="space-y-4 sm:space-y-6 h-full">
                 {/* SOS Button */}
                 {clinic.sosEnabled && (
