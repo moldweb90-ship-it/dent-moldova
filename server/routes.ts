@@ -1273,6 +1273,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get public statistics (for homepage banner)
+  app.get('/api/stats', async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching public stats:', error);
+      res.status(500).json({ message: 'Ошибка при получении статистики' });
+    }
+  });
+
+  // Get cities with districts (public endpoint for statistics)
+  app.get('/api/cities-with-districts', async (req, res) => {
+    try {
+      const cities = await storage.getCitiesWithDistricts();
+      console.log('📊 Cities with districts count:', cities.length);
+      console.log('📊 Total districts:', cities.reduce((sum, city) => sum + city.districts.length, 0));
+      console.log('📊 Sample city:', cities[0] ? { name: cities[0].nameRu, districts: cities[0].districts.length } : 'No cities');
+      res.json(cities);
+    } catch (error) {
+      console.error('Error fetching cities with districts:', error);
+      res.status(500).json({ message: 'Ошибка при получении городов' });
+    }
+  });
+
   // Get admin statistics
   app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
     try {

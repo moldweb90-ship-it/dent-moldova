@@ -14,6 +14,7 @@ import { BookingModal } from '../components/BookingModal';
 import { MobileFiltersModal } from '../components/MobileFiltersModal';
 import { AddClinicForm } from '../components/AddClinicForm';
 import { RecommendedClinics } from '../components/RecommendedClinics';
+import { StatisticsBanner } from '../components/StatisticsBanner';
 import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
 
@@ -1348,7 +1349,6 @@ export default function Home() {
             clinics={recommendedData.clinics}
           />
         ) : null}
-        
 
         {isLoading ? (
           <div className="space-y-8">
@@ -1378,7 +1378,10 @@ export default function Home() {
             </div>
           </div>
         ) : clinicsData?.clinics?.length > 0 ? (
-          <ClinicGrid
+          <>
+            {/* Statistics Banner */}
+            <StatisticsBanner />
+            <ClinicGrid
             clinics={clinicsData.clinics}
             total={clinicsData.total}
             page={page}
@@ -1392,6 +1395,7 @@ export default function Home() {
             filtersVisible={filtersVisible}
             language={language}
           />
+          </>
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
