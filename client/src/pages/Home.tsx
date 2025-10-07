@@ -817,12 +817,33 @@ export default function Home() {
           'Скулянка': 'Скулянке',
           'Буюканы': 'Буюканах',
           'Телецентр': 'Телецентре',
-          'Пост': 'Посту'
+          'Пост': 'Посту',
+          'Рышкановка': 'Рышкановке',
+          'Ботаника-1': 'Ботанике',
+          'Ботаника-2': 'Ботанике',
+          'Чеканы-1': 'Чеканах',
+          'Чеканы-2': 'Чеканах',
+          'Скулянка-1': 'Скулянке',
+          'Скулянка-2': 'Скулянке',
+          'Старая Почта': 'Старой Почте',
+          'Новая Почта': 'Новой Почте'
         };
         return districtDecl[district.nameRu] || district.nameRu;
       } else {
         // Для румынского языка склонение не требуется
         return district.nameRo;
+      }
+    };
+
+    // Функция для определения предлога для районов
+    const getDistrictPreposition = (district: any) => {
+      if (!district) return 'на';
+      
+      if (language === 'ru') {
+        // Для "Центр" используем предлог "в", для остальных "на"
+        return district.nameRu === 'Центр' ? 'в' : 'на';
+      } else {
+        return 'în'; // Для румынского языка всегда "în"
       }
     };
 
@@ -835,14 +856,14 @@ export default function Home() {
         ru: 'Детская стоматология', 
         ro: 'Stomatologie pediatrică',
         slug: 'pediatric-dentistry',
-        titleRu: 'Детские стоматологические клиники',
+        titleRu: 'Детские стоматологии',
         titleRo: 'Clinici stomatologice pediatrice'
       },
       'parking': { 
         ru: 'Парковка', 
         ro: 'Parcare',
         slug: 'parking',
-        titleRu: 'Стоматологические клиники с парковкой',
+        titleRu: 'Стоматологии с парковкой',
         titleRo: 'Clinici stomatologice cu parcare'
       },
       'sos': { 
@@ -955,8 +976,8 @@ export default function Home() {
       // Страница "Открыты сейчас" + город + район
       return {
         title: language === 'ru' 
-          ? `Открытые сейчас стоматологические клиники в ${cityName} на ${districtName} - Dent Moldova`
-          : `Clinici stomatologice deschise acum în ${cityName}, ${districtName} - Dent Moldova`,
+          ? `Открытые сейчас стоматологические клиники в ${cityName} на ${districtName} | MDent.md`
+          : `Clinici stomatologice deschise acum în ${cityName}, ${districtName} | MDent.md`,
         h1: language === 'ru'
           ? `Открытые сейчас стоматологические клиники в ${cityName} на ${districtName}`
           : `Clinici stomatologice deschise acum în ${cityName}, ${districtName}`,
@@ -983,8 +1004,8 @@ export default function Home() {
       // Страница "Открыты сейчас" + город
       return {
         title: language === 'ru' 
-          ? `Открытые сейчас стоматологические клиники в ${cityName} - Dent Moldova`
-          : `Clinici stomatologice deschise acum în ${cityName} - Dent Moldova`,
+          ? `Открытые сейчас стоматологические клиники в ${cityName} | MDent.md`
+          : `Clinici stomatologice deschise acum în ${cityName} | MDent.md`,
         h1: language === 'ru'
           ? `Открытые сейчас стоматологические клиники в ${cityName}`
           : `Clinici stomatologice deschise acum în ${cityName}`,
@@ -1011,8 +1032,8 @@ export default function Home() {
       // Страница "Открыты сейчас"
       return {
         title: language === 'ru' 
-          ? `Открытые сейчас стоматологические клиники - Dent Moldova`
-          : `Clinici stomatologice deschise acum - Dent Moldova`,
+          ? `Открытые сейчас стоматологические клиники | MDent.md`
+          : `Clinici stomatologice deschise acum | MDent.md`,
         h1: language === 'ru'
           ? `Открытые сейчас стоматологические клиники`
           : `Clinici stomatologice deschise acum`,
@@ -1038,10 +1059,10 @@ export default function Home() {
       // Страница функций + город + район
       return {
         title: language === 'ru' 
-          ? `${featureTitle} в ${cityName} на ${districtName} - Dent Moldova`
-          : `${featureTitle} în ${cityName}, ${districtName} - Dent Moldova`,
+          ? `${featureTitle} в ${cityName} ${getDistrictPreposition(selectedDistrict)} ${districtName} | MDent.md`
+          : `${featureTitle} în ${cityName}, ${districtName} | MDent.md`,
         h1: language === 'ru'
-          ? `${featureTitle} в ${cityName} на ${districtName}`
+          ? `${featureTitle} в ${cityName} ${getDistrictPreposition(selectedDistrict)} ${districtName}`
           : `${featureTitle} în ${cityName}, ${districtName}`,
         description: language === 'ru'
           ? `Найдите ${featureTitle.toLowerCase()} в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
@@ -1075,8 +1096,8 @@ export default function Home() {
       // Страница функций + город
       return {
         title: language === 'ru' 
-          ? `${featureTitle} в ${cityName} - Dent Moldova`
-          : `${featureTitle} în ${cityName} - Dent Moldova`,
+          ? `${featureTitle} в ${cityName} | MDent.md`
+          : `${featureTitle} în ${cityName} | MDent.md`,
         h1: language === 'ru'
           ? `${featureTitle} в ${cityName}`
           : `${featureTitle} în ${cityName}`,
@@ -1092,8 +1113,8 @@ export default function Home() {
       // Страница функций без города
       return {
         title: language === 'ru' 
-          ? `${featureTitle} в Молдове - Dent Moldova`
-          : `${featureTitle} în Moldova - Dent Moldova`,
+          ? `${featureTitle} в Молдове | MDent.md`
+          : `${featureTitle} în Moldova | MDent.md`,
         h1: language === 'ru'
           ? `${featureTitle} в Молдове`
           : `${featureTitle} în Moldova`,
@@ -1109,10 +1130,10 @@ export default function Home() {
       // Страница района
       return {
         title: language === 'ru' 
-          ? `Стоматологические клиники в районе ${districtName}, ${cityName} - Dent Moldova`
-          : `Clinici stomatologice în sectorul ${districtName}, ${cityName} - Dent Moldova`,
+          ? `Стоматологии в ${cityName} ${getDistrictPreposition(selectedDistrict)} ${districtName} | MDent.md`
+          : `Clinici stomatologice în sectorul ${districtName}, ${cityName} | MDent.md`,
         h1: language === 'ru'
-          ? `Стоматологические клиники в районе ${districtName}, ${cityName}`
+          ? `Стоматологии в ${cityName} ${getDistrictPreposition(selectedDistrict)} ${districtName}`
           : `Clinici stomatologice în sectorul ${districtName}, ${cityName}`,
         description: language === 'ru'
           ? `Найдите лучшие стоматологические клиники в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
@@ -1126,10 +1147,10 @@ export default function Home() {
       // Страница города
       return {
         title: language === 'ru' 
-          ? `Стоматологические клиники в ${cityName} - Dent Moldova`
-          : `Clinici stomatologice în ${cityName} - Dent Moldova`,
+          ? `Стоматологии в ${cityName} | MDent.md`
+          : `Clinici stomatologice în ${cityName} | MDent.md`,
         h1: language === 'ru'
-          ? `Стоматологические клиники в ${cityName}`
+          ? `Стоматологии в ${cityName}`
           : `Clinici stomatologice în ${cityName}`,
         description: language === 'ru'
           ? `Найдите лучшие стоматологические клиники в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`

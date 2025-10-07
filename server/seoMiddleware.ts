@@ -149,8 +149,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
       else if (req.path.includes('weekend-work')) feature = 'weekendWork';
       
       const featureNames: Record<string, { ru: string, ro: string, titleRu: string, titleRo: string }> = {
-        'pediatricDentistry': { ru: 'Детская стоматология', ro: 'Stomatologie pediatrică', titleRu: 'Детские стоматологические клиники', titleRo: 'Clinici stomatologice pediatrice' },
-        'parking': { ru: 'Парковка', ro: 'Parcare', titleRu: 'Стоматологические клиники с парковкой', titleRo: 'Clinici stomatologice cu parcare' },
+        'pediatricDentistry': { ru: 'Детская стоматология', ro: 'Stomatologie pediatrică', titleRu: 'Детские стоматологии', titleRo: 'Stomatologii pediatrice' },
+        'parking': { ru: 'Парковка', ro: 'Parcare', titleRu: 'Стоматологии с парковкой', titleRo: 'Stomatologii cu parcare' },
         'sos': { ru: 'SOS услуги', ro: 'Servicii SOS', titleRu: 'Срочные стоматологии', titleRo: 'Stomatologii urgente' },
         'work24h': { ru: 'Работа 24 часа', ro: 'Lucru 24 ore', titleRu: 'Круглосуточные стоматологии', titleRo: 'Stomatologii 24/7' },
         'credit': { ru: 'Кредит', ro: 'Credit', titleRu: 'Стоматологии в рассрочку', titleRo: 'Stomatologii în rate' },
@@ -190,11 +190,31 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
             'Скулянка': 'Скулянке',
             'Буюканы': 'Буюканах',
             'Телецентр': 'Телецентре',
-            'Пост': 'Посту'
+            'Пост': 'Посту',
+            'Рышкановка': 'Рышкановке',
+            'Ботаника-1': 'Ботанике',
+            'Ботаника-2': 'Ботанике',
+            'Чеканы-1': 'Чеканах',
+            'Чеканы-2': 'Чеканах',
+            'Скулянка-1': 'Скулянке',
+            'Скулянка-2': 'Скулянке',
+            'Старая Почта': 'Старой Почте',
+            'Новая Почта': 'Новой Почте'
           };
           return districtDecl[district.nameRu] || district.nameRu;
         } else {
           return district.nameRo;
+        }
+      };
+
+      const getDistrictPreposition = (district: any) => {
+        if (!district) return 'на';
+        
+        if (language === 'ru') {
+          // Для "Центр" используем предлог "в", для остальных "на"
+          return district.nameRu === 'Центр' ? 'в' : 'на';
+        } else {
+          return 'în'; // Для румынского языка всегда "în"
         }
       };
 
@@ -206,9 +226,10 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         if (selectedCity && selectedDistrict) {
           const cityName = getCityNameDeclension(selectedCity);
           const districtName = getDistrictNameDeclension(selectedDistrict);
+          const districtPreposition = getDistrictPreposition(selectedDistrict);
           title = language === 'ru' 
-            ? `${featureInfo.titleRu} в ${cityName} на ${districtName} - Dent Moldova`
-            : `${featureInfo.titleRo} în ${cityName}, ${districtName} - Dent Moldova`;
+            ? `${featureInfo.titleRu} в ${cityName} ${districtPreposition} ${districtName} | MDent.md`
+            : `${featureInfo.titleRo} în ${cityName}, ${districtName} | MDent.md`;
           description = language === 'ru'
             ? `Найдите ${featureInfo.titleRu.toLowerCase()} в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
             : `Găsiți ${featureInfo.titleRo.toLowerCase()} în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`;
@@ -218,8 +239,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         } else if (selectedCity) {
           const cityName = getCityNameDeclension(selectedCity);
           title = language === 'ru' 
-            ? `${featureInfo.titleRu} в ${cityName} - Dent Moldova`
-            : `${featureInfo.titleRo} în ${cityName} - Dent Moldova`;
+            ? `${featureInfo.titleRu} в ${cityName} | MDent.md`
+            : `${featureInfo.titleRo} în ${cityName} | MDent.md`;
           description = language === 'ru'
             ? `Найдите ${featureInfo.titleRu.toLowerCase()} в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
             : `Găsiți ${featureInfo.titleRo.toLowerCase()} în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`;
@@ -228,8 +249,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
             : `${featureInfo.ro.toLowerCase()} ${cityName}, stomatologie ${cityName}, ${featureInfo.ro.toLowerCase()}`;
         } else {
           title = language === 'ru' 
-            ? `${featureInfo.titleRu} в Молдове - Dent Moldova`
-            : `${featureInfo.titleRo} în Moldova - Dent Moldova`;
+            ? `${featureInfo.titleRu} в Молдове | MDent.md`
+            : `${featureInfo.titleRo} în Moldova | MDent.md`;
           description = language === 'ru'
             ? `Найдите ${featureInfo.titleRu.toLowerCase()} в Молдове. Запись онлайн, отзывы, цены, адреса и телефоны.`
             : `Găsiți ${featureInfo.titleRo.toLowerCase()} în Moldova. Programare online, recenzii, prețuri, adrese și telefoane.`;
@@ -240,7 +261,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         
         // Генерируем правильную Schema.org разметку для страниц каталога
         const schemaData = {
-          name: title.replace(' - Dent Moldova', ''),
+          name: title.replace(' | MDent.md', ''),
           description,
           url: `https://dent-moldova.com${req.path}`,
           about: {
@@ -276,7 +297,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           title,
           description,
           keywords,
-          h1: title.replace(' - Dent Moldova', ''),
+          h1: title.replace(' | MDent.md', ''),
           ogTitle: title,
           ogDescription: description,
           ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
@@ -344,11 +365,31 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
               'Скулянка': 'Скулянке',
               'Буюканы': 'Буюканах',
               'Телецентр': 'Телецентре',
-              'Пост': 'Посту'
+              'Пост': 'Посту',
+              'Рышкановка': 'Рышкановке',
+              'Ботаника-1': 'Ботанике',
+              'Ботаника-2': 'Ботанике',
+              'Чеканы-1': 'Чеканах',
+              'Чеканы-2': 'Чеканах',
+              'Скулянка-1': 'Скулянке',
+              'Скулянка-2': 'Скулянке',
+              'Старая Почта': 'Старой Почте',
+              'Новая Почта': 'Новой Почте'
             };
             return districtDecl[district.nameRu] || district.nameRu;
           } else {
             return district.nameRo;
+          }
+        };
+
+        const getDistrictPrepositionLocal = (district: any) => {
+          if (!district) return 'на';
+          
+          if (language === 'ru') {
+            // Для "Центр" используем предлог "в", для остальных "на"
+            return district.nameRu === 'Центр' ? 'в' : 'на';
+          } else {
+            return 'în'; // Для румынского языка всегда "în"
           }
         };
 
@@ -359,9 +400,10 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         
         if (selectedDistrict) {
           // Страница района
+          const districtPreposition = getDistrictPrepositionLocal(selectedDistrict);
           title = language === 'ru' 
-            ? `Стоматологические клиники в районе ${districtName}, ${cityName} - Dent Moldova`
-            : `Clinici stomatologice în sectorul ${districtName}, ${cityName} - Dent Moldova`;
+            ? `Стоматологии в ${cityName} ${districtPreposition} ${districtName} | MDent.md`
+            : `Clinici stomatologice în sectorul ${districtName}, ${cityName} | MDent.md`;
           description = language === 'ru'
             ? `Найдите лучшие стоматологические клиники в районе ${districtName}, ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
             : `Găsiți cele mai bune clinici stomatologice în sectorul ${districtName}, ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`;
@@ -371,8 +413,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         } else {
           // Страница города
           title = language === 'ru' 
-            ? `Стоматологические клиники в ${cityName} - Dent Moldova`
-            : `Clinici stomatologice în ${cityName} - Dent Moldova`;
+            ? `Стоматологии в ${cityName} | MDent.md`
+            : `Clinici stomatologice în ${cityName} | MDent.md`;
           description = language === 'ru'
             ? `Найдите лучшие стоматологические клиники в ${cityName}. Запись онлайн, отзывы, цены, адреса и телефоны.`
             : `Găsiți cele mai bune clinici stomatologice în ${cityName}. Programare online, recenzii, prețuri, adrese și telefoane.`;
@@ -383,7 +425,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
         
         // Schema.org для страниц локаций
         const schemaData = {
-          name: title.replace(' - Dent Moldova', ''),
+          name: title.replace(' | MDent.md', ''),
           description,
           url: `https://dent-moldova.com${req.path}`,
           spatialCoverage: {
@@ -415,7 +457,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           title,
           description,
           keywords,
-          h1: title.replace(' - Dent Moldova', ''),
+          h1: title.replace(' | MDent.md', ''),
           ogTitle: title,
           ogDescription: description,
           ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
