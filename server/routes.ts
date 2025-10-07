@@ -1718,9 +1718,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteCity(id);
       res.json({ message: 'Город успешно удален' });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting city:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(400).json({ message: error.message || "Ошибка при удалении города" });
     }
   });
 

@@ -329,12 +329,10 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`Нельзя удалить город, в котором есть клиники (${clinicCount.count} клиник)`);
     }
 
-    // Clear districtId from all districts that belong to this city
-    await db
-      .update(districts)
-      .set({ cityId: undefined })
-      .where(eq(districts.cityId, id));
+    // Delete all districts that belong to this city
+    await db.delete(districts).where(eq(districts.cityId, id));
     
+    // Delete the city
     await db.delete(cities).where(eq(cities.id, id));
     
     await DataProtection.logAudit({
