@@ -260,7 +260,7 @@ export function MobileFiltersModal({
               <span className="text-[0.8rem] font-bold uppercase text-gray-800">{t('conveniences')}</span>
               <div className="ml-2 h-px flex-1 bg-gray-200"></div>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="pediatricDentistry"

@@ -170,6 +170,10 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
   const handleViewFullPage = () => {
     if (!clinic) return;
     const clinicPath = language === 'ro' ? `/clinic/ro/${clinic.slug}` : `/clinic/${clinic.slug}`;
+    
+    console.log('handleViewFullPage called, path:', clinicPath);
+    
+    // Открываем страницу в новом окне на всех устройствах
     window.open(clinicPath, '_blank');
   };
 
@@ -236,7 +240,12 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => {
+      // Закрываем только при клике именно на фон, не на дочерние элементы
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    }}>
       <div className="w-[calc(100vw-2rem)] max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden z-[9999] clinic-detail-modal bg-white rounded-3xl shadow-2xl" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
         {isLoading || !clinic ? (
           <div className="h-full bg-white">
@@ -291,9 +300,9 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
           <>
         <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-t-3xl pb-4">
           {/* decorative bg */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-          <div className="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 z-50 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 border border-white/30"
@@ -364,8 +373,14 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
                 </Button>
                 
                 <Button
-                  onClick={handleViewFullPage}
-                  className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Details button clicked on desktop');
+                    handleViewFullPage();
+                  }}
+                  className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none pointer-events-auto cursor-pointer z-10 relative"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   <ExternalLink className="h-4 w-4" />
                   <span className="font-medium">{t('details')}</span>
@@ -472,8 +487,14 @@ export function ClinicDetail({ clinic, open, isLoading = false, onClose, onOpenC
             </Button>
             
             <Button
-              onClick={handleViewFullPage}
-              className="flex items-center space-x-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg transition-all duration-300 text-xs px-2 py-1 h-7"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Details button clicked on mobile');
+                handleViewFullPage();
+              }}
+              className="flex items-center space-x-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 shadow-lg transition-all duration-300 text-xs px-2 py-1 h-7 pointer-events-auto cursor-pointer z-10 relative"
+              style={{ pointerEvents: 'auto' }}
             >
               <ExternalLink className="h-3 w-3" />
               <span>{t('details')}</span>

@@ -35,11 +35,38 @@ export function StarRating({ value, onChange, size = 'md', disabled = false, lab
   const handleClick = (event: React.MouseEvent<HTMLDivElement>, index: number) => {
     if (disabled) return;
     
+    event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const isHalf = x < rect.width / 2;
     const newValue = index + (isHalf ? 0.5 : 1);
     onChange(newValue);
+  };
+
+  // Touch events для мобильных устройств
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>, index: number) => {
+    if (disabled) return;
+    
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const touch = event.touches[0];
+    const x = touch.clientX - rect.left;
+    const isHalf = x < rect.width / 2;
+    const newValue = index + (isHalf ? 0.5 : 1);
+    setHoverValue(newValue);
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>, index: number) => {
+    if (disabled) return;
+    
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const touch = event.changedTouches[0];
+    const x = touch.clientX - rect.left;
+    const isHalf = x < rect.width / 2;
+    const newValue = index + (isHalf ? 0.5 : 1);
+    onChange(newValue);
+    setHoverValue(null);
   };
 
   const displayValue = hoverValue !== null ? hoverValue : value;
@@ -64,6 +91,8 @@ export function StarRating({ value, onChange, size = 'md', disabled = false, lab
               onMouseMove={(e) => handleMouseMove(e, index)}
               onMouseLeave={handleMouseLeave}
               onClick={(e) => handleClick(e, index)}
+              onTouchStart={(e) => handleTouchStart(e, index)}
+              onTouchEnd={(e) => handleTouchEnd(e, index)}
             >
               <svg
                 viewBox="0 0 24 24"

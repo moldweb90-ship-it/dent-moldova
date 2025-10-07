@@ -3,7 +3,6 @@ import { X, Star, Send, Heart } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { StarRating } from './StarRating';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
 interface ReviewModalProps {
@@ -25,6 +24,19 @@ interface ReviewData {
 
 export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: ReviewModalProps) {
   const { t } = useTranslation();
+  
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      setRatings({ quality: 0, service: 0, comfort: 0, price: 0 });
+      setComment('');
+      setAverageRating(0);
+      setAuthorName('');
+      setAuthorEmail('');
+      setIsSubmitting(false);
+    }
+  }, [open]);
+  
   const [ratings, setRatings] = useState({
     quality: 0,
     service: 0,
@@ -114,23 +126,44 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
 
   const isFormValid = averageRating > 0 && authorName.trim() && authorEmail.trim();
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
-        className="w-[calc(100vw-2rem)] max-w-2xl h-[85vh] max-h-[85vh] overflow-hidden p-0 review-modal"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <DialogHeader className="px-6 py-4 border-b border-gray-200">
-          <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Heart className="w-6 h-6 text-red-500" />
-            {t('leaveReview')}
-          </DialogTitle>
-          <p className="text-gray-600 mt-2">
-            {t('reviewForClinic')}: <span className="font-semibold text-blue-600">{clinicName}</span>
-          </p>
-        </DialogHeader>
+  if (!open) return null;
 
-        <div className="p-6 space-y-6 overflow-y-auto h-full">
+  return (
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden border-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header (в стиле модала верификации) */}
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30">
+                <Heart className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">{t('leaveReview')}</h3>
+                <p className="text-white/90 text-sm font-medium">{t('reviewForClinic')}: {clinicName}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 border border-white/30"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {/* Контактная информация */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">
@@ -142,30 +175,30 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t('yourName')} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder={t('enterYourName')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={100}
-                  required
-                />
+            <input
+              type="text"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder={t('enterYourName')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              maxLength={100}
+              required
+            />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t('yourEmail')} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="email"
-                  value={authorEmail}
-                  onChange={(e) => setAuthorEmail(e.target.value)}
-                  placeholder={t('enterYourEmail')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={150}
-                  required
-                />
+            <input
+              type="email"
+              value={authorEmail}
+              onChange={(e) => setAuthorEmail(e.target.value)}
+              placeholder={t('enterYourEmail')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              maxLength={150}
+              required
+            />
               </div>
             </div>
           </div>
@@ -285,7 +318,7 @@ export function ReviewModal({ open, onClose, clinicId, clinicName, onSubmit }: R
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
