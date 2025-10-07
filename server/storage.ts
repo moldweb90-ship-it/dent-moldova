@@ -227,10 +227,15 @@ export class DatabaseStorage implements IStorage {
     const maxSortOrder = await db.select({ maxSort: sql<number>`MAX(${cities.sortOrder})` }).from(cities);
     const nextSortOrder = (maxSortOrder[0]?.maxSort || 0) + 1;
     
-    const [newCity] = await db.insert(cities).values({
+    // Generate slugs automatically if not provided
+    const cityWithSlugs = {
       ...city,
+      slugRu: city.slugRu || this.createSlug(city.nameRu, 'ru'),
+      slugRo: city.slugRo || this.createSlug(city.nameRo, 'ro'),
       sortOrder: nextSortOrder
-    }).returning();
+    };
+    
+    const [newCity] = await db.insert(cities).values(cityWithSlugs).returning();
     
     await DataProtection.logAudit({
       tableName: 'cities',
@@ -247,9 +252,20 @@ export class DatabaseStorage implements IStorage {
   async updateCity(id: string, updates: Partial<InsertCity>): Promise<City> {
     const oldCity = await db.select().from(cities).where(eq(cities.id, id));
     
+    // Generate slugs if names are being updated but slugs are not provided
+    const updatesWithSlugs = { ...updates };
+    
+    if (updates.nameRu && !updates.slugRu) {
+      updatesWithSlugs.slugRu = this.createSlug(updates.nameRu, 'ru');
+    }
+    
+    if (updates.nameRo && !updates.slugRo) {
+      updatesWithSlugs.slugRo = this.createSlug(updates.nameRo, 'ro');
+    }
+    
     const [updatedCity] = await db
       .update(cities)
-      .set(updates)
+      .set(updatesWithSlugs)
       .where(eq(cities.id, id))
       .returning();
     
