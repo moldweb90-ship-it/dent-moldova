@@ -167,7 +167,9 @@ curl -I https://ваш-домен.com
 
 ### Файл: `/var/www/clinici.md/.env`
 ```env
-DATABASE_URL=postgresql://neondb_owner:npg_OIyN85pFxMlu@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://username:password@ep-raspy-cloud-XXXXX.eu-central-1.aws.neon.tech/neondb?sslmode=require
+ADMIN_PASSWORD=надежный_пароль
+SESSION_SECRET=случайная_строка_32_символа
 NODE_ENV=production
 PORT=5000
 SKIP_MIGRATIONS=true

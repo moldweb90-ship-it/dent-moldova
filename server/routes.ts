@@ -15,7 +15,7 @@ import { calculateRatings } from './utils/ratingCalculator';
 
 // Admin credentials
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'dancerboy';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dancerboy'; // TODO: Установите ADMIN_PASSWORD в .env
 
 // Robots.txt generation function
 async function generateRobotsTxt(baseUrl: string) {
@@ -369,13 +369,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Session configuration
   app.use(session({
-    secret: 'dent-moldova-admin-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET || 'dent-moldova-admin-secret-key-change-in-production', // TODO: Установите SESSION_SECRET в .env
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
+      secure: process.env.NODE_ENV === 'production', // true в production с HTTPS
       httpOnly: true,
-      maxAge: null, // Session-only cookie (удаляется при закрытии браузера)
+      maxAge: 24 * 60 * 60 * 1000, // 24 часа
       sameSite: 'strict' // Дополнительная безопасность
     }
   }));

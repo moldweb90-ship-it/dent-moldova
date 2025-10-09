@@ -15,8 +15,10 @@
 
 ### 2. Проверить .env файл
 ```bash
-# Убедиться что есть правильный DATABASE_URL
-DATABASE_URL=postgresql://neondb_owner:npg_b0lfKBQnkx1W@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+# Убедиться что есть правильный DATABASE_URL для production
+DATABASE_URL=postgresql://username:password@ep-raspy-cloud-XXXXX.eu-central-1.aws.neon.tech/neondb?sslmode=require
+ADMIN_PASSWORD=надежный_пароль_администратора
+SESSION_SECRET=случайная_строка_минимум_32_символа
 NODE_ENV=production
 PORT=5000
 ```

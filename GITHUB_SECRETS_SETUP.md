@@ -25,8 +25,17 @@
 - **Пример**: `root`
 
 #### 4. `DATABASE_URL`
-- **Что это**: Строка подключения к вашей базе данных Neon
-- **Пример**: `postgresql://neondb_owner:npg_b01fKBQnkx1W@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require`
+- **Что это**: Строка подключения к вашей базе данных Neon (production)
+- **Формат**: `postgresql://username:password@host.region.aws.neon.tech/dbname?sslmode=require`
+- **Получить**: Neon Dashboard → вашбаза → Connection String
+
+#### 5. `ADMIN_PASSWORD`
+- **Что это**: Пароль для входа в админ-панель
+- **Требования**: Минимум 8 символов, используйте надежный пароль
+
+#### 6. `SESSION_SECRET`
+- **Что это**: Секретный ключ для шифрования сессий
+- **Генерация**: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 ## 🚀 После настройки секретов
 

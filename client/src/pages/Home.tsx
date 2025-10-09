@@ -1339,8 +1339,8 @@ export default function Home() {
         {/* Main Content */}
         <main className={`flex-1 px-4 md:px-8 py-2 md:py-8 md:min-h-screen ${!filtersVisible ? 'max-w-full' : ''}`}>
         
-        {/* Hero Section - показываем только на главной без фильтров */}
-        {!citySlug && !districtSlug && activeFeatures.length === 0 && !isOpenNowActive && (
+        {/* Hero Section - показываем только на главной без фильтров и поиска */}
+        {!citySlug && !districtSlug && activeFeatures.length === 0 && !isOpenNowActive && !searchQuery && (
           <div className="mb-6 text-center">
             <h1 className="font-bold text-gray-900 leading-tight" style={{ fontSize: '1.6rem', letterSpacing: '-1px' }}>
               <style>
@@ -1348,7 +1348,7 @@ export default function Home() {
                   h1 { font-size: 2rem !important; }
                 }`}
               </style>
-              {language === 'ru' ? 'Все стоматологии Молдовы в одном месте' : 'Toate clinicile stomatologice din Moldova într-un singur loc'}
+              {language === 'ru' ? 'Все стоматологии Молдовы в один клик' : 'Toate clinicile stomatologice din Moldova într-un singur click'}
             </h1>
             <p className="mt-3 md:mt-4 text-gray-600 max-w-3xl mx-auto" style={{ fontSize: '1em', lineHeight: '1rem' }}>
               {language === 'ru' 

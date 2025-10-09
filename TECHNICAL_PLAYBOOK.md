@@ -13,7 +13,9 @@
 
 ### 3) Env variables
 - `DATABASE_URL` (required). Use non-pooled host and no channel_binding:
-  `postgresql://neondb_owner:PASS@ep-raspy-cloud-a2o31v0k.eu-central-1.aws.neon.tech/neondb?sslmode=require`
+  `postgresql://username:password@ep-raspy-cloud-XXXXX.eu-central-1.aws.neon.tech/neondb?sslmode=require`
+- `ADMIN_PASSWORD` (required). Admin panel password
+- `SESSION_SECRET` (required). Secret key for sessions (min 32 chars)
 - `NODE_ENV`: `development` locally, `production` on VPS
 - `SKIP_MIGRATIONS`: `true` on VPS
 

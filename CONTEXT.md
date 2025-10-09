@@ -136,12 +136,14 @@ shared/
 ### ⚠️ ВАЖНО: Проверка подключения к базе данных
 **Проверьте `.env` файл в корне проекта:**
 ```env
-DATABASE_URL=postgresql://neondb_owner:npg_OIyN85pFxMlu@ep-noisy-glade-a27o92qc-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://username:password@ep-noisy-glade-XXXXX.eu-central-1.aws.neon.tech/neondb?sslmode=require
 PORT=5000
 NODE_ENV=development
+ADMIN_PASSWORD=ваш_пароль_администратора
+SESSION_SECRET=случайная_строка_минимум_32_символа
 ```
 
-**⚠️ Если в `.env` указана production база (ep-raspy-cloud-a2o31v0k), клиники не будут загружаться!**
+**⚠️ ВАЖНО:** Используйте development базу для локальной разработки! Production база только для выделенного сервера.
 
 ### Команды
 ```bash
