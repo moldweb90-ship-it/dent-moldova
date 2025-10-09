@@ -88,4 +88,4 @@ update-git.sh
 
 # Production images (не синхронизируем с локальным)
 img/
-img_backup_*/
+img_backup_*/public/sitemap.xml
