@@ -89,3 +89,6 @@ update-git.sh
 # Production images (не синхронизируем с локальным)
 img/
 img_backup_*/public/sitemap.xml
+
+# Sitemap (генерируется автоматически на каждом сервере)
+public/sitemap.xml
