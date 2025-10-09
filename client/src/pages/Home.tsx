@@ -1212,10 +1212,15 @@ export default function Home() {
                 onClick={() => setMobileFiltersOpen(true)}
                 variant="outline"
                 size="sm"
-                className="flex items-center space-x-1 px-2 bg-gray-100 border-gray-300"
+                className="flex items-center space-x-1 px-2 bg-gray-100 border-gray-300 relative"
               >
-                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Filter className="h-3 w-3 sm:h-4 sm:w-4 animate-pulse-subtle" />
                 <span className="text-xs sm:text-sm">{t('filters')}</span>
+                {/* Пульсирующая точка-индикатор */}
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" style={{ animationDuration: '2s' }}></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                </span>
               </Button>
             </div>
 
