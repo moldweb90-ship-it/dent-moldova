@@ -141,7 +141,7 @@ export function RecommendedClinics({ onClinicClick, onBookClick, onPricesClick, 
       <div className="flex items-center space-x-2 mb-6">
         <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-          {t('recommended')}
+          {t('recommendedHeading')}
         </h2>
         <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm flex items-center gap-1">
           <Star className="h-3 w-3" />
@@ -158,7 +158,7 @@ export function RecommendedClinics({ onClinicClick, onBookClick, onPricesClick, 
           >
             {/* Recommended Badge */}
             <div className="absolute top-3 left-3 z-10">
-              <Badge className="bg-red-500 text-white font-semibold">
+              <Badge className="bg-red-500 text-white font-semibold" style={{ fontSize: '0.68rem' }}>
                 <Flame className="h-3 w-3 mr-1" />
                 {t('recommended')}
               </Badge>

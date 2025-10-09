@@ -339,7 +339,10 @@ export default function ClinicPage() {
                 {/* Clinic name above photo */}
                 <h1 className="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 leading-tight mb-3">
                   <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                    {language === 'ru' ? (clinic.nameRu || clinic.nameRo) : (clinic.nameRo || clinic.nameRu)}
+                    {language === 'ru' 
+                      ? (clinic.seoH1Ru || clinic.seoH1 || clinic.nameRu || clinic.nameRo) 
+                      : (clinic.seoH1Ro || clinic.seoH1 || clinic.nameRo || clinic.nameRu)
+                    }
                     {clinic.verified && (
                       <Tooltip content={language === 'ru' ? 'Клиника верифицирована' : 'Clinică verificată'}>
                         <svg 

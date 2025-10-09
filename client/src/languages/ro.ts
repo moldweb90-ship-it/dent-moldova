@@ -149,7 +149,7 @@ export const ro = {
   pricing: {
     title: "Prețuri",
     subtitle: "DentHUB este mai mult decât un catalog. Creăm pentru clinica dvs. o vitrină online profesională, atragem pacienți și asigurăm cereri cu un singur clic.",
-    recommended: "Recomandat",
+    recommended: "Alegerea noastră",
     limitations: "Limitări",
     basic: {
       name: "Basic",
@@ -188,7 +188,7 @@ export const ro = {
       features: {
         allVerified: "Tot din Verified",
         topPlacement: "Plasare TOP în catalog",
-        recommended: "Marcajul «Recomandat»",
+        recommended: "Marcajul «Alegerea noastră»",
         advertising: "Reclama clinicii dvs. în rețelele sociale și pe portal",
         analytics: "Analiză extinsă a cererilor și apelurilor",
         separatePage: "Pagină separată cu prețuri și promoții",
@@ -305,7 +305,7 @@ export const ro = {
   appointment: "Programare",
   appointmentShort: "Programare",
   bestChoice: "Cea mai bună alegere",
-  recommended: "Recomandăm",
+  recommendedHeading: "Recomandăm",
   currency: "Valută",
   from: "de la",
   priceType: "Tipul prețului",

@@ -932,11 +932,11 @@ export class DatabaseStorage implements IStorage {
         ? (clinicData.seoKeywordsRo || clinicData.seoKeywordsRu || 'stomatologie, tratament dentar, dentist')
         : (clinicData.seoKeywordsRu || clinicData.seoKeywordsRo || 'стоматология, лечение зубов, стоматолог'),
       seoH1: language === 'ro' 
-        ? (clinicData.seoH1Ro || clinicData.seoH1Ru || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică`)
-        : (clinicData.seoH1Ru || clinicData.seoH1Ro || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника`),
+        ? (clinicData.seoH1Ro || clinicData.seoH1Ru || clinicData.nameRo || clinicData.nameRu)
+        : (clinicData.seoH1Ru || clinicData.seoH1Ro || clinicData.nameRu || clinicData.nameRo),
       ogTitle: language === 'ro' 
-        ? (clinicData.ogTitleRo || clinicData.ogTitleRu || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică`)
-        : (clinicData.ogTitleRu || clinicData.ogTitleRo || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника`),
+        ? (clinicData.ogTitleRo || clinicData.ogTitleRu || clinicData.nameRo || clinicData.nameRu)
+        : (clinicData.ogTitleRu || clinicData.ogTitleRo || clinicData.nameRu || clinicData.nameRo),
       ogDescription: language === 'ro' 
         ? (clinicData.ogDescriptionRo || clinicData.ogDescriptionRu || `${clinicData.nameRo || clinicData.nameRu} - clinică stomatologică în ${result.city?.nameRo || 'Chișinău'}`)
         : (clinicData.ogDescriptionRu || clinicData.ogDescriptionRo || `${clinicData.nameRu || clinicData.nameRo} - стоматологическая клиника в ${result.city?.nameRu || 'Кишинёв'}`),

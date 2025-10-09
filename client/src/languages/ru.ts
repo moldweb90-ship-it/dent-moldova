@@ -188,7 +188,7 @@ export const ru = {
       features: {
         allVerified: "Всё из Verified",
         topPlacement: "ТОП-размещение в каталоге",
-        recommended: "Отметка «Рекомендуем»",
+        recommended: "Отметка «Наш выбор»",
         advertising: "Реклама вашей клиники в соцсетях и на портале",
         analytics: "Расширенная аналитика заявок и звонков",
         separatePage: "Отдельная страница с прайсом и акциями",
@@ -305,7 +305,8 @@ export const ru = {
   appointment: "Запись",
   appointmentShort: "Запись",
   bestChoice: "Лучший выбор",
-  recommended: "Рекомендуем",
+  recommended: "Наш выбор",
+  recommendedHeading: "Рекомендуем",
   currency: "Валюта",
   from: "от",
   priceType: "Тип цены",

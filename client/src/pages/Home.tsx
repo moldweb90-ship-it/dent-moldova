@@ -1339,6 +1339,24 @@ export default function Home() {
         {/* Main Content */}
         <main className={`flex-1 px-4 md:px-8 py-2 md:py-8 md:min-h-screen ${!filtersVisible ? 'max-w-full' : ''}`}>
         
+        {/* Hero Section - показываем только на главной без фильтров */}
+        {!citySlug && !districtSlug && activeFeatures.length === 0 && !isOpenNowActive && (
+          <div className="mb-6 text-center">
+            <h1 className="font-bold text-gray-900 leading-tight" style={{ fontSize: '1.6rem', letterSpacing: '-1px' }}>
+              <style>
+                {`@media (min-width: 768px) {
+                  h1 { font-size: 2rem !important; }
+                }`}
+              </style>
+              {language === 'ru' ? 'Все стоматологии Молдовы в одном месте' : 'Toate clinicile stomatologice din Moldova într-un singur loc'}
+            </h1>
+            <p className="mt-3 md:mt-4 text-gray-600 max-w-3xl mx-auto" style={{ fontSize: '1em', lineHeight: '1rem' }}>
+              {language === 'ru' 
+                ? 'Нашёл → Сравнил → Записался' 
+                : 'Am găsit → Am comparat → M-am înscris'}
+            </p>
+          </div>
+        )}
 
         {/* Recommended Clinics Section */}
         {recommendedLoading ? (
@@ -1400,8 +1418,20 @@ export default function Home() {
           </div>
         ) : clinicsData?.clinics?.length > 0 ? (
           <>
-            {/* Statistics Banner */}
-            <StatisticsBanner />
+            {/* Statistics Banner - показываем только если не применены фильтры */}
+            {!filters.city && 
+             filters.districts.length === 0 && 
+             filters.features.length === 0 && 
+             filters.promotionalLabels.length === 0 && 
+             filters.verified === undefined && 
+             filters.openNow === undefined && 
+             !searchQuery &&
+             !citySlug &&
+             !districtSlug &&
+             activeFeatures.length === 0 &&
+             !isOpenNowActive && (
+              <StatisticsBanner />
+            )}
             <ClinicGrid
             clinics={clinicsData.clinics}
             total={clinicsData.total}
