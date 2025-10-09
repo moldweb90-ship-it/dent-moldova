@@ -202,9 +202,8 @@ async function generateSitemap(baseUrl: string) {
     }
   }
 
-  // 5. Active clinic pages
+  // 5. All clinic pages (verified and unverified)
   const activeClinics = await db.query.clinics.findMany({
-    where: eq(clinics.verified, true),
     columns: {
       slug: true,
       updatedAt: true
@@ -249,7 +248,7 @@ ${urls.map(url => `  <url>
     featurePages: features.length * 2, // Russian + Romanian
     featureCityPages: features.length * allCities.length * 2, // Feature + City combinations
     featureDistrictPages: features.length * allDistricts.length * 2, // Feature + District combinations
-    clinicPages: activeClinics.length * 2, // Russian + Romanian
+    clinicPages: activeClinics.length * 2, // All clinics (verified + unverified) Russian + Romanian
     lastUpdated: new Date().toISOString()
   };
 }
