@@ -56,21 +56,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Выполняем миграции при запуске (только в продакшене)
-  if (process.env.NODE_ENV === 'production' && !process.env.SKIP_MIGRATIONS) {
-    try {
-      log('🔄 Applying database migrations...');
-      await execAsync('npm run db:push');
-      log('✅ Database migrations applied successfully');
-      
-      log('🌱 Seeding database...');
-      await execAsync('npx tsx server/seed.ts');
-      log('✅ Database seeded successfully');
-    } catch (error) {
-      log('❌ Error during database setup:', error);
-      // Не останавливаем приложение, продолжаем работу
-    }
-  }
+  // Миграции выполняются отдельно, не при каждом запуске
 
   const server = await registerRoutes(app);
 
