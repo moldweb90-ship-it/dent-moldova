@@ -373,10 +373,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // true в production с HTTPS
+      secure: false, // Временно false для HTTP, будет true после SSL
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 часа
-      sameSite: 'strict' // Дополнительная безопасность
+      sameSite: 'lax' // Более мягкие настройки для HTTP
     }
   }));
 
