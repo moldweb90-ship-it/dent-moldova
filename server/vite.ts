@@ -788,6 +788,33 @@ export async function setupVite(app: Express, server: Server) {
         
       }
 
+      // Добавляем базовый контент в root div для SEO (боты увидят текст до загрузки JS)
+      if (homepageSEO) {
+        const isRomanian = homepageSEO.language === 'ro';
+        const preloadContent = isRomanian 
+          ? `<div id="root">
+  <noscript>
+    <h1>MDent.md – Catalogul clinicilor stomatologice din Moldova</h1>
+    <p>Găsiți cele mai bune clinici stomatologice din Moldova. Comparați prețuri, citiți recenzii, programați-vă online.</p>
+  </noscript>
+  <div style="display:none">
+    <h1>MDent.md – Catalogul clinicilor stomatologice din Moldova</h1>
+    <p>Găsiți cele mai bune clinici stomatologice din Moldova. Comparați prețuri, citiți recenzii, programați-vă online.</p>
+  </div>
+</div>`
+          : `<div id="root">
+  <noscript>
+    <h1>MDent.md – Все стоматологии Молдовы в одном месте</h1>
+    <p>Каталог лучших стоматологических клиник Молдовы. Сравнивайте цены, читайте отзывы, записывайтесь онлайн.</p>
+  </noscript>
+  <div style="display:none">
+    <h1>MDent.md – Все стоматологии Молдовы в одном месте</h1>
+    <p>Каталог лучших стоматологических клиник Молдовы. Сравнивайте цены, читайте отзывы, записывайтесь онлайн.</p>
+  </div>
+</div>`;
+        template = template.replace(/<div id="root"><\/div>/, preloadContent);
+      }
+
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
