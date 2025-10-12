@@ -54,7 +54,7 @@ function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
     "name": clinicData?.nameRu || organizationName,
     "description": clinicData?.seoDescriptionRu || organizationDescription,
     "url": clinicData ? `${baseUrl.replace(/\/$/, '')}/clinic/${clinicData.slug}/` : baseUrl,
-    "logo": clinicData?.logoUrl ? `${baseUrl}${clinicData.logoUrl}` : (settingsMap.logo ? `${baseUrl}${settingsMap.logo}` : undefined),
+    "logo": clinicData?.logoUrl ? `${baseUrl}${clinicData.logoUrl}` : (settingsMap.logo ? `${baseUrl}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}` : undefined),
     "telephone": clinicData?.phone || "+373-69919026",
     "email": clinicData?.email || "info@mdent.md",
     "address": {
@@ -627,7 +627,7 @@ export async function setupVite(app: Express, server: Server) {
       // Добавляем логотип сайта в мета-теги Open Graph
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML:', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md/'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
@@ -975,7 +975,7 @@ export function serveStatic(app: Express) {
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML (prod):', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md/'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
