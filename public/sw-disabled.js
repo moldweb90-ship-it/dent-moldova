@@ -1,18 +1,31 @@
-// Отключенный Service Worker для экстренного деплоя
-console.log('Service Worker отключен');
+// Service Worker включен для кеширования
+console.log('Service Worker включен для кеширования');
 
-// Просто пропускаем все запросы без кеширования
-self.addEventListener('fetch', (event) => {
-  // Не делаем ничего - все запросы идут напрямую к серверу
-  return;
-});
-
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Установка (отключен)');
+self.addEventListener('install', () => {
+  console.log('Service Worker установлен');
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Активация (отключен)');
+self.addEventListener('activate', () => {
+  console.log('Service Worker активирован');
   self.clients.claim();
+});
+
+// Обрабатываем fetch события для кеширования
+self.addEventListener('fetch', (event) => {
+  // Кешируем статические ресурсы
+  if (event.request.destination === 'image' || 
+      event.request.destination === 'script' || 
+      event.request.destination === 'style') {
+    event.respondWith(
+      caches.match(event.request).then(response => {
+        return response || fetch(event.request).then(fetchResponse => {
+          return caches.open('static-cache').then(cache => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        });
+      })
+    );
+  }
 });
