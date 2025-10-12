@@ -47,7 +47,7 @@ function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
   const schemaType = seoData.schemaType || 'Organization';
   
   // Базовые поля для всех схем
-  const baseSchema = {
+  const baseSchema: any = {
     "@context": "https://schema.org",
     "@type": schemaType,
     "@id": clinicData ? `${baseUrl.replace(/\/$/, '')}/clinic/${clinicData.slug}/#organization` : `${baseUrl}#organization`,
@@ -788,31 +788,42 @@ export async function setupVite(app: Express, server: Server) {
         
       }
 
-      // Добавляем базовый контент в root div для SEO (боты увидят текст до загрузки JS)
+      // Добавляем Progressive Enhancement SEO-контент
       if (homepageSEO) {
         const isRomanian = homepageSEO.language === 'ro';
-        const preloadContent = isRomanian 
-          ? `<div id="root">
-  <noscript>
+        
+        // Добавляем скрипт для переключения класса (в head, до стилей)
+        template = template.replace(
+          /<\/head>/,
+          `  <script>
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('js');
+  </script>
+  <style>
+    .preload-hero { padding:24px 16px; max-width:1100px; margin:0 auto; background:#fff; }
+    .preload-hero h1 { font-size:28px; line-height:1.2; margin:0 0 8px; color:#111; }
+    .preload-hero p { margin:6px 0; color:#444; line-height:1.6; }
+    .js .preload-hero { display:none; }
+  </style>
+</head>`
+        );
+        
+        // Добавляем видимый SEO-контент перед root
+        const preloadHero = isRomanian
+          ? `  <header class="preload-hero" role="banner">
     <h1>MDent.md – Catalogul clinicilor stomatologice din Moldova</h1>
     <p>Găsiți cele mai bune clinici stomatologice din Moldova. Comparați prețuri, citiți recenzii, programați-vă online.</p>
-  </noscript>
-  <div style="display:none">
-    <h1>MDent.md – Catalogul clinicilor stomatologice din Moldova</h1>
-    <p>Găsiți cele mai bune clinici stomatologice din Moldova. Comparați prețuri, citiți recenzii, programați-vă online.</p>
-  </div>
-</div>`
-          : `<div id="root">
-  <noscript>
+    <p>Implantare, fațete, ortodonție, igienă, protezare – totul pe o singură hartă.</p>
+  </header>
+`
+          : `  <header class="preload-hero" role="banner">
     <h1>MDent.md – Все стоматологии Молдовы в одном месте</h1>
     <p>Каталог лучших стоматологических клиник Молдовы. Сравнивайте цены, читайте отзывы, записывайтесь онлайн.</p>
-  </noscript>
-  <div style="display:none">
-    <h1>MDent.md – Все стоматологии Молдовы в одном месте</h1>
-    <p>Каталог лучших стоматологических клиник Молдовы. Сравнивайте цены, читайте отзывы, записывайтесь онлайн.</p>
-  </div>
-</div>`;
-        template = template.replace(/<div id="root"><\/div>/, preloadContent);
+    <p>Имплантация, виниры, ортодонтия, гигиена, протезирование – всё на одной карте.</p>
+  </header>
+`;
+        
+        template = template.replace(/<div id="root"><\/div>/, `${preloadHero}  <main id="root"></main>`);
       }
 
       const page = await vite.transformIndexHtml(url, template);
@@ -1106,6 +1117,44 @@ export function serveStatic(app: Express) {
           console.log('✅ Basic JSON-LD schema added to HTML');
         }
         
+      }
+
+      // Добавляем Progressive Enhancement SEO-контент (PRODUCTION)
+      if (homepageSEO) {
+        const isRomanian = homepageSEO.language === 'ro';
+        
+        // Добавляем скрипт для переключения класса (в head, до стилей)
+        template = template.replace(
+          /<\/head>/,
+          `  <script>
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('js');
+  </script>
+  <style>
+    .preload-hero { padding:24px 16px; max-width:1100px; margin:0 auto; background:#fff; }
+    .preload-hero h1 { font-size:28px; line-height:1.2; margin:0 0 8px; color:#111; }
+    .preload-hero p { margin:6px 0; color:#444; line-height:1.6; }
+    .js .preload-hero { display:none; }
+  </style>
+</head>`
+        );
+        
+        // Добавляем видимый SEO-контент перед root
+        const preloadHero = isRomanian
+          ? `  <header class="preload-hero" role="banner">
+    <h1>MDent.md – Catalogul clinicilor stomatologice din Moldova</h1>
+    <p>Găsiți cele mai bune clinici stomatologice din Moldova. Comparați prețuri, citiți recenzii, programați-vă online.</p>
+    <p>Implantare, fațete, ortodonție, igienă, protezare – totul pe o singură hartă.</p>
+  </header>
+`
+          : `  <header class="preload-hero" role="banner">
+    <h1>MDent.md – Все стоматологии Молдовы в одном месте</h1>
+    <p>Каталог лучших стоматологических клиник Молдовы. Сравнивайте цены, читайте отзывы, записывайтесь онлайн.</p>
+    <p>Имплантация, виниры, ортодонтия, гигиена, протезирование – всё на одной карте.</p>
+  </header>
+`;
+        
+        template = template.replace(/<div id="root"><\/div>/, `${preloadHero}  <main id="root"></main>`);
       }
       
       res.status(200).set({ "Content-Type": "text/html" }).end(template);
