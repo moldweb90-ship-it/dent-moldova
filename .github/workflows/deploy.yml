@@ -27,8 +27,7 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd /var/www/clinici.md &&
-            git stash &&
-            git pull origin main &&
+            git stash push -u public/robots.txt public/sitemap.xml 2>/dev/null || true &&
             chmod +x deploy-safe.sh &&
             ./deploy-safe.sh
           "
