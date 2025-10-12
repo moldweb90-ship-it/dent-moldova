@@ -108,7 +108,12 @@ export function DynamicSEO({
       updateMetaTag('og:description', ogDescription, 'og:description');
     }
     if (ogImage) {
-      updateMetaTag('og:image', ogImage, 'og:image');
+      // Ensure og:image URL is absolute
+      const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${window.location.origin}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+      updateMetaTag('og:image', absoluteOgImage, 'og:image');
+      updateMetaTag('og:image:width', '1200', 'og:image:width');
+      updateMetaTag('og:image:height', '630', 'og:image:height');
+      updateMetaTag('og:image:type', 'image/jpeg', 'og:image:type');
     }
 
     // Set default OG tags

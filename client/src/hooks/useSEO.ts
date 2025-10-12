@@ -92,7 +92,12 @@ export function useSEO(language?: string) {
       updateOrCreateMeta('property', 'og:type', 'website');
       updateOrCreateMeta('property', 'og:url', window.location.href);
       if (ogImage) {
-        updateOrCreateMeta('property', 'og:image', ogImage);
+        // Ensure og:image URL is absolute
+        const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${window.location.origin}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+        updateOrCreateMeta('property', 'og:image', absoluteOgImage);
+        updateOrCreateMeta('property', 'og:image:width', '1200');
+        updateOrCreateMeta('property', 'og:image:height', '630');
+        updateOrCreateMeta('property', 'og:image:type', 'image/jpeg');
       }
 
       // Update Twitter Card tags  
@@ -100,7 +105,9 @@ export function useSEO(language?: string) {
       updateOrCreateMeta('name', 'twitter:title', ogTitle || title);
       updateOrCreateMeta('name', 'twitter:description', ogDescription || description);
       if (ogImage) {
-        updateOrCreateMeta('name', 'twitter:image', ogImage);
+        // Ensure Twitter image URL is absolute
+        const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${window.location.origin}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+        updateOrCreateMeta('name', 'twitter:image', absoluteOgImage);
       }
       
       // Add HTML lang attribute

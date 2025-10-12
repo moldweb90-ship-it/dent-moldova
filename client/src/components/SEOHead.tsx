@@ -97,13 +97,41 @@ export function SEOHead({
     }
 
     if (ogImage) {
+      // Ensure og:image URL is absolute
+      const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${window.location.origin}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+      
       let ogImageMeta = document.querySelector('meta[property="og:image"]');
       if (!ogImageMeta) {
         ogImageMeta = document.createElement('meta');
         ogImageMeta.setAttribute('property', 'og:image');
         document.getElementsByTagName('head')[0].appendChild(ogImageMeta);
       }
-      ogImageMeta.setAttribute('content', ogImage);
+      ogImageMeta.setAttribute('content', absoluteOgImage);
+      
+      // Add og:image dimensions
+      let ogImageWidthMeta = document.querySelector('meta[property="og:image:width"]');
+      if (!ogImageWidthMeta) {
+        ogImageWidthMeta = document.createElement('meta');
+        ogImageWidthMeta.setAttribute('property', 'og:image:width');
+        document.getElementsByTagName('head')[0].appendChild(ogImageWidthMeta);
+      }
+      ogImageWidthMeta.setAttribute('content', '1200');
+      
+      let ogImageHeightMeta = document.querySelector('meta[property="og:image:height"]');
+      if (!ogImageHeightMeta) {
+        ogImageHeightMeta = document.createElement('meta');
+        ogImageHeightMeta.setAttribute('property', 'og:image:height');
+        document.getElementsByTagName('head')[0].appendChild(ogImageHeightMeta);
+      }
+      ogImageHeightMeta.setAttribute('content', '630');
+      
+      let ogImageTypeMeta = document.querySelector('meta[property="og:image:type"]');
+      if (!ogImageTypeMeta) {
+        ogImageTypeMeta = document.createElement('meta');
+        ogImageTypeMeta.setAttribute('property', 'og:image:type');
+        document.getElementsByTagName('head')[0].appendChild(ogImageTypeMeta);
+      }
+      ogImageTypeMeta.setAttribute('content', 'image/jpeg');
     }
 
     // Set default OG tags
