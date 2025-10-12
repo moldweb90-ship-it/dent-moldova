@@ -627,14 +627,16 @@ export async function setupVite(app: Express, server: Server) {
       // Добавляем логотип сайта в мета-теги Open Graph
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML:', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md/'}${settingsMap.logo}`;
         
-        // Добавляем og:image и og:logo
+        // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
           /<\/head>/,
           `    <!-- Logo для Open Graph -->
     <meta property="og:image" content="${logoUrl}" />
-    <meta property="og:logo" content="${logoUrl}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
     
     <!-- Theme Color for mobile browsers -->
     <meta name="theme-color" content="#3b82f6">
@@ -973,14 +975,16 @@ export function serveStatic(app: Express) {
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML (prod):', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo}`;
+        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md/'}${settingsMap.logo}`;
         
-        // Добавляем og:image и og:logo
+        // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
           /<\/head>/,
           `    <!-- Logo для Open Graph -->
     <meta property="og:image" content="${logoUrl}" />
-    <meta property="og:logo" content="${logoUrl}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
   </head>`
         );
         console.log('✅ Logo added to HTML (prod)');
