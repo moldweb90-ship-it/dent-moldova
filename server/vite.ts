@@ -1120,7 +1120,9 @@ export function serveStatic(app: Express) {
       }
 
       // Добавляем Progressive Enhancement SEO-контент (PRODUCTION)
+      console.log('🔍 Progressive Enhancement check (PROD):', { homepageSEO: !!homepageSEO, url });
       if (homepageSEO) {
+        console.log('✅ Adding Progressive Enhancement (PROD)');
         const isRomanian = homepageSEO.language === 'ro';
         
         // Добавляем скрипт для переключения класса (в head, до стилей)
