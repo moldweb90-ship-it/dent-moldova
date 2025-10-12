@@ -635,11 +635,26 @@ export async function setupVite(app: Express, server: Server) {
           `    <!-- Logo для Open Graph -->
     <meta property="og:image" content="${logoUrl}" />
     <meta property="og:logo" content="${logoUrl}" />
+    
+    <!-- Theme Color for mobile browsers -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="msapplication-navbutton-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
   </head>`
         );
         console.log('✅ Logo added to HTML');
       } else {
         console.log('❌ No logo found in settings');
+        
+        // Добавляем theme-color даже если нет логотипа
+        template = template.replace(
+          /<\/head>/,
+          `    <!-- Theme Color for mobile browsers -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="msapplication-navbutton-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  </head>`
+        );
       }
 
       // Применяем SEO данные если они есть
