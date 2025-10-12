@@ -53,7 +53,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           ogDescription: clinic.ogDescriptionRu || clinic.ogDescriptionRo || clinic.seoDescriptionRu || clinic.seoDescriptionRo,
           ogImage: clinic.ogImage,
           canonical: clinic.seoCanonical,
-          robots: clinic.seoRobots || 'index,follow',
+          robots: clinic.seoRobots || 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
           schemaType: clinic.seoSchemaType || 'Dentist',
           schemaData: clinic.seoSchemaData,
           language: language,
@@ -109,9 +109,9 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           ? (settingsMap.ogImageRo || settingsMap.logo || '')
           : (settingsMap.ogImageRu || settingsMap.logo || ''),
         canonical: isRomanian
-          ? (settingsMap.canonicalRo || 'https://mdent.md/ro')
-          : (settingsMap.canonicalRu || 'https://mdent.md'),
-        robots: settingsMap.robots || 'index,follow',
+          ? (settingsMap.canonicalRo || 'https://mdent.md/ro/')
+          : (settingsMap.canonicalRu || 'https://mdent.md/'),
+        robots: settingsMap.robots || 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
         schemaType: settingsMap.schemaType || 'Organization',
         schemaData: settingsMap.schemaData || '',
         language: language,
@@ -302,7 +302,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           ogDescription: description,
           ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
           canonical: `https://dent-moldova.com${req.path}`,
-          robots: 'index,follow',
+          robots: 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
           language,
           schemaType: 'CollectionPage',
           schemaData
@@ -462,7 +462,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           ogDescription: description,
           ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
           canonical: `https://dent-moldova.com${req.path}`,
-          robots: 'index,follow',
+          robots: 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
           language,
           schemaType: 'CollectionPage',
           schemaData

@@ -11,8 +11,30 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const viteLogger = createLogger();
 
 // Функция для генерации базовой JSON-LD схемы
+function generateHreflangTags(url: string, language?: string) {
+  const baseUrl = 'https://mdent.md';
+  const currentPath = url.replace(/^\/ro/, '') || '/';
+  const isRomanian = url.startsWith('/ro');
+  
+  let ruPath: string;
+  let roPath: string;
+  
+  if (isRomanian) {
+    roPath = url.endsWith('/') ? url : `${url}/`;
+    ruPath = currentPath === '/' ? '/' : (currentPath.endsWith('/') ? currentPath : `${currentPath}/`);
+  } else {
+    ruPath = url.endsWith('/') ? url : `${url}/`;
+    roPath = currentPath === '/' ? '/ro/' : `/ro${currentPath}${currentPath.endsWith('/') ? '' : '/'}`;
+  }
+  
+  return `<!-- Hreflang -->
+<link rel="alternate" hreflang="ru" href="${baseUrl}${ruPath}">
+<link rel="alternate" hreflang="ro" href="${baseUrl}${roPath}">
+<link rel="alternate" hreflang="x-default" href="${baseUrl}${ruPath}">`;
+}
+
 function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
-  const baseUrl = settingsMap.websiteUrl || 'https://mdent.md';
+  const baseUrl = settingsMap.websiteUrl || 'https://mdent.md/';
   const organizationName = settingsMap.organizationName || 'MDent.md - стоматологии Молдовы в одном месте';
   const organizationDescription = settingsMap.organizationDescription || 'Каталог стоматологических клиник в Молдове';
   const organizationCity = settingsMap.organizationCity || 'Кишинёв';
@@ -28,10 +50,13 @@ function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
   const baseSchema = {
     "@context": "https://schema.org",
     "@type": schemaType,
+    "@id": clinicData ? `${baseUrl.replace(/\/$/, '')}/clinic/${clinicData.slug}/#organization` : `${baseUrl}#organization`,
     "name": clinicData?.nameRu || organizationName,
     "description": clinicData?.seoDescriptionRu || organizationDescription,
-    "url": clinicData ? `${baseUrl}/clinic/${clinicData.slug}` : baseUrl,
+    "url": clinicData ? `${baseUrl.replace(/\/$/, '')}/clinic/${clinicData.slug}/` : baseUrl,
     "logo": clinicData?.logoUrl ? `${baseUrl}${clinicData.logoUrl}` : (settingsMap.logo ? `${baseUrl}${settingsMap.logo}` : undefined),
+    "telephone": clinicData?.phone || "+373-69919026",
+    "email": clinicData?.email || "info@mdent.md",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": clinicData?.city?.nameRu || organizationCity,
@@ -42,7 +67,7 @@ function generateBasicSchema(seoData: any, settingsMap: any, clinicData?: any) {
       "@type": "ContactPoint",
       "contactType": "customer service",
       "availableLanguage": ["Russian", "Romanian"],
-      "telephone": clinicData?.phone
+      "telephone": clinicData?.phone || "+373-69919026"
     }
   };
 
@@ -653,6 +678,15 @@ export async function setupVite(app: Express, server: Server) {
           `<meta name="robots" content="${seoData.robots}"`
         );
         
+        // Добавляем hreflang теги
+        const hreflangTags = generateHreflangTags(url, seoData.language);
+        if (hreflangTags) {
+          template = template.replace(
+            /<\/head>/,
+            `    ${hreflangTags}\n  </head>`
+          );
+        }
+        
         // Обновляем Open Graph теги
         if (seoData.ogTitle) {
           template = template.replace(
@@ -936,6 +970,15 @@ export function serveStatic(app: Express) {
           /<meta name="robots" content="[^"]*"/,
           `<meta name="robots" content="${seoData.robots}"`
         );
+        
+        // Добавляем hreflang теги
+        const hreflangTags = generateHreflangTags(url, seoData.language);
+        if (hreflangTags) {
+          template = template.replace(
+            /<\/head>/,
+            `    ${hreflangTags}\n  </head>`
+          );
+        }
         
         // Обновляем Open Graph теги
         if (seoData.ogTitle) {

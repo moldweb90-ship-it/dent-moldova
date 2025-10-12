@@ -107,6 +107,7 @@ export function useSEO(language?: string) {
       if (language) {
         document.documentElement.lang = language === 'ru' ? 'ru' : 'ro';
       }
+
     }
   }, [seoSettings, language]);
 
