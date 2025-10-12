@@ -627,7 +627,8 @@ export async function setupVite(app: Express, server: Server) {
       // Добавляем логотип сайта в мета-теги Open Graph
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML:', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
+        const baseUrl = settingsMap.websiteUrl || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://mdent.md');
+        const logoUrl = `${baseUrl}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
@@ -975,7 +976,8 @@ export function serveStatic(app: Express) {
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML (prod):', settingsMap.logo);
-        const logoUrl = `${settingsMap.websiteUrl || 'https://mdent.md'}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
+        const baseUrl = settingsMap.websiteUrl || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://mdent.md');
+        const logoUrl = `${baseUrl}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения
         template = template.replace(
