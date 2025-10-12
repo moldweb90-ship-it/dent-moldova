@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useHreflang } from '@/hooks/useHreflang';
 
 interface DynamicSEOProps {
   title?: string;
@@ -29,6 +30,11 @@ export function DynamicSEO({
   schemaData,
   language
 }: DynamicSEOProps) {
+  // Автоматически генерируем hreflang теги
+  useHreflang({ 
+    language: (language === 'ro' ? 'ro' : 'ru') as 'ru' | 'ro',
+    enabled: !!language 
+  });
   useEffect(() => {
 
     // Принудительно очищаем старые мета-теги

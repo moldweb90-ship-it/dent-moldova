@@ -27,7 +27,7 @@ PORT=5000
 
 ### 1. Подключение к серверу
 ```bash
-ssh root@5.35.126.5
+ssh root@mdent.md
 cd /var/www/clinici.md
 ```
 
@@ -48,14 +48,79 @@ ufw allow 5000
 ufw status
 ```
 
-## 🔧 Настройка Nginx
+### 4. Запуск приложения через PM2 (ОБЯЗАТЕЛЬНО!)
 
-### 1. Создать конфигурацию
+⚠️ **ВАЖНО**: Приложение НЕ должно запускаться через `npm start` в терминале, так как при закрытии терминала сайт перестанет работать!
+
+#### Правильный запуск через PM2:
 ```bash
-nano /etc/nginx/sites-available/clinici-md
+# 1. Остановить все процессы PM2
+pm2 stop all
+pm2 delete all
+
+# 2. Запустить приложение через PM2
+pm2 start npm --name "clinici-md" -- start
+
+# 3. Проверить статус
+pm2 status
+
+# 4. Проверить логи
+pm2 logs clinici-md --lines 10
+
+# 5. Проверить что порт слушается
+netstat -tlnp | grep :5000
+
+# 6. Настроить автозапуск при загрузке сервера
+pm2 startup
+pm2 save
 ```
 
-### 2. Конфигурация Nginx
+#### Почему PM2:
+- ✅ Приложение работает в фоне независимо от терминала
+- ✅ При закрытии терминала сайт продолжает работать
+- ✅ При перезагрузке сервера сайт автоматически запустится
+- ✅ При сбое PM2 автоматически перезапустит приложение
+- ✅ Можно управлять процессами: `pm2 restart clinici-md`, `pm2 stop clinici-md`
+
+## 🔧 Настройка Nginx
+
+### 1. Создать конфигурацию для домена
+```bash
+nano /etc/nginx/sites-available/mdent.md
+```
+
+### 2. Конфигурация Nginx для домена mdent.md
+```nginx
+server {
+    listen 80;
+    server_name mdent.md www.mdent.md;
+
+    # Статические изображения клиник
+    location /images/ {
+        alias /var/www/clinici.md/img/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### 3. Резервная конфигурация для IP адреса
+```bash
+nano /etc/nginx/sites-available/clinici-md-ip
+```
+
 ```nginx
 server {
     listen 80;
@@ -69,7 +134,7 @@ server {
     }
 
     location / {
-        proxy_pass http://[::1]:5000;  # IPv6 localhost
+        proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -82,11 +147,54 @@ server {
 }
 ```
 
-### 3. Активировать сайт
+### 4. Активировать сайты
 ```bash
-ln -s /etc/nginx/sites-available/clinici-md /etc/nginx/sites-enabled/
+# Активировать домен mdent.md
+ln -s /etc/nginx/sites-available/mdent.md /etc/nginx/sites-enabled/
+
+# Активировать резервную конфигурацию для IP
+ln -s /etc/nginx/sites-available/clinici-md-ip /etc/nginx/sites-enabled/
+
+# Проверить конфигурацию
 nginx -t
+
+# Перезагрузить Nginx
 systemctl reload nginx
+```
+
+### 5. Проверить работу
+```bash
+# Проверить что сайт работает по домену
+curl -H "Host: mdent.md" http://localhost
+
+# Проверить что сайт работает по IP
+curl http://5.35.126.5
+```
+
+## 🔒 Настройка SSL сертификата
+
+### 1. Установка Certbot
+```bash
+# Установить Certbot
+apt update
+apt install certbot python3-certbot-nginx
+
+# Получить SSL сертификат
+certbot --nginx -d mdent.md -d www.mdent.md
+
+# Настроить автообновление
+crontab -e
+# Добавить строку:
+# 0 12 * * * /usr/bin/certbot renew --quiet
+```
+
+### 2. Проверка SSL
+```bash
+# Проверить статус сертификата
+certbot certificates
+
+# Проверить что HTTPS работает
+curl -I https://mdent.md
 ```
 
 ## 🚀 Запуск приложения

@@ -8,18 +8,23 @@ import { LanguageToggle } from '../components/LanguageToggle';
 import { AddClinicForm } from '../components/AddClinicForm';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useHreflang } from '@/hooks/useHreflang';
 
 export default function PricingPage() {
   const [, paramsRo] = useRoute('/ro/pricing');
   const isRomanian = !!paramsRo;
+  const language = isRomanian ? 'ro' : 'ru';
   const { t, changeLanguage } = useTranslation();
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
+  // Генерируем hreflang теги
+  useHreflang({ language });
+
   // Синхронизируем язык в i18n системе с URL
   useEffect(() => {
-    changeLanguage(isRomanian ? 'ro' : 'ru');
-  }, [isRomanian, changeLanguage]);
+    changeLanguage(language);
+  }, [language, changeLanguage]);
 
   // Fetch site settings for logo
   const { data: siteSettings, isLoading: settingsLoading } = useQuery({

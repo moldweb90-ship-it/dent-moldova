@@ -22,7 +22,7 @@
 ### 4) Local workflow (golden rule)
 1. Тестируем локально на `http://localhost:5000`
 2. Если всё ок → `git add/commit/push` в `main`
-3. GitHub Actions автодеплоит на VPS → `http://5.35.126.5:5000`
+3. GitHub Actions автодеплоит на VPS → `https://mdent.md/`
 
 ### 5) Commands
 ```

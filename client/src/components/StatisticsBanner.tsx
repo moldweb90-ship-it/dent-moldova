@@ -65,7 +65,7 @@ export function StatisticsBanner() {
       {/* Desktop version */}
       <div className="hidden sm:flex items-center justify-center space-x-6 text-sm text-gray-600">
         {/* Стоматологии */}
-        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:scale-110 hover:text-blue-600 group">
+        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:text-blue-600 group">
           <Building2 className="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" />
           <span className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-300" style={{ fontSize: '1rem' }}>{totalClinics}</span>
           <span className="group-hover:text-blue-600 transition-colors duration-300">{language === 'ro' ? 'stomatologii' : 'стоматологий'}</span>
@@ -74,7 +74,7 @@ export function StatisticsBanner() {
         <div className="text-gray-300">•</div>
 
         {/* Города */}
-        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:scale-110 hover:text-green-600 group">
+        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:text-green-600 group">
           <MapPin className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors duration-300" />
           <span className="font-medium text-gray-900 group-hover:text-green-600 transition-colors duration-300" style={{ fontSize: '1rem' }}>{totalCities}</span>
           <span className="group-hover:text-green-600 transition-colors duration-300">{language === 'ro' ? 'orașe' : 'городов'}</span>
@@ -83,7 +83,7 @@ export function StatisticsBanner() {
         <div className="text-gray-300">•</div>
 
         {/* Районы */}
-        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:scale-110 hover:text-purple-600 group">
+        <div className="flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:text-purple-600 group">
           <MapPinned className="w-4 h-4 text-gray-500 group-hover:text-purple-600 transition-colors duration-300" />
           <span className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors duration-300" style={{ fontSize: '1rem' }}>{totalDistricts}</span>
           <span className="group-hover:text-purple-600 transition-colors duration-300">{language === 'ro' ? 'raioane' : 'районов'}</span>
@@ -94,7 +94,7 @@ export function StatisticsBanner() {
       {/* Mobile version - compact */}
       <div className="flex sm:hidden items-center justify-center space-x-3 text-xs text-gray-600">
         {/* Стоматологии */}
-        <div className="flex items-center space-x-1 active:scale-110 transition-transform duration-200 group">
+        <div className="flex items-center space-x-1 active:text-blue-600 transition-all duration-200 group">
           <Building2 className="w-3.5 h-3.5 text-gray-500 group-active:text-blue-600 transition-colors duration-200" />
           <span className="font-semibold text-gray-900 group-active:text-blue-600 transition-colors duration-200" style={{ fontSize: '1rem' }}>{totalClinics}</span>
           <span className="text-gray-600 group-active:text-blue-600 transition-colors duration-200">{language === 'ro' ? 'clinici' : 'клиник'}</span>
@@ -103,7 +103,7 @@ export function StatisticsBanner() {
         <div className="text-gray-300">•</div>
 
         {/* Города */}
-        <div className="flex items-center space-x-1 active:scale-110 transition-transform duration-200 group">
+        <div className="flex items-center space-x-1 active:text-green-600 transition-all duration-200 group">
           <MapPin className="w-3.5 h-3.5 text-gray-500 group-active:text-green-600 transition-colors duration-200" />
           <span className="font-semibold text-gray-900 group-active:text-green-600 transition-colors duration-200" style={{ fontSize: '1rem' }}>{totalCities}</span>
           <span className="text-gray-600 group-active:text-green-600 transition-colors duration-200">{language === 'ro' ? 'orașe' : 'городов'}</span>
@@ -112,7 +112,7 @@ export function StatisticsBanner() {
         <div className="text-gray-300">•</div>
 
         {/* Районы */}
-        <div className="flex items-center space-x-1 active:scale-110 transition-transform duration-200 group">
+        <div className="flex items-center space-x-1 active:text-purple-600 transition-all duration-200 group">
           <MapPinned className="w-3.5 h-3.5 text-gray-500 group-active:text-purple-600 transition-colors duration-200" />
           <span className="font-semibold text-gray-900 group-active:text-purple-600 transition-colors duration-200" style={{ fontSize: '1rem' }}>{totalDistricts}</span>
           <span className="text-gray-600 group-active:text-purple-600 transition-colors duration-200">{language === 'ro' ? 'raioane' : 'районов'}</span>
