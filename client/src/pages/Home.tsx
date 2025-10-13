@@ -1089,7 +1089,7 @@ export default function Home() {
             latitude: '47.0105',
             longitude: '28.8638'
           },
-          url: `https://dent-moldova.com${canonical}`
+          url: `${window.location.origin}${canonical}`
         }
       };
     } else if (selectedFeatures.length > 0 && selectedCity) {

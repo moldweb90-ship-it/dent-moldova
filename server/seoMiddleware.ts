@@ -259,11 +259,16 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
             : `${featureInfo.ro.toLowerCase()}, stomatologie Moldova, ${featureInfo.ro.toLowerCase()} clinici`;
         }
         
+        // Определяем baseUrl динамически
+        const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+        const host = req.headers.host || 'localhost:5000';
+        const baseUrl = `${protocol}://${host}`;
+
         // Генерируем правильную Schema.org разметку для страниц каталога
         const schemaData = {
           name: title.replace(' | MDent.md', ''),
           description,
-          url: `https://dent-moldova.com${req.path}`,
+          url: `${baseUrl}${req.path}`,
           about: {
             '@type': 'MedicalSpecialty',
             name: featureInfo[language === 'ro' ? 'ro' : 'ru']
@@ -300,8 +305,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           h1: title.replace(' | MDent.md', ''),
           ogTitle: title,
           ogDescription: description,
-          ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
-          canonical: `https://dent-moldova.com${req.path}`,
+          ogImage: `${baseUrl}/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
+          canonical: `${baseUrl}${req.path}`,
           robots: 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
           language,
           schemaType: 'CollectionPage',
@@ -423,11 +428,16 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
             : `stomatologie ${cityName}, stomatolog ${cityName}, tratament dentar ${cityName}, clinică ${cityName}`;
         }
         
+        // Определяем baseUrl динамически
+        const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+        const host = req.headers.host || 'localhost:5000';
+        const baseUrl = `${protocol}://${host}`;
+
         // Schema.org для страниц локаций
         const schemaData = {
           name: title.replace(' | MDent.md', ''),
           description,
-          url: `https://dent-moldova.com${req.path}`,
+          url: `${baseUrl}${req.path}`,
           spatialCoverage: {
             '@type': 'Place',
             name: selectedDistrict ? `${districtName}, ${cityName}` : cityName,
@@ -445,7 +455,7 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           provider: {
             '@type': 'Organization',
             name: 'Dent Moldova',
-            url: 'https://dent-moldova.com'
+            url: baseUrl
           }
         };
         
@@ -460,8 +470,8 @@ export async function seoMiddleware(req: Request, res: Response, next: NextFunct
           h1: title.replace(' | MDent.md', ''),
           ogTitle: title,
           ogDescription: description,
-          ogImage: `https://dent-moldova.com/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
-          canonical: `https://dent-moldova.com${req.path}`,
+          ogImage: `${baseUrl}/images/clinic-image-1757955205248-68680144.png`, // Используем логотип сайта
+          canonical: `${baseUrl}${req.path}`,
           robots: 'index,follow,max-snippet:150,max-image-preview:large,max-video-preview:30',
           language,
           schemaType: 'CollectionPage',
