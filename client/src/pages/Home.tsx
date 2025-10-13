@@ -184,16 +184,13 @@ export default function Home() {
 
   // ПРИНУДИТЕЛЬНО АКТИВИРУЕМ ФИЛЬТР "ОТКРЫТЫ СЕЙЧАС" ЕСЛИ URL СОДЕРЖИТ open-now
   useEffect(() => {
-    if (isOpenNowActive) {
-      setFilters(prev => {
-        // Проверяем только если фильтр еще не установлен
-        if (!prev.openNow) {
-          return { ...prev, openNow: true };
-        }
-        return prev; // Возвращаем тот же объект если фильтр уже установлен
-      });
+    if (isOpenNowActive && !filters.openNow) {
+      setFilters(prev => ({ ...prev, openNow: true }));
+    } else if (!isOpenNowActive && filters.openNow) {
+      // Сбрасываем фильтр если URL изменился
+      setFilters(prev => ({ ...prev, openNow: undefined }));
     }
-  }, [isOpenNowActive]); // Убираем filters.openNow из зависимостей чтобы избежать бесконечного цикла
+  }, [isOpenNowActive]); // Не добавляем filters.openNow чтобы избежать цикла
   
   const [page, setPage] = useState(1);
   // Количество карточек на странице (вернули как было)
@@ -229,51 +226,65 @@ export default function Home() {
 
   // Устанавливаем фильтры на основе URL после загрузки данных
   useEffect(() => {
-    if (citySlug && cities.length > 0) {
-      const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+    if (!cities.length) return; // Ждем загрузки городов
+    
+    const slugField = language === 'ro' ? 'slugRo' : 'slugRu';
+    
+    if (citySlug) {
       const selectedCity = cities.find(c => c[slugField] === citySlug);
+      if (!selectedCity) return;
       
-      if (selectedCity) {
-        setFilters(prev => ({
+      // Обновляем только если город изменился
+      setFilters(prev => {
+        const newDistrictId = districtSlug && districts.length > 0 
+          ? districts.find(d => d[slugField] === districtSlug)?.id
+          : null;
+        
+        const newDistrictIds = newDistrictId ? [newDistrictId] : [];
+        const newFeatures = activeFeatures.length > 0 ? activeFeatures : prev.features;
+        
+        // Проверяем, изменились ли данные, чтобы избежать лишних обновлений
+        if (prev.city === selectedCity.id && 
+            JSON.stringify(prev.districts) === JSON.stringify(newDistrictIds) &&
+            JSON.stringify(prev.features) === JSON.stringify(newFeatures)) {
+          return prev; // Ничего не изменилось
+        }
+        
+        return {
           ...prev,
           city: selectedCity.id,
-          districts: districtSlug && districts.length > 0 
-            ? [districts.find(d => d[slugField] === districtSlug)?.id].filter(Boolean)
-            : [],
-          features: activeFeatures.length > 0 ? activeFeatures : prev.features
-        }));
-      }
-    } else if (!citySlug) {
-      // Если нет citySlug в URL, сбрасываем фильтры города и района, но сохраняем функцию
-      setFilters(prev => ({
-        ...prev,
-        city: '',
-        districts: [],
-        features: activeFeatures.length > 0 ? activeFeatures : prev.features
-      }));
-    }
-    
-    // Если есть активные функции, но они не установлены в фильтрах
-    // Проверяем, что это не результат ручного снятия галочки пользователем
-    if (activeFeatures.length > 0 && !isManualFilterChange) {
-      const missingFeatures = activeFeatures.filter(f => !filters.features.includes(f));
-      if (missingFeatures.length > 0) {
-        setFilters(prev => ({
+          districts: newDistrictIds,
+          features: newFeatures
+        };
+      });
+    } else {
+      // Сбрасываем город и район если нет в URL
+      setFilters(prev => {
+        const newFeatures = activeFeatures.length > 0 ? activeFeatures : prev.features;
+        
+        if (!prev.city && !prev.districts.length && 
+            JSON.stringify(prev.features) === JSON.stringify(newFeatures)) {
+          return prev; // Ничего не изменилось
+        }
+        
+        return {
           ...prev,
-          features: [...new Set([...prev.features, ...activeFeatures])]
-        }));
-      }
+          city: '',
+          districts: [],
+          features: newFeatures
+        };
+      });
     }
     
-    // Сбрасываем флаг ручного изменения после обработки URL
+    // Сбрасываем флаг после обработки
     if (isManualFilterChange) {
       setIsManualFilterChange(false);
     }
   }, [citySlug, districtSlug, cities, districts, language, activeFeatures, isManualFilterChange]);
 
   
-  // Build query parameters
-  const buildQueryParams = useCallback(() => {
+  // Build query parameters - используем useMemo для избежания лишних пересчетов
+  const queryParams = useMemo(() => {
     const params = new URLSearchParams();
     
     if (searchQuery) params.set('q', searchQuery);
@@ -292,26 +303,21 @@ export default function Home() {
       params.set('verified', filters.verified.toString());
     }
     
-    // ПРИНУДИТЕЛЬНАЯ АКТИВАЦИЯ ФИЛЬТРА "ОТКРЫТЫ СЕЙЧАС" ДЛЯ ТЕСТИРОВАНИЯ
+    // ПРИНУДИТЕЛЬНАЯ АКТИВАЦИЯ ФИЛЬТРА "ОТКРЫТЫ СЕЙЧАС"
     if (isOpenNowActive || filters.openNow) {
       params.set('openNow', 'true');
     }
-    
-    // ФИЛЬТР "ЕЩЕ ОТКРЫТЫ"
     
     params.set('sort', filters.sort);
     params.set('page', page.toString());
     params.set('limit', limit.toString());
     params.set('language', language);
     
-    const queryString = params.toString();
-    
-    
-    return queryString;
+    return params.toString();
   }, [searchQuery, filters, page, language, isOpenNowActive]);
 
-  // Fetch clinics
-  const queryKey = ['/api/clinics', buildQueryParams(), language];
+  // Fetch clinics - queryKey использует мемоизированные параметры
+  const queryKey = useMemo(() => ['/api/clinics', queryParams, language], [queryParams, language]);
   
   const { data: clinicsData, isLoading, isFetching } = useQuery({
     queryKey,
@@ -321,19 +327,16 @@ export default function Home() {
       const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const clientTimezoneOffset = new Date().getTimezoneOffset();
       
-      const url = `/api/clinics?${buildQueryParams()}&clientTime=${encodeURIComponent(clientTime)}&clientTimezone=${encodeURIComponent(clientTimezone)}&clientTimezoneOffset=${clientTimezoneOffset}`;
-      
-      // Отправляем время клиента на сервер для корректной работы фильтра "Открытые сейчас"
+      const url = `/api/clinics?${queryParams}&clientTime=${encodeURIComponent(clientTime)}&clientTimezone=${encodeURIComponent(clientTimezone)}&clientTimezoneOffset=${clientTimezoneOffset}`;
       
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch clinics');
       const data = await response.json();
       
-      
       return data;
     },
     staleTime: 30 * 1000, // Кешируем на 30 секунд
-    cacheTime: 2 * 60 * 1000, // Храним в кеше 2 минуты
+    gcTime: 2 * 60 * 1000, // Храним в кеше 2 минуты (новое название вместо cacheTime)
     refetchOnWindowFocus: false, // Не перезапрашивать при фокусе
     refetchOnMount: false, // Не перезапрашивать при монтировании если данные есть
   });
@@ -572,12 +575,6 @@ export default function Home() {
     
     // Если изменился только фильтр openNow
     if (openNowChanged && !cityChanged && !districtChanged && !featuresChanged) {
-      // Принудительно очищаем кэш перед навигацией
-      if (window.queryClient) {
-        window.queryClient.invalidateQueries({ queryKey: ['/api/clinics'] });
-        window.queryClient.removeQueries({ queryKey: ['/api/clinics'] });
-      }
-      
       if (newFilters.openNow) {
         // Включаем фильтр "Открыты сейчас" - переходим на URL
         navigateToOpenNow(newFilters.city, newFilters.districts[0]);
