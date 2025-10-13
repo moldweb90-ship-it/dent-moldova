@@ -27,20 +27,12 @@ async function generateRobotsTxt(baseUrl: string) {
       return acc;
     }, {});
     
-    const robotsContent = settingsMap.robotsTxt || `User-agent: *
-Disallow: /admin
-Disallow: /api
-
-Sitemap: ${baseUrl}/sitemap.xml`;
+    const robotsContent = settingsMap.robotsTxt || '';
     
     return robotsContent;
   } catch (error) {
     console.error('Error generating robots.txt:', error);
-    return `User-agent: *
-Disallow: /admin
-Disallow: /api
-
-Sitemap: ${baseUrl}/sitemap.xml`;
+    return '';
   }
 }
 
@@ -1501,17 +1493,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Serve robots.txt
-  app.get('/robots.txt', (req, res) => {
-    const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
-    if (fs.existsSync(robotsPath)) {
-      res.sendFile(robotsPath);
-    } else {
-      // Default robots.txt if file doesn't exist
-      res.type('text/plain');
-      res.send('User-agent: *\nDisallow: /admin\nDisallow: /api\n');
-    }
-  });
 
   // Serve site.webmanifest
   app.get('/site.webmanifest', (req, res) => {
@@ -2945,6 +2926,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (fs.existsSync(robotsPath)) {
         const robotsContent = fs.readFileSync(robotsPath, 'utf8');
         res.set('Content-Type', 'text/plain');
+        res.set('X-Robots-Tag', 'noindex, nofollow');
         res.send(robotsContent);
       } else {
         // Generate robots.txt on the fly if file doesn't exist
@@ -2954,6 +2936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const robotsContent = await generateRobotsTxt(baseUrl);
         res.set('Content-Type', 'text/plain');
+        res.set('X-Robots-Tag', 'noindex, nofollow');
         res.send(robotsContent);
       }
     } catch (error) {
