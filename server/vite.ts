@@ -540,6 +540,81 @@ export async function setupVite(app: Express, server: Server) {
       );
       console.log('🔧 Setting HTML lang attribute to:', lang, 'for URL:', url);
 
+      // Обработка SEO для специальных страниц
+      if (url === '/pricing' || url === '/ro/pricing') {
+        const seoData = lang === 'ru' ? {
+          title: 'Цены на размещение стоматологической клиники в каталоге MDent.md | Реклама для стоматологий Молдовы',
+          description: 'Разместите свою стоматологическую клинику в топовом каталоге Молдовы. Бесплатное базовое размещение, верифицированный статус и премиум позиции. Привлекайте новых пациентов уже сегодня!',
+          keywords: 'размещение стоматологии, реклама клиники молдова, добавить клинику в каталог, продвижение стоматологии, цены на рекламу стоматологии, верификация клиники, премиум размещение, каталог стоматологий молдова, привлечение пациентов',
+          ogTitle: 'Разместите свою стоматологию в каталоге MDent.md',
+          ogDescription: 'Бесплатное базовое размещение, верифицированный статус и премиум позиции. Привлекайте новых пациентов!'
+        } : {
+          title: 'Prețuri pentru plasarea clinicii stomatologice în catalogul MDent.md | Publicitate pentru stomatologii din Moldova',
+          description: 'Plasați clinica dvs. stomatologică în catalogul top al Moldovei. Plasare gratuită de bază, statut verificat și poziții premium. Atrageți pacienți noi astăzi!',
+          keywords: 'plasare stomatologie, publicitate clinică moldova, adăugare clinică în catalog, promovare stomatologie, prețuri publicitate stomatologie, verificare clinică, plasare premium, catalog stomatologii moldova, atragere pacienți',
+          ogTitle: 'Plasați clinica dvs. stomatologică în catalogul MDent.md',
+          ogDescription: 'Plasare gratuită de bază, statut verificat și poziții premium. Atrageți pacienți noi!'
+        };
+
+        template = template.replace(
+          /<title>.*?<\/title>/,
+          `<title>${seoData.title}</title>`
+        );
+        template = template.replace(
+          /<meta name="description" content="[^"]*"/,
+          `<meta name="description" content="${seoData.description}"`
+        );
+        template = template.replace(
+          /<meta name="keywords" content="[^"]*"/,
+          `<meta name="keywords" content="${seoData.keywords}"`
+        );
+        template = template.replace(
+          /<meta property="og:title" content="[^"]*"/,
+          `<meta property="og:title" content="${seoData.ogTitle}"`
+        );
+        template = template.replace(
+          /<meta property="og:description" content="[^"]*"/,
+          `<meta property="og:description" content="${seoData.ogDescription}"`
+        );
+      }
+
+      if (url === '/privacy' || url === '/ro/privacy') {
+        const seoData = lang === 'ru' ? {
+          title: 'Политика конфиденциальности MDent.md | Защита персональных данных в Молдове',
+          description: 'Политика конфиденциальности и защиты персональных данных MDent.md. Узнайте, как мы собираем, храним и обрабатываем вашу информацию в соответствии с GDPR и законодательством Молдовы.',
+          keywords: 'политика конфиденциальности, защита данных молдова, GDPR молдова, персональные данные, privacy policy, обработка данных, безопасность данных, закон 133/2011',
+          ogTitle: 'Политика конфиденциальности MDent.md',
+          ogDescription: 'Защита персональных данных в соответствии с GDPR и законодательством Молдовы'
+        } : {
+          title: 'Politica de confidențialitate MDent.md | Protecția datelor personale în Moldova',
+          description: 'Politica de confidențialitate și protecția datelor personale MDent.md. Aflați cum colectăm, stocăm și procesăm informațiile dvs. în conformitate cu GDPR și legislația Moldovei.',
+          keywords: 'politică confidențialitate, protecția datelor moldova, GDPR moldova, date personale, privacy policy, procesare date, securitate date, legea 133/2011',
+          ogTitle: 'Politica de confidențialitate MDent.md',
+          ogDescription: 'Protecția datelor personale în conformitate cu GDPR și legislația Moldovei'
+        };
+
+        template = template.replace(
+          /<title>.*?<\/title>/,
+          `<title>${seoData.title}</title>`
+        );
+        template = template.replace(
+          /<meta name="description" content="[^"]*"/,
+          `<meta name="description" content="${seoData.description}"`
+        );
+        template = template.replace(
+          /<meta name="keywords" content="[^"]*"/,
+          `<meta name="keywords" content="${seoData.keywords}"`
+        );
+        template = template.replace(
+          /<meta property="og:title" content="[^"]*"/,
+          `<meta property="og:title" content="${seoData.ogTitle}"`
+        );
+        template = template.replace(
+          /<meta property="og:description" content="[^"]*"/,
+          `<meta property="og:description" content="${seoData.ogDescription}"`
+        );
+      }
+
       // Базовый URL от запроса (домен продакшена или локальный)
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
       const host = req.headers.host;
@@ -627,7 +702,7 @@ export async function setupVite(app: Express, server: Server) {
       // Добавляем логотип сайта в мета-теги Open Graph
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML:', settingsMap.logo);
-        const baseUrl = settingsMap.websiteUrl || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://mdent.md');
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : (settingsMap.websiteUrl || 'https://mdent.md');
         const logoUrl = `${baseUrl}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения
@@ -976,7 +1051,7 @@ export function serveStatic(app: Express) {
       // Добавляем логотип сайта в мета-теги Open Graph (продакшн)
       if (settingsMap.logo) {
         console.log('✅ Adding logo to HTML (prod):', settingsMap.logo);
-        const baseUrl = settingsMap.websiteUrl || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://mdent.md');
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : (settingsMap.websiteUrl || 'https://mdent.md');
         const logoUrl = `${baseUrl}${settingsMap.logo.startsWith('/') ? '' : '/'}${settingsMap.logo}`;
         
         // Добавляем og:image с размерами для лучшего отображения

@@ -8,7 +8,7 @@ import { LanguageToggle } from '../components/LanguageToggle';
 import { AddClinicForm } from '../components/AddClinicForm';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useHreflang } from '@/hooks/useHreflang';
+import { DynamicSEO } from '@/components/DynamicSEO';
 
 export default function PricingPage() {
   const [, paramsRo] = useRoute('/ro/pricing');
@@ -18,8 +18,22 @@ export default function PricingPage() {
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-  // Генерируем hreflang теги
-  useHreflang({ language });
+  // SEO метаданные
+  const seoData = language === 'ru' ? {
+    title: 'Цены на размещение стоматологической клиники в каталоге MDent.md | Реклама для стоматологий Молдовы',
+    description: 'Разместите свою стоматологическую клинику в топовом каталоге Молдовы. Бесплатное базовое размещение, верифицированный статус и премиум позиции. Привлекайте новых пациентов уже сегодня!',
+    keywords: 'размещение стоматологии, реклама клиники молдова, добавить клинику в каталог, продвижение стоматологии, цены на рекламу стоматологии, верификация клиники, премиум размещение, каталог стоматологий молдова, привлечение пациентов',
+    h1: 'Цены на размещение стоматологической клиники',
+    ogTitle: 'Разместите свою стоматологию в каталоге MDent.md',
+    ogDescription: 'Бесплатное базовое размещение, верифицированный статус и премиум позиции. Привлекайте новых пациентов!'
+  } : {
+    title: 'Prețuri pentru plasarea clinicii stomatologice în catalogul MDent.md | Publicitate pentru stomatologii din Moldova',
+    description: 'Plasați clinica dvs. stomatologică în catalogul top al Moldovei. Plasare gratuită de bază, statut verificat și poziții premium. Atrageți pacienți noi astăzi!',
+    keywords: 'plasare stomatologie, publicitate clinică moldova, adăugare clinică în catalog, promovare stomatologie, prețuri publicitate stomatologie, verificare clinică, plasare premium, catalog stomatologii moldova, atragere pacienți',
+    h1: 'Prețuri pentru plasarea clinicii stomatologice',
+    ogTitle: 'Plasați clinica dvs. stomatologică în catalogul MDent.md',
+    ogDescription: 'Plasare gratuită de bază, statut verificat și poziții premium. Atrageți pacienți noi!'
+  };
 
   // Синхронизируем язык в i18n системе с URL
   useEffect(() => {
@@ -70,6 +84,24 @@ export default function PricingPage() {
 
   return (
     <>
+      <DynamicSEO
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        h1={seoData.h1}
+        ogTitle={seoData.ogTitle}
+        ogDescription={seoData.ogDescription}
+        canonical={`https://mdent.md${language === 'ro' ? '/ro' : ''}/pricing`}
+        robots="index,follow"
+        schemaType="WebPage"
+        schemaData={{
+          name: seoData.h1,
+          description: seoData.description,
+          url: `https://mdent.md${language === 'ro' ? '/ro' : ''}/pricing`
+        }}
+        language={language}
+      />
+      
       <AddClinicForm 
         open={clinicFormOpen} 
         onClose={() => setClinicFormOpen(false)}

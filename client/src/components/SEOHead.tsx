@@ -96,6 +96,7 @@ export function SEOHead({
       ogDescMeta.setAttribute('content', ogDescription);
     }
 
+    // Only update og:image if provided (don't overwrite server-rendered default)
     if (ogImage) {
       // Ensure og:image URL is absolute
       const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${window.location.origin}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;

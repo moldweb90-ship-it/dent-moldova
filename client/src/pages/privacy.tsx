@@ -7,17 +7,36 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { AddClinicForm } from '@/components/AddClinicForm';
 import { Building2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { DynamicSEO } from '@/components/DynamicSEO';
 
 export default function PrivacyPolicyPage() {
   const [, paramsRo] = useRoute('/ro/privacy');
   const isRomanian = !!paramsRo;
+  const language = isRomanian ? 'ro' : 'ru';
   const { t, changeLanguage } = useTranslation();
   const [clinicFormOpen, setClinicFormOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
+  // SEO метаданные
+  const seoData = language === 'ru' ? {
+    title: 'Политика конфиденциальности MDent.md | Защита персональных данных в Молдове',
+    description: 'Политика конфиденциальности и защиты персональных данных MDent.md. Узнайте, как мы собираем, храним и обрабатываем вашу информацию в соответствии с GDPR и законодательством Молдовы.',
+    keywords: 'политика конфиденциальности, защита данных молдова, GDPR молдова, персональные данные, privacy policy, обработка данных, безопасность данных, закон 133/2011',
+    h1: 'Политика конфиденциальности',
+    ogTitle: 'Политика конфиденциальности MDent.md',
+    ogDescription: 'Узнайте, как мы защищаем ваши персональные данные в соответствии с GDPR и законодательством Молдовы.'
+  } : {
+    title: 'Politica de confidențialitate MDent.md | Protecția datelor personale în Moldova',
+    description: 'Politica de confidențialitate și protecția datelor personale MDent.md. Aflați cum colectăm, stocăm și procesăm informațiile dvs. în conformitate cu GDPR și legislația Moldovei.',
+    keywords: 'politică confidențialitate, protecția datelor moldova, GDPR moldova, date personale, privacy policy, procesare date, securitate date, legea 133/2011',
+    h1: 'Politica de confidențialitate',
+    ogTitle: 'Politica de confidențialitate MDent.md',
+    ogDescription: 'Aflați cum protejăm datele dvs. personale în conformitate cu GDPR și legislația Moldovei.'
+  };
+
   useEffect(() => {
-    changeLanguage(isRomanian ? 'ro' : 'ru');
-  }, [isRomanian, changeLanguage]);
+    changeLanguage(language);
+  }, [language, changeLanguage]);
 
   // Fetch site settings for logo
   const { data: siteSettings, isLoading: settingsLoading } = useQuery({
@@ -63,6 +82,24 @@ export default function PrivacyPolicyPage() {
 
   return (
     <>
+      <DynamicSEO
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        h1={seoData.h1}
+        ogTitle={seoData.ogTitle}
+        ogDescription={seoData.ogDescription}
+        canonical={`https://mdent.md${language === 'ro' ? '/ro' : ''}/privacy`}
+        robots="index,follow"
+        schemaType="WebPage"
+        schemaData={{
+          name: seoData.h1,
+          description: seoData.description,
+          url: `https://mdent.md${language === 'ro' ? '/ro' : ''}/privacy`
+        }}
+        language={language}
+      />
+      
       <AddClinicForm 
         open={clinicFormOpen} 
         onClose={() => setClinicFormOpen(false)}
