@@ -35,11 +35,37 @@ async function loadCacheSettings() {
     if (response.ok) {
       const settings = await response.json();
       cacheSettings = { ...cacheSettings, ...settings };
+      console.log('Service Worker: Настройки кеша обновлены', cacheSettings);
     }
   } catch (error) {
     console.log('Не удалось загрузить настройки кеширования, используются по умолчанию');
   }
 }
+
+// Периодическое обновление настроек каждые 30 секунд
+setInterval(loadCacheSettings, 30000);
+
+// Обработка сообщений от админки
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'UPDATE_SETTINGS') {
+    console.log('Service Worker: Получены новые настройки', event.data.settings);
+    cacheSettings = { ...cacheSettings, ...event.data.settings };
+    
+    // Очищаем кеш при изменении настроек
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Service Worker: Очистка кеша', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    });
+  }
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
@@ -238,9 +264,46 @@ async function handleApiRequest(request) {
 
 // Обработка HTML страниц
 async function handlePageRequest(request) {
+  // Если кеширование страниц отключено - всегда идем в сеть
+  if (!cacheSettings.pagesEnabled) {
+    cacheStats.missCount++;
+    return fetch(request);
+  }
+
   const cache = await caches.open(PAGES_CACHE);
   const cachedResponse = await cache.match(request);
 
+  // Network First стратегия для страниц (рекомендуется)
+  if (cacheSettings.cacheStrategy === 'networkFirst') {
+    try {
+      const networkResponse = await fetch(request);
+      if (networkResponse.ok) {
+        const responseToCache = networkResponse.clone();
+        const headers = new Headers(responseToCache.headers);
+        headers.set('sw-cache-date', new Date().toISOString());
+        
+        const modifiedResponse = new Response(responseToCache.body, {
+          status: responseToCache.status,
+          statusText: responseToCache.statusText,
+          headers: headers
+        });
+        
+        await cache.put(request, modifiedResponse);
+        cacheStats.missCount++;
+        return networkResponse;
+      }
+    } catch (error) {
+      console.log('Network error, trying cache:', error);
+    }
+    
+    // Если сеть недоступна - используем кеш
+    if (cachedResponse) {
+      cacheStats.hitCount++;
+      return cachedResponse;
+    }
+  }
+
+  // Cache First или Stale While Revalidate для страниц
   if (cachedResponse) {
     // Проверяем возраст кеша
     const cacheDate = new Date(cachedResponse.headers.get('sw-cache-date'));

@@ -399,12 +399,31 @@ export function Settings() {
     try {
       await apiRequest('POST', '/api/admin/settings', data);
       
-      // Обновляем Service Worker с новыми настройками
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'UPDATE_SETTINGS',
-          settings: data
-        });
+      // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ Service Worker
+      if ('serviceWorker' in navigator) {
+        try {
+          // Отправляем сообщение с новыми настройками
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'UPDATE_SETTINGS',
+              settings: data
+            });
+          }
+          
+          // Принудительно обновляем Service Worker
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration && registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          
+          // Перезагружаем страницу для применения изменений
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          
+        } catch (swError) {
+          console.error('Ошибка обновления Service Worker:', swError);
+        }
       }
       
       toast({
