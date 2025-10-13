@@ -121,15 +121,15 @@ export function MobileFiltersModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md h-[85vh] max-h-[85vh] overflow-hidden p-0 mobile-filters-modal">
-        <DialogHeader className="px-6 py-4 border-b border-gray-200">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md h-[85vh] max-h-[85vh] overflow-hidden p-0 gap-0 mobile-filters-modal" style={{ display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader className="px-6 py-4 border-b border-gray-200" style={{ flexShrink: 0 }}>
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
             <Filter className="h-5 w-5 mr-2" />
             {t('filters')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-6 space-y-6 overflow-y-auto h-full">
+        <div className="overflow-y-auto p-6 pb-2 space-y-6" style={{ flex: 1 }}>
           {/* Hidden button to receive initial focus */}
           <button tabIndex={-1} className="sr-only" autoFocus></button>
           
@@ -475,16 +475,6 @@ export function MobileFiltersModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3 pt-4 border-t border-gray-200">
-            <Button onClick={handleApply} className="w-full bg-blue-600 text-white hover:bg-blue-700 shadow-lg">
-              {t('applyFilters')}
-            </Button>
-            <Button onClick={handleReset} variant="outline" className="w-full hover:bg-gray-50">
-              {t('reset')}
-            </Button>
-          </div>
-          
           {/* Active Clinics Counter */}
           <div className="pt-4 border-t border-gray-200">
             <ActiveClinicsCounter 
@@ -504,6 +494,16 @@ export function MobileFiltersModal({
               }}
             />
           </div>
+        </div>
+
+        {/* Sticky Action Buttons */}
+        <div className="p-6 bg-white border-t border-gray-200 space-y-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]" style={{ flexShrink: 0 }}>
+          <Button onClick={handleApply} className="w-full bg-blue-600 text-white hover:bg-blue-700 shadow-lg h-12 text-base font-semibold">
+            {t('applyFilters')}
+          </Button>
+          <Button onClick={handleReset} variant="outline" className="w-full hover:bg-gray-50 h-12 text-base font-semibold border-2">
+            {t('reset')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
