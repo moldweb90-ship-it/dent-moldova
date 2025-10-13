@@ -629,10 +629,12 @@ export async function setupVite(app: Express, server: Server) {
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
       const host = req.headers.host;
       const baseUrl = `${proto}://${host}`;
-      // Обновляем canonical и og:url под реальный домен
-      template = template
-        .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}"`)
-        .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}"`);
+      // Обновляем og:url под реальный домен только для главной страницы
+      if (url === '/' || url === '/ro') {
+        template = template
+          .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}${url === '/ro' ? '/ro' : ''}"`)
+          .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}${url === '/ro' ? '/ro' : ''}"`);
+      }
 
       // Получаем глобальные настройки для фавиконки
       const { storage } = await import('./storage');
@@ -812,13 +814,25 @@ export async function setupVite(app: Express, server: Server) {
           );
         }
         
-        // Обновляем canonical URL
+        // Обновляем canonical URL и og:url
+        const currentUrl = `${baseUrl}${url}`;
         if (seoData.canonical) {
           template = template.replace(
             /<link rel="canonical" href="[^"]*"/,
             `<link rel="canonical" href="${seoData.canonical}"`
           );
+        } else {
+          template = template.replace(
+            /<link rel="canonical" href="[^"]*"/,
+            `<link rel="canonical" href="${currentUrl}"`
+          );
         }
+        
+        // Обновляем og:url
+        template = template.replace(
+          /<meta property="og:url" content="[^"]*"/,
+          `<meta property="og:url" content="${currentUrl}"`
+        );
         
         // Генерируем и добавляем JSON-LD схему
         if (seoData.schemaType && seoData.schemaData && Object.keys(seoData.schemaData).length > 0) {
@@ -979,9 +993,12 @@ export function serveStatic(app: Express) {
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
       const host = req.headers.host;
       const baseUrl = `${proto}://${host}`;
-      template = template
-        .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}"`)
-        .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}"`);
+      // Обновляем og:url под реальный домен только для главной страницы (продакшн)
+      if (url === '/' || url === '/ro') {
+        template = template
+          .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${baseUrl}${url === '/ro' ? '/ro' : ''}"`)
+          .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${baseUrl}${url === '/ro' ? '/ro' : ''}"`);
+      }
 
       // Получаем глобальные настройки для фавиконки (продакшн)
       const { storage } = await import('./storage');
@@ -1146,13 +1163,25 @@ export function serveStatic(app: Express) {
           );
         }
         
-        // Обновляем canonical URL
+        // Обновляем canonical URL и og:url
+        const currentUrl = `${baseUrl}${url}`;
         if (seoData.canonical) {
           template = template.replace(
             /<link rel="canonical" href="[^"]*"/,
             `<link rel="canonical" href="${seoData.canonical}"`
           );
+        } else {
+          template = template.replace(
+            /<link rel="canonical" href="[^"]*"/,
+            `<link rel="canonical" href="${currentUrl}"`
+          );
         }
+        
+        // Обновляем og:url
+        template = template.replace(
+          /<meta property="og:url" content="[^"]*"/,
+          `<meta property="og:url" content="${currentUrl}"`
+        );
         
         // Генерируем и добавляем JSON-LD схему
         if (seoData.schemaType && seoData.schemaData && Object.keys(seoData.schemaData).length > 0) {
