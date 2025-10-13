@@ -13,18 +13,28 @@ const viteLogger = createLogger();
 // Функция для генерации базовой JSON-LD схемы
 function generateHreflangTags(url: string, language?: string) {
   const baseUrl = 'https://mdent.md';
-  const currentPath = url.replace(/^\/ro/, '') || '/';
-  const isRomanian = url.startsWith('/ro');
   
   let ruPath: string;
   let roPath: string;
   
-  if (isRomanian) {
+  // Special case for clinic pages: /clinic/ro/:slug
+  if (url.startsWith('/clinic/ro/')) {
+    // Current path is Romanian clinic
+    roPath = url.endsWith('/') ? url : `${url}/`;
+    ruPath = url.replace('/clinic/ro/', '/clinic/').replace(/\/$/, '') + '/';
+  } else if (url.startsWith('/clinic/')) {
+    // Current path is Russian clinic
+    ruPath = url.endsWith('/') ? url : `${url}/`;
+    roPath = url.replace('/clinic/', '/clinic/ro/').replace(/\/$/, '') + '/';
+  } else if (url.startsWith('/ro/')) {
+    // Romanian version (general pages)
+    const currentPath = url.replace(/^\/ro/, '') || '/';
     roPath = url.endsWith('/') ? url : `${url}/`;
     ruPath = currentPath === '/' ? '/' : (currentPath.endsWith('/') ? currentPath : `${currentPath}/`);
   } else {
+    // Russian version (general pages)
     ruPath = url.endsWith('/') ? url : `${url}/`;
-    roPath = currentPath === '/' ? '/ro/' : `/ro${currentPath}${currentPath.endsWith('/') ? '' : '/'}`;
+    roPath = url === '/' ? '/ro/' : `/ro${url}${url.endsWith('/') ? '' : '/'}`;
   }
   
   return `<!-- Hreflang -->

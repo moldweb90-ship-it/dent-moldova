@@ -35,6 +35,9 @@ export function useHreflang({ language, enabled = true }: HreflangConfig) {
         ruPath = currentPath.replace('/ro/', '/');
       } else if (currentPath === '/ro') {
         ruPath = '/';
+      } else if (currentPath.startsWith('/clinic/ro/')) {
+        // Для клиник: /clinic/ro/slug -> /clinic/slug
+        ruPath = currentPath.replace('/clinic/ro/', '/clinic/');
       } else {
         // Для остальных случаев убираем /ro в начале
         ruPath = currentPath.replace(/^\/ro/, '') || '/';
@@ -45,6 +48,9 @@ export function useHreflang({ language, enabled = true }: HreflangConfig) {
       // Генерируем румынский путь (добавляем /ro)
       if (currentPath === '/') {
         roPath = '/ro';
+      } else if (currentPath.startsWith('/clinic/')) {
+        // Для клиник: /clinic/slug -> /clinic/ro/slug
+        roPath = currentPath.replace('/clinic/', '/clinic/ro/');
       } else if (currentPath.startsWith('/')) {
         roPath = '/ro' + currentPath;
       } else {

@@ -6,7 +6,7 @@ import { initServiceWorker } from './lib/serviceWorker';
 // Устанавливаем правильный lang атрибут в зависимости от URL
 function setLanguageFromPath() {
   const path = window.location.pathname;
-  if (path.startsWith('/clinic/ro/') || path === '/ro') {
+  if (path.startsWith('/clinic/ro/') || path.startsWith('/ro/') || path === '/ro') {
     document.documentElement.lang = 'ro';
   } else {
     document.documentElement.lang = 'ru';

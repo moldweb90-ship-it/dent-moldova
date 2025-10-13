@@ -213,7 +213,7 @@ async function generateSitemap(baseUrl: string) {
     
     // Romanian version
     urls.push({
-      loc: `${baseUrl}/ro/clinic/${clinic.slug}`,
+      loc: `${baseUrl}/clinic/ro/${clinic.slug}`,
       lastmod: clinic.updatedAt?.toISOString() || new Date().toISOString(),
       changefreq: 'weekly',
       priority: '0.6'
