@@ -24,17 +24,17 @@ async function initCacheSettingsProduction() {
 
     // Настройки кеширования по умолчанию для продакшена
     const defaultCacheSettings = {
-      cacheEnabled: false, // Отключено по умолчанию для стабильности
-      cacheStrategy: 'staleWhileRevalidate',
+      cacheEnabled: true, // Включено для производительности
+      cacheStrategy: 'networkFirst', // Network First для страниц (нет сброса форм)
       staticAssetsEnabled: true,
-      staticAssetsDuration: 60, // 60 минут
-      staticAssetsMaxSize: 50, // 50 MB
+      staticAssetsDuration: 30, // 30 дней
+      staticAssetsMaxSize: 100, // 100 MB
       apiDataEnabled: true,
       apiDataDuration: 15, // 15 минут
       apiEndpoints: 'clinics,cities,districts,services',
-      pagesEnabled: true,
-      pagesDuration: 2, // 2 минуты
-      pagesPreload: true,
+      pagesEnabled: false, // ОТКЛЮЧЕНО кеширование страниц (нет сброса форм)
+      pagesDuration: 1, // 1 минута (не используется)
+      pagesPreload: false, // ОТКЛЮЧЕНО предзагрузка
     };
 
     console.log('📝 Настройки кеширования по умолчанию:', defaultCacheSettings);

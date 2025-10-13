@@ -1884,16 +1884,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const cacheSettings = {
         cacheEnabled: settingsMap.cacheEnabled !== 'false',
-        cacheStrategy: settingsMap.cacheStrategy || 'staleWhileRevalidate',
+        cacheStrategy: settingsMap.cacheStrategy || 'networkFirst', // Network First по умолчанию
         staticAssetsEnabled: settingsMap.staticAssetsEnabled !== 'false',
         staticAssetsDuration: parseInt(settingsMap.staticAssetsDuration) || 30,
         staticAssetsMaxSize: parseInt(settingsMap.staticAssetsMaxSize) || 100,
         apiDataEnabled: settingsMap.apiDataEnabled !== 'false',
         apiDataDuration: parseInt(settingsMap.apiDataDuration) || 15,
         apiEndpoints: (settingsMap.apiEndpoints || 'clinics,cities,districts,services').split(','),
-        pagesEnabled: settingsMap.pagesEnabled !== 'false',
-        pagesDuration: parseInt(settingsMap.pagesDuration) || 2,
-        pagesPreload: settingsMap.pagesPreload !== 'false'
+        pagesEnabled: settingsMap.pagesEnabled === 'true', // Строгая проверка (по умолчанию false)
+        pagesDuration: parseInt(settingsMap.pagesDuration) || 1,
+        pagesPreload: settingsMap.pagesPreload === 'true' // Строгая проверка (по умолчанию false)
       };
       
       res.json(cacheSettings);

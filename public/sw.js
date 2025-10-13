@@ -16,16 +16,16 @@ let cacheStats = {
 // Настройки кеширования (будут загружаться с сервера)
 let cacheSettings = {
   cacheEnabled: true,
-  cacheStrategy: 'staleWhileRevalidate',
+  cacheStrategy: 'networkFirst', // Network First по умолчанию (нет сброса форм)
   staticAssetsEnabled: true,
   staticAssetsDuration: 30, // дни
   staticAssetsMaxSize: 100, // MB
   apiDataEnabled: true,
   apiDataDuration: 15, // минуты
   apiEndpoints: ['clinics', 'cities', 'districts', 'services'],
-  pagesEnabled: true,
-  pagesDuration: 2, // часы
-  pagesPreload: true
+  pagesEnabled: false, // ОТКЛЮЧЕНО кеширование страниц (нет сброса форм)
+  pagesDuration: 1, // минута (не используется)
+  pagesPreload: false // ОТКЛЮЧЕНО предзагрузка
 };
 
 // Загрузка настроек кеширования
