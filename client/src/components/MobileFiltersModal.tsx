@@ -497,13 +497,15 @@ export function MobileFiltersModal({
         </div>
 
         {/* Sticky Action Buttons */}
-        <div className="p-6 bg-white border-t border-gray-200 space-y-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]" style={{ flexShrink: 0 }}>
-          <Button onClick={handleApply} className="w-full bg-blue-600 text-white hover:bg-blue-700 shadow-lg h-12 text-base font-semibold">
-            {t('applyFilters')}
-          </Button>
-          <Button onClick={handleReset} variant="outline" className="w-full hover:bg-gray-50 h-12 text-base font-semibold border-2">
-            {t('reset')}
-          </Button>
+        <div className="p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]" style={{ flexShrink: 0 }}>
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={handleApply} className="bg-blue-600 text-white hover:bg-blue-700 shadow-lg h-10 text-sm font-semibold">
+              Применить
+            </Button>
+            <Button onClick={handleReset} variant="outline" className="hover:bg-gray-50 h-10 text-sm font-semibold border-2">
+              Сброс
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

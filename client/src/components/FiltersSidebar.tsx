@@ -500,13 +500,15 @@ export function FiltersSidebar({
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-3 pt-3 border-t border-gray-200">
-          <Button onClick={onApply} className="w-full bg-blue-600 text-white hover:bg-blue-700 shadow-lg">
-            {t('applyFilters')}
-          </Button>
-          <Button onClick={onReset} variant="outline" className="w-full hover:bg-gray-50">
-            {t('reset')}
-          </Button>
+        <div className="pt-3 border-t border-gray-200">
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={onApply} className="bg-blue-600 text-white hover:bg-blue-700 shadow-lg">
+              Применить
+            </Button>
+            <Button onClick={onReset} variant="outline" className="hover:bg-gray-50">
+              Сброс
+            </Button>
+          </div>
         </div>
 
       </div>
