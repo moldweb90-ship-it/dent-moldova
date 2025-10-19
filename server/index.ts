@@ -11,8 +11,21 @@ import { promisify } from "util";
 const execAsync = promisify(exec);
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Увеличиваем лимиты для больших запросов
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Добавляем обработку необработанных ошибок
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  // Не завершаем процесс, а логируем ошибку
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Не завершаем процесс, а логируем ошибку
+});
 
 // Отключаем кеширование для всех страниц
 app.use((req, res, next) => {
@@ -24,6 +37,17 @@ app.use((req, res, next) => {
 
 // Подключаем SEO middleware
 app.use(seoMiddleware);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

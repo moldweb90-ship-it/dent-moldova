@@ -2989,6 +2989,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Глобальный обработчик ошибок
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Логируем ошибку для диагностики
+    console.error('❌ API Error:', {
+      status,
+      message,
+      stack: err.stack,
+      url: _req.url,
+      method: _req.method,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(status).json({ 
+      message,
+      timestamp: new Date().toISOString(),
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

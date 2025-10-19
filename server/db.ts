@@ -5,7 +5,14 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// Настройка WebSocket для Neon только если ws доступен
+try {
+  if (typeof ws !== 'undefined') {
+    neonConfig.webSocketConstructor = ws;
+  }
+} catch (error) {
+  console.warn('⚠️ WebSocket не доступен, используем HTTP подключение к БД');
+}
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
