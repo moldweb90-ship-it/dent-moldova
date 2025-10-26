@@ -17,6 +17,7 @@ import { RecommendedClinics } from '../components/RecommendedClinics';
 import { StatisticsBanner } from '../components/StatisticsBanner';
 import { DynamicSEO } from '../components/DynamicSEO';
 import { ActiveClinicsCounter } from '../components/ActiveClinicsCounter';
+import { SEOEnhancer } from '../components/SEOEnhancer';
 
 import { useTranslation } from '../lib/i18n';
 import { useSEO } from '@/hooks/useSEO';
@@ -934,8 +935,9 @@ export default function Home() {
     const featureTitle = featureInfo.title;
     const featureName = featureInfo.name;
 
-    // Генерируем canonical URL
-    let canonical = `/${language === 'ro' ? 'ro/' : ''}`;
+    // Генерируем canonical URL (абсолютный URL)
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mdent.md';
+    let canonical = `${baseUrl}/${language === 'ro' ? 'ro/' : ''}`;
     if (isOpenNowActive && selectedCity && selectedDistrict) {
       canonical += `city/${citySlug}/${districtSlug}/open-now`;
     } else if (isOpenNowActive && selectedCity) {
@@ -966,7 +968,7 @@ export default function Home() {
     } else if (selectedCity) {
       canonical += `city/${citySlug}`;
     } else {
-      canonical = canonical.slice(0, -1) || '/'; // Remove trailing slash for home
+      canonical = canonical.slice(0, -1) || `${baseUrl}/`; // Remove trailing slash for home
     }
 
     if (isOpenNowActive && selectedCity && selectedDistrict) {
@@ -994,7 +996,9 @@ export default function Home() {
           address: {
             addressLocality: cityName,
             addressCountry: 'MD'
-          }
+          },
+          url: canonical,
+          '@type': 'Dentist'
         }
       };
     } else if (isOpenNowActive && selectedCity) {
@@ -1022,7 +1026,9 @@ export default function Home() {
           address: {
             addressLocality: cityName,
             addressCountry: 'MD'
-          }
+          },
+          url: canonical,
+          '@type': 'Dentist'
         }
       };
     } else if (isOpenNowActive) {
@@ -1173,28 +1179,35 @@ export default function Home() {
   return (
     <>
       {seoData ? (
-        <DynamicSEO
-          title={seoData.title}
-          description={seoData.description}
-          keywords={seoData.keywords}
-          h1={seoData.h1}
-          ogTitle={seoData.title}
-          ogDescription={seoData.description}
-          canonical={seoData.canonical}
-          schemaType={seoData.schemaType}
-          schemaData={seoData.schemaData}
-          language={language}
-        />
+        <>
+          <DynamicSEO
+            title={seoData.title}
+            description={seoData.description}
+            keywords={seoData.keywords}
+            h1={seoData.h1}
+            ogTitle={seoData.title}
+            ogDescription={seoData.description}
+            canonical={seoData.canonical}
+            robots="index,follow"
+            schemaType={seoData.schemaType}
+            schemaData={seoData.schemaData}
+            language={language}
+          />
+          <SEOEnhancer url={seoData.canonical} language={language} />
+        </>
       ) : seoSettings?.seoSettings ? (
-        <DynamicSEO
-          title={language === 'ru' ? seoSettings.seoSettings.siteTitleRu : seoSettings.seoSettings.siteTitleRo}
-          description={language === 'ru' ? seoSettings.seoSettings.metaDescriptionRu : seoSettings.seoSettings.metaDescriptionRo}
-          keywords={language === 'ru' ? seoSettings.seoSettings.keywordsRu : seoSettings.seoSettings.keywordsRo}
-          ogTitle={language === 'ru' ? seoSettings.seoSettings.ogTitleRu : seoSettings.seoSettings.ogTitleRo}
-          ogDescription={language === 'ru' ? seoSettings.seoSettings.ogDescriptionRu : seoSettings.seoSettings.ogDescriptionRo}
-          canonical={language === 'ru' ? seoSettings.seoSettings.canonicalRu : seoSettings.seoSettings.canonicalRo}
-          language={language}
-        />
+        <>
+          <DynamicSEO
+            title={language === 'ru' ? seoSettings.seoSettings.siteTitleRu : seoSettings.seoSettings.siteTitleRo}
+            description={language === 'ru' ? seoSettings.seoSettings.metaDescriptionRu : seoSettings.seoSettings.metaDescriptionRo}
+            keywords={language === 'ru' ? seoSettings.seoSettings.keywordsRu : seoSettings.seoSettings.keywordsRo}
+            ogTitle={language === 'ru' ? seoSettings.seoSettings.ogTitleRu : seoSettings.seoSettings.ogTitleRo}
+            ogDescription={language === 'ru' ? seoSettings.seoSettings.ogDescriptionRu : seoSettings.seoSettings.ogDescriptionRo}
+            canonical={language === 'ru' ? seoSettings.seoSettings.canonicalRu : seoSettings.seoSettings.canonicalRo}
+            language={language}
+          />
+          <SEOEnhancer url={language === 'ru' ? seoSettings.seoSettings.canonicalRu : seoSettings.seoSettings.canonicalRo} language={language} />
+        </>
       ) : null}
       <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
