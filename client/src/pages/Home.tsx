@@ -772,6 +772,7 @@ export default function Home() {
     const safeCities = cities || [];
     const safeDistricts = districts || [];
     
+    
     const selectedCity = citySlug && safeCities.length > 0 
       ? safeCities.find(c => c[language === 'ro' ? 'slugRo' : 'slugRu'] === citySlug)
       : null;
@@ -1175,7 +1176,7 @@ export default function Home() {
       // Главная страница - НЕ генерируем SEO данные, используем настройки из админки
       return null; // Возвращаем null чтобы использовались настройки из useSEO
     }
-  }, [cities, districts, citySlug, districtSlug, language, activeFeatures, isOpenNowActive]);
+  }, [cities, districts, citySlug, districtSlug, language, activeFeatures, isOpenNowActive, cityParamsRu, cityParamsRo, districtParamsRu, districtParamsRo]);
 
   const seoData = useMemo(() => generateSEOData(), [generateSEOData]);
   
@@ -1294,7 +1295,7 @@ export default function Home() {
               
               {/* Language Toggle - moved before Add Clinic Button for mobile */}
               <div className="flex md:hidden">
-                <LanguageToggle />
+                <LanguageToggle cities={cities} />
               </div>
               
               {/* Add Clinic Button */}
@@ -1316,7 +1317,7 @@ export default function Home() {
               
               {/* Language Toggle - for desktop */}
               <div className="hidden md:flex">
-                <LanguageToggle />
+                <LanguageToggle cities={cities} />
               </div>
             </div>
           </div>

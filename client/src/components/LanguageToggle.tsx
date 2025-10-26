@@ -1,6 +1,18 @@
 import { useLocation } from 'wouter';
 
-export function LanguageToggle() {
+interface City {
+  id: string;
+  nameRu: string;
+  nameRo: string;
+  slugRu: string;
+  slugRo: string;
+}
+
+interface LanguageToggleProps {
+  cities?: City[];
+}
+
+export function LanguageToggle({ cities = [] }: LanguageToggleProps) {
   const [currentPath, setLocation] = useLocation();
   
   // Получаем текущий путь напрямую из wouter
@@ -43,8 +55,20 @@ export function LanguageToggle() {
         if (path === '/ro') {
           newPath = '/';
         } else if (path.startsWith('/ro/city/')) {
-          // /ro/city/chisinau/sos -> /city/chisinau/sos
-          newPath = path.replace('/ro/', '/');
+          // /ro/city/cahul -> /city/kahul (используем slugRu)
+          const citySlug = path.split('/')[3]; // Получаем slug города
+          const city = cities.find(c => c.slugRo === citySlug);
+          if (city && city.slugRu) {
+            newPath = `/city/${city.slugRu}`;
+            // Добавляем остальную часть пути (район, функция и т.д.)
+            const remainingPath = path.split('/').slice(4).join('/');
+            if (remainingPath) {
+              newPath += `/${remainingPath}`;
+            }
+          } else {
+            // Fallback: используем старую логику если город не найден
+            newPath = path.replace('/ro/', '/');
+          }
         } else if (path.startsWith('/ro/')) {
           // /ro/sos -> /sos
           // /ro/?features=parking&features=sos -> /?features=parking&features=sos
@@ -57,8 +81,20 @@ export function LanguageToggle() {
         if (path === '/') {
           newPath = '/ro';
         } else if (path.startsWith('/city/')) {
-          // /city/chisinau/sos -> /ro/city/chisinau/sos
-          newPath = '/ro' + path;
+          // /city/kahul -> /ro/city/cahul (используем slugRo)
+          const citySlug = path.split('/')[2]; // Получаем slug города
+          const city = cities.find(c => c.slugRu === citySlug);
+          if (city && city.slugRo) {
+            newPath = `/ro/city/${city.slugRo}`;
+            // Добавляем остальную часть пути (район, функция и т.д.)
+            const remainingPath = path.split('/').slice(3).join('/');
+            if (remainingPath) {
+              newPath += `/${remainingPath}`;
+            }
+          } else {
+            // Fallback: используем старую логику если город не найден
+            newPath = '/ro' + path;
+          }
         } else if (path.match(/^\/(pediatric-dentistry|parking|sos|work24h|credit|weekend-work)$/)) {
           // /sos -> /ro/sos
           newPath = '/ro' + path;
