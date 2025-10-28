@@ -23,7 +23,16 @@ if (!DATABASE_URL) {
 console.log(`🗄️ Используем PostgreSQL (Neon)`);
 console.log(`📍 Database host: ${new URL(DATABASE_URL).hostname}`);
 
-const pool = new Pool({ connectionString: DATABASE_URL });
+const pool = new Pool({ 
+  connectionString: DATABASE_URL,
+  // Настройки для предотвращения отключения соединений
+  max: 20,                    // Максимум соединений в пуле
+  min: 2,                     // Минимум соединений в пуле
+  idleTimeoutMillis: 30000,   // 30 секунд до закрытия неактивного соединения
+  connectionTimeoutMillis: 10000, // 10 секунд на установку соединения
+  keepAlive: true,            // Поддерживать соединения живыми
+  keepAliveInitialDelayMillis: 0
+});
 const db = drizzle({ client: pool, schema });
 
 export { pool, db };
