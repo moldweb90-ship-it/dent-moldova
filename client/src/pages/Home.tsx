@@ -194,8 +194,8 @@ export default function Home() {
   }, [isOpenNowActive]); // Не добавляем filters.openNow чтобы избежать цикла
   
   const [page, setPage] = useState(1);
-  // Количество карточек на странице (вернули как было)
-  const limit = 50;
+  // Количество карточек на странице - 24 клиники для всех устройств
+  const limit = 24;
   const [isManualFilterChange, setIsManualFilterChange] = useState(false);
 
   // Fetch cities

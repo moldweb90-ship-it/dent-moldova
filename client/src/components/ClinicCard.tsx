@@ -105,9 +105,8 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
   const [verificationForm, setVerificationForm] = useState({ email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Ленивая загрузка отзывов: активируем после ховера/фокуса или если карточка приоритетная
-  const [enableRatings, setEnableRatings] = useState<boolean>(priority);
-  const { ratingData, realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRatings(clinic.id, { enabled: enableRatings });
+  // Загружаем рейтинги сразу для всех карточек - рейтинг важен и должен отображаться без задержек
+  const { ratingData, realRatings, isLoading: ratingsLoading, error: ratingsError } = useClinicRatings(clinic.id, { enabled: true });
   
   
   // Отладка названий клиник (временно отключено)
@@ -274,7 +273,6 @@ export function ClinicCard({ clinic, onClinicClick, onBookClick, onPricesClick, 
       ref={rootRef}
       className={`relative rounded-2xl overflow-hidden ${clinic.verified ? 'cursor-pointer' : 'cursor-default'} aspect-[5/6] md:aspect-[4/3] group ${getPromotionalBorder()}`}
       onClick={handleCardClick}
-      onFocus={() => setEnableRatings(true)}
       tabIndex={0}
     >
       {/* Background Image */}
