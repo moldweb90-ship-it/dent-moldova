@@ -22,7 +22,10 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: undefined, // Отключаем manual chunks полностью - пусть Vite сам управляет
+        // Убираем хеши из имён файлов и добавляем простые имена
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`
       },
     },
   },
