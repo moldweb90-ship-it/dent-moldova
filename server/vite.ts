@@ -946,15 +946,18 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve hashed build assets with correct MIME types and long cache
+  // Serve hashed build assets with correct MIME types
   const assetsPath = path.resolve(distPath, "assets");
   if (fs.existsSync(assetsPath)) {
     app.use(
       "/assets",
       express.static(assetsPath, {
-        maxAge: "1y",
-        immutable: true,
+        maxAge: 0, // ВРЕМЕННО отключено долгое кэширование для отладки
+        immutable: false,
         setHeaders: (res, filePath) => {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
           if (filePath.endsWith(".js")) res.type("application/javascript");
           else if (filePath.endsWith(".css")) res.type("text/css");
         },
