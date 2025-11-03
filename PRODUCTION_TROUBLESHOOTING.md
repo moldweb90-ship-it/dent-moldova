@@ -58,18 +58,56 @@ npm run build
 pm2 restart clinici-md
 ```
 
-### Проблема: Development режим в продакшене
-**Симптомы:** В логах PM2 видны сообщения "vite", "dev", "watch"
+### Проблема: Нужно пересобрать после обновления кода
+**Симптомы:** После `git pull` сайт показывает старую версию или не работает
 **Диагностика:**
 ```bash
-pm2 show clinici-md
 pm2 logs clinici-md --lines 20
+ls -la public/assets/
 ```
 **Решение:**
 ```bash
-pm2 stop clinici-md
-pm2 delete clinici-md
-pm2 start ecosystem.config.cjs
+npm run build
+pm2 restart clinici-md
+```
+
+### Проблема: Клиники не загружаются (ошибки БД)
+**Симптомы:** Сайт работает, но клиники не отображаются, в логах ошибки "password authentication failed"
+**Диагностика:**
+```bash
+pm2 logs clinici-md --lines 20
+curl -m 10 http://localhost:5000/api/clinics
+```
+**Решение:**
+```bash
+# 1. Проверить правильный пароль БД
+DATABASE_URL="postgresql://neondb_owner:npg_OIyN85pFxMlu@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" node -e "
+import('@neondatabase/serverless').then(async m => {
+  const { neon } = m;
+  const c = neon(process.env.DATABASE_URL);
+  try {
+    const result = await c\`select count(*) from clinics\`;
+    console.log('✅ DB connection OK, clinics count:', result[0].count);
+  } catch (e) {
+    console.error('❌ DB error:', e.message);
+  }
+}).catch(e => console.error('❌ Import error:', e.message));
+"
+
+# 2. Обновить .env с правильным паролем
+cat > .env << 'EOF'
+DATABASE_URL=postgresql://neondb_owner:npg_OIyN85pFxMlu@ep-raspy-cloud-a2o31v0k-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+PORT=5000
+NODE_ENV=production
+ADMIN_PASSWORD=dancerboy2013
+SESSION_SECRET=7188a5408992dcceabcfdcd44ab879b9921120958a74c5fc317d6637790b23e4
+EOF
+
+# 3. Перезапустить сервер
+pm2 restart clinici-md
+
+# 4. Проверить API
+curl -m 10 http://localhost:5000/api/clinics
 ```
 
 ### Проблема: Высокое потребление памяти
