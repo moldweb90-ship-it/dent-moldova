@@ -23,25 +23,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Vendor chunks
+          // Простое разделение: все node_modules в один vendor chunk
+          // Vite автоматически оптимизирует загрузку зависимостей
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('@tanstack/react-query')) {
-              return 'vendor-query';
-            }
-            if (id.includes('wouter')) {
-              return 'vendor-router';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'vendor-radix';
-            }
             return 'vendor';
           }
-          
-          // НЕ выделяем UI компоненты в отдельный chunk
-          // Они должны загружаться вместе со страницами для избежания ошибок импорта
         },
       },
     },
