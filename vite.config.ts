@@ -22,13 +22,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Простое разделение: все node_modules в один vendor chunk
-          // Vite автоматически оптимизирует загрузку зависимостей
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
+        manualChunks: undefined, // Отключаем manual chunks полностью - пусть Vite сам управляет
       },
     },
   },
