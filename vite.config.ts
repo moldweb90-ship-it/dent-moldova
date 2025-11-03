@@ -22,19 +22,11 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        entryFileNames: `assets/[name].js`,
-        chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`,
-        manualChunks(id) {
-          // Выделяем UI компоненты в отдельный chunk который загрузится первым
-          if (id.includes('client/src/components/ui/button')) {
-            return 'ui-base';
-          }
-          // Vendor chunk для node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
+        // Возвращаем хеши чтобы браузер не кешировал старые файлы
+        entryFileNames: `assets/[name]-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`,
+        // НЕ используем manualChunks - пусть Vite сам определяет как разбивать
       },
     },
   },

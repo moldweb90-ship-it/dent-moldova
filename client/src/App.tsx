@@ -5,9 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, lazy, Suspense } from "react";
 
-// Route-based code splitting
-const Home = lazy(() => import("@/pages/Home"));
-// ВРЕМЕННО убрано lazy loading для страницы клиники
+// Убираем lazy loading полностью чтобы избежать проблем с Button
+import Home from "@/pages/Home";
 import ClinicPage from "@/pages/clinic/[slug]";
 const AdminPage = lazy(() => import("@/pages/admin"));
 const PricingPage = lazy(() => import("@/pages/pricing"));
