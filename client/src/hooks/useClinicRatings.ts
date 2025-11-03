@@ -52,7 +52,7 @@ export const useClinicRatings = (clinicId: string, options?: { enabled?: boolean
       }
       return response.json();
     },
-    enabled: !!clinicId && (options?.enabled ?? false),
+    enabled: !!clinicId && (options?.enabled ?? true), // По умолчанию загружаем рейтинги для всех карточек
     staleTime: 10 * 60 * 1000, // Кешируем на 10 минут
     cacheTime: 15 * 60 * 1000, // Храним в кеше 15 минут
   });
