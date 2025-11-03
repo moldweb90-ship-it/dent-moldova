@@ -7,7 +7,8 @@ import { useState, lazy, Suspense } from "react";
 
 // Route-based code splitting
 const Home = lazy(() => import("@/pages/Home"));
-const ClinicPage = lazy(() => import("@/pages/clinic/[slug]"));
+// ВРЕМЕННО убрано lazy loading для страницы клиники
+import ClinicPage from "@/pages/clinic/[slug]";
 const AdminPage = lazy(() => import("@/pages/admin"));
 const PricingPage = lazy(() => import("@/pages/pricing"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/privacy"));
