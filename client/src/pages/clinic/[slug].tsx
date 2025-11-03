@@ -3,7 +3,7 @@ import { useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useTranslation } from '@/lib/i18n';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/index';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScoreBar } from '@/components/ScoreBar';
 import { BookingModal } from '@/components/BookingModal';
