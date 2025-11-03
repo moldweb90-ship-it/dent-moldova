@@ -1,0 +1,30 @@
+# Игнорируемые файлы и папки
+
+# Конфигурация
+config/database.php
+config/config.php
+
+# Загруженные файлы
+images/*
+!images/.gitkeep
+
+# Временные файлы
+*.tmp
+*.log
+*.cache
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Backup файлы
+*.sql.bak
+*.bak
+
+

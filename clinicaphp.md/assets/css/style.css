@@ -1,0 +1,275 @@
+/* Основные стили - повторяют оригинальный проект */
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fonts */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent page scroll when modal open */
+body.modal-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+html {
+    overflow-y: scroll;
+}
+
+/* Language Toggle Styles */
+.lang-toggle .toggle-button-cover {
+    display: inline-block;
+    position: relative;
+    width: 74px;
+    height: 36px;
+}
+
+.lang-toggle .button,
+.lang-toggle .knobs,
+.lang-toggle .layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.lang-toggle .button {
+    position: relative;
+    width: 74px;
+    height: 36px;
+    margin: 0;
+    overflow: hidden;
+}
+
+.lang-toggle .checkbox {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.lang-toggle .knobs { z-index: 2; }
+.lang-toggle .layer {
+    width: 100%;
+    background-color: #ebf7fc;
+    transition: 0.3s ease all;
+    z-index: 1;
+}
+
+.lang-toggle .button.r,
+.lang-toggle .button.r .layer {
+    border-radius: 100px;
+}
+
+.lang-toggle #lang-button .knobs::before,
+.lang-toggle #lang-button .knobs::after {
+    position: absolute;
+    top: 4px;
+    width: 28px;
+    height: 28px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 50%;
+    transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+}
+
+.lang-toggle #lang-button .knobs::before {
+    content: "RU";
+    left: 4px;
+    background-color: #2563eb;
+}
+
+.lang-toggle #lang-button .knobs::after {
+    content: "RO";
+    left: 42px;
+    color: #2563eb;
+    background: transparent;
+    border-radius: 8px;
+}
+
+.lang-toggle #lang-button .checkbox:active + .knobs::before {
+    width: 46px;
+    border-radius: 100px;
+}
+
+.lang-toggle #lang-button .checkbox:checked:active + .knobs::before {
+    width: 46px;
+    border-radius: 100px;
+    left: 20px;
+}
+
+.lang-toggle #lang-button .checkbox:checked + .knobs::before {
+    content: "RO";
+    left: 42px;
+    background-color: #16a34a;
+}
+
+.lang-toggle #lang-button .checkbox:checked + .knobs::after {
+    content: "RU";
+    left: 4px;
+    color: #16a34a;
+}
+
+.lang-toggle #lang-button .checkbox:checked ~ .layer {
+    background-color: #ecfdf5;
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-pulse-subtle {
+    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Clinic Card Styles */
+.clinic-card {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    aspect-ratio: 5/6;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.clinic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.clinic-card .clinic-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.clinic-card .clinic-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3));
+}
+
+.clinic-card .clinic-content {
+    position: relative;
+    z: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.5rem;
+    color: white;
+}
+
+@media (min-width: 768px) {
+    .clinic-card {
+        aspect-ratio: 4/3;
+    }
+    .clinic-card .clinic-content {
+        padding: 1rem;
+    }
+}
+
+/* D-Score Colors */
+.d-score-85 { background: linear-gradient(to bottom right, #10b981, #059669); }
+.d-score-75 { background: linear-gradient(to bottom right, #22c55e, #10b981); }
+.d-score-65 { background: linear-gradient(to bottom right, #eab308, #f59e0b); }
+.d-score-50 { background: linear-gradient(to bottom right, #f59e0b, #ef4444); }
+.d-score-low { background: linear-gradient(to bottom right, #ef4444, #ec4899); }
+
+/* Mobile Modal */
+@media (max-width: 768px) {
+    #modal-overlay {
+        align-items: flex-end;
+    }
+    
+    #modal-content {
+        max-height: 85vh;
+        border-radius: 1.5rem 1.5rem 0 0;
+        margin: 0;
+        width: 100%;
+    }
+}
+
+/* Scrollbar */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Utilities */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Mobile: reduce extra-bold to bold */
+@media (max-width: 640px) {
+    .font-extrabold {
+        font-weight: 700 !important;
+    }
+}

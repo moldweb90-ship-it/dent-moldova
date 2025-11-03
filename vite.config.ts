@@ -22,10 +22,19 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        // Убираем хеши из имён файлов и добавляем простые имена
         entryFileNames: `assets/[name].js`,
         chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`
+        assetFileNames: `assets/[name].[ext]`,
+        manualChunks(id) {
+          // Выделяем UI компоненты в отдельный chunk который загрузится первым
+          if (id.includes('client/src/components/ui/button')) {
+            return 'ui-base';
+          }
+          // Vendor chunk для node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
       },
     },
   },

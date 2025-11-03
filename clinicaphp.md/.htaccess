@@ -1,0 +1,40 @@
+# Rewrite Engine для ЧПУ
+# Совместимость с Apache 2.4 и Open Server
+RewriteEngine On
+RewriteBase /clinicaphp.md/
+
+# Защита от прямого доступа к конфигурационным файлам
+<FilesMatch "^(config|includes|database)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# API запросы - УБИРАЕМ RewriteBase из правила, используем абсолютный путь
+RewriteCond %{REQUEST_URI} ^/clinicaphp\.md/api/
+RewriteRule ^clinicaphp\.md/api/(.*)$ clinicaphp.md/api/index.php [QSA,L]
+
+# Перенаправление на index.php для всех остальных запросов
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+
+# Защита .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Включение сжатия
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Кеширование статических файлов
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
