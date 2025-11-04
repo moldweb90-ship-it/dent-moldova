@@ -19,12 +19,28 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 // Добавляем обработку необработанных ошибок
 process.on('uncaughtException', (error) => {
   console.error('❌ Uncaught Exception:', error);
-  // Не завершаем процесс, а логируем ошибку
+  console.error('Stack:', error.stack);
+  // Не завершаем процесс, PM2 перезапустит если нужно
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-  // Не завершаем процесс, а логируем ошибку
+  console.error('❌ Unhandled Rejection at:', promise);
+  console.error('Reason:', reason);
+  if (reason instanceof Error) {
+    console.error('Stack:', reason.stack);
+  }
+  // Не завершаем процесс, PM2 перезапустит если нужно
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  process.exit(0);
 });
 
 // Отключаем кеширование для всех страниц
@@ -39,14 +55,34 @@ app.use((req, res, next) => {
 app.use(seoMiddleware);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    env: process.env.NODE_ENV || 'development'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    const { checkDatabaseConnection } = await import('./db');
+    const dbStatus = await checkDatabaseConnection();
+    
+    const memoryUsage = process.memoryUsage();
+    const memoryMB = {
+      rss: Math.round(memoryUsage.rss / 1024 / 1024),
+      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+      external: Math.round(memoryUsage.external / 1024 / 1024)
+    };
+
+    res.status(dbStatus ? 200 : 503).json({ 
+      status: dbStatus ? 'OK' : 'DB_ERROR',
+      timestamp: new Date().toISOString(),
+      uptime: Math.round(process.uptime()),
+      memory: memoryMB,
+      database: dbStatus ? 'connected' : 'disconnected',
+      env: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(503).json({
+      status: 'ERROR',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 app.use((req, res, next) => {
@@ -105,10 +141,25 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  
   server.listen({
     port,
     host: "0.0.0.0",
   }, () => {
-    log(`serving on port ${port}`);
+    log(`✅ Server started on port ${port}`);
+    // Отправляем сигнал PM2 что сервер готов
+    if (process.send) {
+      process.send('ready');
+    }
+  });
+
+  // Обработка ошибок сервера
+  server.on('error', (error: any) => {
+    if (error.code === 'EADDRINUSE') {
+      log(`❌ Port ${port} is already in use`);
+      process.exit(1);
+    } else {
+      log(`❌ Server error: ${error.message}`);
+    }
   });
 })();
